@@ -4,6 +4,10 @@
   "private": true,
   "main": "src/index.ts",
   "dependencies": {
-    "@raqib/shared": "*"
+    "@raqib/shared": "*",
+    "better-sqlite3": "^13.0.3"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.12"
   }
 }
