@@ -1,0 +1,30 @@
+# Env
+.env
+.env.local
+.env.*.local
+
+# Config locale
+config/providers.json
+config/raqib.local.json
+
+# Données / rapports / DB
+data/
+reports/
+*.db
+*.sqlite
+*.sqlite-journal
+
+# Node
+node_modules/
+dist/
+build/
+.next/
+out/
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
