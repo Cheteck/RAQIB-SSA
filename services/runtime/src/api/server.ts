@@ -1,8 +1,29 @@
 import express from 'express';
+import cors from 'cors';
 import { RaqibRuntime } from '../RaqibRuntime';
 
 export function createRuntimeServer(runtime: RaqibRuntime) {
   const app = express();
+
+  const allowedOrigins = process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(',').map((o) => o.trim())
+    : ['http://localhost:3000', 'http://127.0.0.1:3000'];
+
+  app.use(
+    cors({
+      origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) {
+          callback(null, true);
+        } else {
+          callback(new Error(`CORS policy denied access for origin ${origin}`));
+        }
+      },
+      credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization'],
+    })
+  );
+
   app.use(express.json());
 
   // Status & Health

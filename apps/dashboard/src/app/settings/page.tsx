@@ -2,12 +2,14 @@
 
 import { useState } from 'react';
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+
 export default function SettingsPage() {
   const [msg, setMsg] = useState('');
 
   const toggleEmergency = async (action: 'activate' | 'deactivate') => {
     try {
-      const res = await fetch('http://localhost:4000/api/emergency-stop', {
+      const res = await fetch(`${API_BASE}/api/emergency-stop`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -33,19 +35,21 @@ export default function SettingsPage() {
         </p>
         <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
           <button
+            id="btn-activate-emergency"
             onClick={() => toggleEmergency('activate')}
             style={{ padding: '0.75rem 1.5rem', background: '#dc2626', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}
           >
             ACTIVER EMERGENCY STOP
           </button>
           <button
+            id="btn-deactivate-emergency"
             onClick={() => toggleEmergency('deactivate')}
             style={{ padding: '0.75rem 1.5rem', background: '#16a34a', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}
           >
             DÉSACTIVER (RÉINITIALISER)
           </button>
         </div>
-        {msg && <p style={{ marginTop: '1rem', fontWeight: 'bold', color: '#38bdf8' }}>{msg}</p>}
+        {msg && <p id="emergency-toggle-message" style={{ marginTop: '1rem', fontWeight: 'bold', color: '#38bdf8' }}>{msg}</p>}
       </div>
     </div>
   );

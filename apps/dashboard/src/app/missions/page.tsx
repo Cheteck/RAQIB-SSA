@@ -2,12 +2,14 @@
 
 import { useState, useEffect } from 'react';
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+
 export default function MissionsPage() {
   const [missions, setMissions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('http://localhost:4000/api/missions')
+    fetch(`${API_BASE}/api/missions`)
       .then(res => res.json())
       .then(data => setMissions(data.missions || []))
       .catch(() => setMissions([]))
@@ -20,11 +22,11 @@ export default function MissionsPage() {
       {loading ? (
         <p>Chargement des missions...</p>
       ) : missions.length === 0 ? (
-        <p style={{ color: '#94a3b8' }}>Aucune mission enregistrée pour le moment.</p>
+        <p id="no-missions-msg" style={{ color: '#94a3b8' }}>Aucune mission enregistrée pour le moment.</p>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1.5rem' }}>
           {missions.map((m) => (
-            <div key={m.id} style={{ background: '#1e293b', padding: '1.25rem', borderRadius: '8px', border: '1px solid #334155' }}>
+            <div key={m.id} className="mission-card" style={{ background: '#1e293b', padding: '1.25rem', borderRadius: '8px', border: '1px solid #334155' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <strong style={{ fontSize: '1.1rem', color: '#38bdf8' }}>{m.id} — {m.name}</strong>
                 <span style={{ padding: '0.25rem 0.6rem', borderRadius: '4px', background: '#334155', fontSize: '0.85rem' }}>{m.status}</span>

@@ -2,12 +2,14 @@
 
 import { useState, useEffect } from 'react';
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+
 export default function AuditPage() {
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('http://localhost:4000/api/audit')
+    fetch(`${API_BASE}/api/audit`)
       .then(res => res.json())
       .then(data => setEvents(data.events || []))
       .catch(() => setEvents([]))
@@ -24,7 +26,7 @@ export default function AuditPage() {
       ) : (
         <div style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           {events.map((evt) => (
-            <div key={evt.id} style={{ background: '#1e293b', padding: '1rem', borderRadius: '6px', borderLeft: '4px solid #38bdf8' }}>
+            <div key={evt.id} className="audit-event-card" style={{ background: '#1e293b', padding: '1rem', borderRadius: '6px', borderLeft: '4px solid #38bdf8' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: '#94a3b8' }}>
                 <span>[{evt.timestamp}] <strong>{evt.type}</strong></span>
                 <span>Acteur: {evt.actor}</span>

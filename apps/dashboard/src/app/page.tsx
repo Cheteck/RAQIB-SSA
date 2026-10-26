@@ -2,13 +2,15 @@
 
 import { useState, useEffect } from 'react';
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+
 export default function OverviewPage() {
   const [status, setStatus] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   const fetchStatus = async () => {
     try {
-      const res = await fetch('http://localhost:4000/api/status');
+      const res = await fetch(`${API_BASE}/api/status`);
       const data = await res.json();
       setStatus(data);
     } catch {
@@ -33,7 +35,7 @@ export default function OverviewPage() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', marginTop: '1.5rem' }}>
           <div style={{ background: '#1e293b', padding: '1.5rem', borderRadius: '8px', border: '1px solid #334155' }}>
             <h3>Statut du Runtime</h3>
-            <span style={{
+            <span id="runtime-status-badge" style={{
               padding: '0.4rem 0.8rem',
               borderRadius: '4px',
               fontWeight: 'bold',
@@ -46,7 +48,7 @@ export default function OverviewPage() {
 
           <div style={{ background: '#1e293b', padding: '1.5rem', borderRadius: '8px', border: '1px solid #334155' }}>
             <h3>Arrêt d'urgence (Emergency Stop)</h3>
-            <span style={{
+            <span id="emergency-status-badge" style={{
               padding: '0.4rem 0.8rem',
               borderRadius: '4px',
               fontWeight: 'bold',
@@ -59,7 +61,7 @@ export default function OverviewPage() {
 
           <div style={{ background: '#1e293b', padding: '1.5rem', borderRadius: '8px', border: '1px solid #334155' }}>
             <h3>Mode de Fonctionnement</h3>
-            <span style={{
+            <span id="mode-status-badge" style={{
               padding: '0.4rem 0.8rem',
               borderRadius: '4px',
               fontWeight: 'bold',
