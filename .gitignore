@@ -4,12 +4,10 @@
 .env.*.local
 
 # Config locale
-config/providers.json
 config/raqib.local.json
 
-# Données / rapports / DB
+# DonnÃ©es / DB
 data/
-reports/
 *.db
 *.sqlite
 *.sqlite-journal
