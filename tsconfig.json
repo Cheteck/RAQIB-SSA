@@ -36,7 +36,10 @@
   },
   "include": [
     "packages/**/*",
-    "scripts/**/*",
-    "tests/**/*"
+    "scripts/**/*"
+  ],
+  "exclude": [
+    "tests/**/*",
+    "apps/**/*"
   ]
 }

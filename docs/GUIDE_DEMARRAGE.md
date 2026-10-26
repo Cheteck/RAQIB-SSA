@@ -86,3 +86,28 @@ Lors du développement avec OpenCode :
 
 ## Prochaine action concrète
 **Phase 0 complète** → Démarrer **Phase 1** : Développer RAQIB-001 en lecture seule.
+
+
+## Étape 5 : Lancement du Service Runtime et du Dashboard Next.js
+
+RAQIB propose des scripts de lancement simples depuis la racine du workspace :
+
+
+
+## Étape 5 : Lancement du Service Runtime et du Dashboard Next.js
+
+RAQIB propose des scripts de lancement simples depuis la racine du workspace :
+
+```bash
+# Lancer uniquement le service autonome Runtime (port 4000 par défaut)
+npm run start:runtime
+
+# Lancer le Dashboard Next.js en mode développement
+npm run dev:dashboard
+
+# Lancer le Dashboard Next.js en mode production
+npm run start:dashboard
+
+# Lancer le Runtime et le Dashboard en parallèle
+npm run start:all
+```
