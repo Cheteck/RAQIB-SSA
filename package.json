@@ -8,8 +8,8 @@
     "services/*"
   ],
   "scripts": {
-    "dev": "tsc --watch",
-    "build": "tsc",
+    "dev": "concurrently -n runtime,dash -c blue,magenta \"npm run dev:runtime\" \"npm run dev:dashboard\"",
+    "build": "tsc -p tsconfig.build.json",
     "start:audit": "npm run build && node dist/scripts/run-audit-001.js",
     "test:freellmapi": "node scripts/test-freellmapi.js",
     "test:audit": "npm run build && node dist/scripts/run-audit-001.js",
@@ -17,11 +17,11 @@
     "clean": "rimraf dist",
     "test:security": "vitest run tests/security",
     "test": "vitest run",
-    "start:runtime": "ts-node services/runtime/src/index.ts",
-    "dev:runtime": "ts-node services/runtime/src/index.ts",
-    "start:dashboard": "npm run --workspace=@raqib/dashboard start",
-    "dev:dashboard": "npm run --workspace=@raqib/dashboard dev",
-    "start:all": "npm run start:runtime & npm run start:dashboard"
+    "start:runtime": "npm run build && node dist/services/runtime/src/index.js",
+    "dev:runtime": "tsx services/runtime/src/index.ts",
+    "start:dashboard": "npm run start --workspace=@raqib/dashboard",
+    "dev:dashboard": "npm run dev --workspace=@raqib/dashboard",
+    "start:all": "concurrently -n runtime,dash -c blue,magenta \"npm run start:runtime\" \"npm run start:dashboard\""
   },
   "dependencies": {
     "better-sqlite3": "^13.0.3",
@@ -34,6 +34,7 @@
     "@types/express": "^5.0.6",
     "@types/node": "^26.6.5",
     "@types/supertest": "^7.2.1",
+    "concurrently": "^10.0.6",
     "rimraf": "^6.0.1",
     "supertest": "^7.3.1",
     "ts-node": "^10.9.2",
