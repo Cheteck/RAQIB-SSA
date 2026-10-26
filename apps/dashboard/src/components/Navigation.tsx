@@ -2,67 +2,79 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useState, useEffect } from 'react';
 
 export default function Navigation() {
   const pathname = usePathname();
+  const [timeStr, setTimeStr] = useState<string>('--:--:--');
+  const [dateStr, setDateStr] = useState<string>('');
+
+  useEffect(() => {
+    const updateTime = () => {
+      const now = new Date();
+      setTimeStr(now.toLocaleTimeString('en-US'));
+      setDateStr(now.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }));
+    };
+    updateTime();
+    const interval = setInterval(updateTime, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   const isActive = (path: string) => pathname === path;
 
   return (
-    <header className="sticky top-0 z-50 w-full h-14 bg-[#0a111c]/90 backdrop-blur-xl border-b border-primary-container/20 px-4 flex items-center justify-between shadow-[0_4px_24px_rgba(0,0,0,0.6)]">
-      {/* LEFT: BRAND + SYSTEM STATUS */}
-      <div className="flex items-center gap-4">
-        <Link href="/" className="flex items-center gap-2.5 no-underline">
-          <div className="w-8 h-8 rounded-lg bg-primary-container/15 border border-primary-container/40 flex items-center justify-center text-primary-container shadow-[0_0_12px_rgba(66,217,255,0.3)]">
-            <span className="material-symbols-outlined text-[20px]">hub</span>
-          </div>
+    <header className="sticky top-0 z-50 w-full h-[58px] bg-[#04060b]/90 backdrop-blur-xl border-b border-primary-container/20 px-6 flex items-center justify-between shadow-[0_4px_24px_rgba(0,0,0,0.8)]">
+      {/* BRAND & LOGO */}
+      <div className="flex items-center gap-3">
+        <Link href="/" className="flex items-center gap-3 no-underline">
+          <svg width="32" height="32" viewBox="0 0 34 34" fill="none" stroke="#62e6ff">
+            <circle cx="17" cy="17" r="15" strokeDasharray="4 3" opacity=".6">
+              <animateTransform attributeName="transform" type="rotate" from="0 17 17" to="360 17 17" dur="14s" repeatCount="indefinite" />
+            </circle>
+            <circle cx="17" cy="17" r="9" />
+            <circle cx="17" cy="17" r="3" fill="#7dffc8" stroke="none" />
+          </svg>
           <div className="flex flex-col">
             <div className="flex items-center gap-2">
-              <span className="font-mono text-xs font-bold tracking-widest text-primary neon-cyan-text">RAQIB</span>
-              <span className="text-[10px] text-outline font-mono px-1 py-0.5 rounded bg-surface-container-high border border-outline-variant">OS v1.0</span>
+              <span className="font-oxanium text-lg font-bold tracking-widest text-white neon-cyan-text">RAQIB AI</span>
+              <span className="font-mono text-[9px] px-1.5 py-0.5 border border-[#7dffc8]/40 text-[#7dffc8]">MARK LXXXV</span>
+              <span className="font-mono text-[9px] px-1.5 py-0.5 border border-white/14 text-[#7f95a6]">OS v1.0</span>
             </div>
-            <span className="text-[9px] font-mono tracking-widest text-on-surface-variant uppercase">AI COMMAND CENTER</span>
+            <span className="font-mono text-[9px] tracking-widest text-[#7f95a6] uppercase">STRATEGIC GOVERNANCE TACTICAL HUD</span>
           </div>
         </Link>
-
-        {/* SYSTEM STATUS PILL */}
-        <div className="hidden sm:flex items-center gap-2 px-3 py-1 rounded-full bg-surface-container-low/90 border border-tertiary/30 shadow-[0_0_10px_rgba(114,253,196,0.15)]">
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-tertiary opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-tertiary"></span>
-          </span>
-          <span className="font-mono text-[11px] text-tertiary font-semibold tracking-wider uppercase">GOVERNANCE ENGINE ACTIVE</span>
-        </div>
       </div>
 
-      {/* CENTER: MODULE LINKS */}
+      {/* CENTER CLOCK */}
+      <div className="hidden md:flex flex-col items-center">
+        <span className="font-mono text-[9px] text-[#7f95a6] tracking-widest uppercase">{dateStr}</span>
+        <span className="font-oxanium text-2xl font-light tracking-widest text-white neon-cyan-text">{timeStr}</span>
+      </div>
+
+      {/* MODULE LINKS & OPERATOR */}
       <div className="flex items-center gap-2">
-        <Link href="/" className={`px-3 py-1.5 rounded-lg font-mono text-xs font-medium transition-all ${isActive('/') ? 'bg-primary-container/15 text-primary border border-primary-container/40 shadow-[0_0_10px_rgba(66,217,255,0.2)]' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high'}`}>
-          Vue Générale
+        <Link href="/" className={`px-3 py-1.5 font-mono text-xs font-medium transition-all ${isActive('/') ? 'text-white border-b-2 border-[#62e6ff] bg-[#62e6ff]/10' : 'text-[#7f95a6] hover:text-white'}`}>
+          Command Core
         </Link>
-        <Link href="/missions" className={`px-3 py-1.5 rounded-lg font-mono text-xs font-medium transition-all ${isActive('/missions') ? 'bg-primary-container/15 text-primary border border-primary-container/40 shadow-[0_0_10px_rgba(66,217,255,0.2)]' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high'}`}>
+        <Link href="/missions" className={`px-3 py-1.5 font-mono text-xs font-medium transition-all ${isActive('/missions') ? 'text-white border-b-2 border-[#62e6ff] bg-[#62e6ff]/10' : 'text-[#7f95a6] hover:text-white'}`}>
           Missions
         </Link>
-        <Link href="/approvals" className={`px-3 py-1.5 rounded-lg font-mono text-xs font-medium transition-all ${isActive('/approvals') ? 'bg-primary-container/15 text-primary border border-primary-container/40 shadow-[0_0_10px_rgba(66,217,255,0.2)]' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high'}`}>
-          Approbations
+        <Link href="/approvals" className={`px-3 py-1.5 font-mono text-xs font-medium transition-all ${isActive('/approvals') ? 'text-white border-b-2 border-[#62e6ff] bg-[#62e6ff]/10' : 'text-[#7f95a6] hover:text-white'}`}>
+          Approvals
         </Link>
-        <Link href="/audit" className={`px-3 py-1.5 rounded-lg font-mono text-xs font-medium transition-all ${isActive('/audit') ? 'bg-primary-container/15 text-primary border border-primary-container/40 shadow-[0_0_10px_rgba(66,217,255,0.2)]' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high'}`}>
+        <Link href="/audit" className={`px-3 py-1.5 font-mono text-xs font-medium transition-all ${isActive('/audit') ? 'text-white border-b-2 border-[#62e6ff] bg-[#62e6ff]/10' : 'text-[#7f95a6] hover:text-white'}`}>
           Audit Ledger
         </Link>
-        <Link href="/settings" className={`px-3 py-1.5 rounded-lg font-mono text-xs font-medium transition-all ${isActive('/settings') ? 'bg-error-container/30 text-error border border-error/40 shadow-[0_0_10px_rgba(255,180,171,0.2)]' : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high'}`}>
-          Urgence & Parameters
+        <Link href="/settings" className={`px-3 py-1.5 font-mono text-xs font-medium transition-all ${isActive('/settings') ? 'text-[#ff6b5e] border-b-2 border-[#ff6b5e] bg-[#ff6b5e]/10' : 'text-[#7f95a6] hover:text-[#ff6b5e]'}`}>
+          Emergency
         </Link>
-      </div>
 
-      {/* RIGHT: COMMANDER PROFILE */}
-      <div className="flex items-center gap-2.5">
-        <div className="flex items-center gap-2 pl-1 py-0.5 pr-2.5 rounded-full bg-surface-container-low border border-primary-container/20">
-          <div className="w-7 h-7 rounded-full bg-primary-container/20 border border-primary-container/40 flex items-center justify-center text-primary-container">
-            <span className="material-symbols-outlined text-[17px]">account_circle</span>
-          </div>
+        {/* OPERATOR PILL */}
+        <div className="flex items-center gap-2 pl-3 ml-2 border-l border-white/10">
+          <span className="material-symbols-outlined text-[#62e6ff] text-[20px]">shield_person</span>
           <div className="flex flex-col text-left">
-            <span className="font-mono text-[11px] font-semibold text-primary leading-tight">Commander</span>
-            <span className="text-[9px] font-mono text-outline leading-none">Fondateur Operator</span>
+            <span className="font-oxanium text-xs font-semibold text-white tracking-wide">F. OPERATOR</span>
+            <span className="font-mono text-[9px] text-[#7f95a6]">Commander</span>
           </div>
         </div>
       </div>

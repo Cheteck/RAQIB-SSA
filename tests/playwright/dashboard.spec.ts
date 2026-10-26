@@ -22,7 +22,7 @@ test.describe('RAQIB Dashboard & Cors Verification', () => {
     await page.screenshot({ path: 'reports/screenshots/02-missions.png' });
 
     // 3. Approvals page
-    await page.click('a:has-text("Approbations")');
+    await page.click('a:has-text("Approvals")');
     await page.waitForTimeout(500);
     await page.screenshot({ path: 'reports/screenshots/03-approvals.png' });
 
@@ -32,7 +32,7 @@ test.describe('RAQIB Dashboard & Cors Verification', () => {
     await page.screenshot({ path: 'reports/screenshots/04-audit.png' });
 
     // 5. Settings / Emergency page
-    await page.click('a:has-text("Urgence & Parameters")');
+    await page.click('a:has-text("Emergency")');
     await page.waitForSelector('#btn-activate-emergency');
     await page.screenshot({ path: 'reports/screenshots/05-settings-initial.png' });
 
