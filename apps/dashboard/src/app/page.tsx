@@ -8,18 +8,19 @@ export default function OverviewPage() {
   const [status, setStatus] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [prompt, setPrompt] = useState('');
-  const [feedback, setFeedback] = useState('At your service, sir. All systems nominal.');
+  const [echoText, setEchoText] = useState('› RAQIB OS initialized');
+  const [outputText, setOutputText] = useState('At your service, sir. All systems nominal.');
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
     fetch(`${API_BASE}/api/status`)
-      .then(res => res.json())
-      .then(data => setStatus(data))
+      .then((res) => res.json())
+      .then((data) => setStatus(data))
       .catch(() => setStatus({ status: 'OFFLINE', emergencyStop: false, readOnlyMode: true }))
       .finally(() => setLoading(false));
   }, []);
 
-  // 3D Fibonacci Particle Sphere Animation from Stitch
+  // 3D Fibonacci Canvas Sphere Rendering (Original JS logic from HTML template)
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -100,136 +101,192 @@ export default function OverviewPage() {
     };
   }, []);
 
-  const handleDirectiveSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!prompt.trim()) return;
-    setFeedback(`Directive acknowledged, sir: "${prompt}"`);
+  const handleDirective = (cmd: string) => {
+    if (!cmd.trim()) return;
+    setEchoText(`› ${cmd}`);
+    setOutputText(`Command received: "${cmd}". Runtime Status: ${status?.status || 'OK'}`);
     setPrompt('');
   };
 
   return (
-    <div className="relative flex-1 w-full flex flex-col justify-between overflow-hidden">
-      {/* 3D Fibonacci Sphere Canvas */}
-      <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden flex items-center justify-center">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(98,230,255,0.08)_0%,rgba(6,13,24,0.45)_55%,#04060b_88%)]"></div>
-        <canvas ref={canvasRef} className="w-full h-full opacity-90"></canvas>
+    <>
+      <canvas id="c" ref={canvasRef} aria-label="Noyau visuel RAQIB"></canvas>
+      <div className="vg"></div>
+
+      <div className="st">
+        {/* LEFT RAIL */}
+        <aside className="rail l" id="L">
+          <section className="p" style={{ '--i': 0 } as any}>
+            <h3>Modules de travail<em>{loading ? '...' : status?.status === 'OK' ? '08 ARMED' : 'OFFLINE'}</em></h3>
+            <div className="mods">
+              <button className="on"><span className="ms">terminal</span><span>Workspace</span></button>
+              <button><span className="ms">account_tree</span><span>Architecture</span></button>
+              <button><span className="ms">smart_toy</span><span>Agents</span><b>DEMO</b></button>
+              <button><span className="ms">checklist</span><span>Backlog</span><b className="a">LOCAL</b></button>
+              <button><span className="ms">history</span><span>Historique</span></button>
+              <button><span className="ms">hub</span><span>Contexte projet</span></button>
+            </div>
+          </section>
+
+          <section className="p" style={{ '--i': 1 } as any}>
+            <h3>Gouvernance & Sécurité<em>Real Engine</em></h3>
+            <div className="ag act">
+              <span className="ms">shield</span>
+              <div>
+                <b>Policy Engine</b>
+                <small id="runtime-status-badge">{status?.status || 'UNKNOWN'}</small>
+              </div>
+              <span className="eq"><i></i><i></i><i></i><i></i></span>
+            </div>
+            <div className="ag act">
+              <span className="ms">warning</span>
+              <div>
+                <b>Emergency Lock</b>
+                <small id="emergency-status-badge">{status?.emergencyStop ? 'ARMED' : 'CLEAR'}</small>
+              </div>
+              <span className="eq"><i></i><i></i><i></i><i></i></span>
+            </div>
+          </section>
+
+          <section className="p" style={{ '--i': 2 } as any}>
+            <h3>Indicateurs Runtime<em>RAQIB Core</em></h3>
+            <div className="gs">
+              <div className="g" style={{ color: 'rgb(98,230,255)' }}>
+                <svg viewBox="0 0 36 36">
+                  <circle className="b" cx="18" cy="18" r="15.9" />
+                  <circle className="f" cx="18" cy="18" r="15.9" stroke="rgb(98,230,255)" style={{ strokeDasharray: '32 100' }} />
+                </svg>
+                <b>32%</b>
+                <small>Rules</small>
+              </div>
+              <div className="g" style={{ color: 'rgb(125,255,200)' }}>
+                <svg viewBox="0 0 36 36">
+                  <circle className="b" cx="18" cy="18" r="15.9" />
+                  <circle className="f" cx="18" cy="18" r="15.9" stroke="rgb(125,255,200)" style={{ strokeDasharray: '65 100' }} />
+                </svg>
+                <b>65%</b>
+                <small>Memory</small>
+              </div>
+              <div className="g" style={{ color: 'rgb(255,179,71)' }}>
+                <svg viewBox="0 0 36 36">
+                  <circle className="b" cx="18" cy="18" r="15.9" />
+                  <circle className="f" cx="18" cy="18" r="15.9" stroke="rgb(255,179,71)" style={{ strokeDasharray: '98 100' }} />
+                </svg>
+                <b>98%</b>
+                <small>Reactor</small>
+              </div>
+            </div>
+          </section>
+        </aside>
+
+        {/* CENTER STAGE */}
+        <section className="mid">
+          <div className="hd">
+            <span id="sl"><i className="dot"></i><span id="st">STANDBY</span></span>
+            <h1>RAQIB</h1>
+            <small>Development workspace · project data connected · local runtime port 4000</small>
+          </div>
+          <div className="bt">
+            <small id="echo">{echoText}</small>
+            <div id="out" aria-live="polite">{outputText}</div>
+            <section className="p tl" id="TL" style={{ '--i': 5 } as any}>
+              <h3>Mission chronos<em>active deck · 4 objectives</em></h3>
+              <div className="tm d"><i></i><b>Initialisation du Runtime</b><small>09:30 AM · Done</small></div>
+              <div className="tm n"><i></i><b>Vérification Policy Engine</b><small>12:00 PM · In progress</small></div>
+              <div className="tm"><i></i><b>Audit Ledger Verification</b><small>02:00 PM · Queued</small></div>
+              <div className="tm"><i></i><b>Validation finale MVP</b><small>04:30 PM · Queued</small></div>
+            </section>
+          </div>
+        </section>
+
+        {/* RIGHT RAIL */}
+        <aside className="rail r" id="R">
+          <section className="p" style={{ '--i': 3 } as any}>
+            <h3>Journal d’activité<em>Audit Engine</em></h3>
+            <div className="feed" id="fd">
+              <div className="fi">
+                <header><span>System Initialization</span><em>LOG</em></header>
+                <p>RAQIB Autonomous Runtime Service running on port 4000.</p>
+                <small>11:15 AM · RAQIB core</small>
+              </div>
+              <div className="fi w">
+                <header><span>Emergency Stop Status</span><em>STATUS</em></header>
+                <p>{status?.emergencyStop ? 'Emergency stop active: write actions locked.' : 'Emergency stop inactive: normal mode.'}</p>
+                <small>10:54 AM · Safety</small>
+              </div>
+            </div>
+          </section>
+
+          <section className="p" style={{ '--i': 4 } as any}>
+            <h3>Actions rapides<em>Directives</em></h3>
+            <div className="dir">
+              <button onClick={() => handleDirective("Analyse l’architecture du projet")}><span className="ms">account_tree</span><span>Analyser l’architecture</span></button>
+              <button onClick={() => handleDirective("Découpe cette fonctionnalité en tâches")}><span className="ms">checklist</span><span>Découper une tâche</span></button>
+              <button onClick={() => handleDirective("Prépare une stratégie de tests")}><span className="ms">bug_report</span><span>Préparer les tests</span></button>
+              <button onClick={() => handleDirective("Prépare la prochaine release")}><span className="ms">rocket_launch</span><span>Préparer release</span></button>
+            </div>
+          </section>
+
+          <section className="p" style={{ '--i': 5 } as any}>
+            <h3>Réseau de contexte<em>Graph</em></h3>
+            <div className="cs">
+              <svg id="cn" viewBox="0 0 100 80">
+                <line x1="12" y1="16" x2="36" y2="8" />
+                <line x1="36" y1="8" x2="60" y2="18" />
+                <line x1="60" y1="18" x2="88" y2="10" />
+                <line x1="20" y1="42" x2="46" y2="34" />
+                <circle cx="12" cy="16" r="2.4" />
+                <circle cx="36" cy="8" r="1.6" />
+                <circle cx="60" cy="18" r="2.4" />
+                <circle cx="88" cy="10" r="1.6" />
+              </svg>
+              <div>
+                <small>Activité locale</small>
+                <b id="vc">25</b>
+                <small><span id="tn">25</span> tests PASS · 100% PASS</small>
+              </div>
+            </div>
+          </section>
+        </aside>
       </div>
 
-      {/* Main Grid Content */}
-      <main className="relative z-20 flex-1 w-full px-5 py-2 grid grid-cols-12 gap-4 items-stretch overflow-hidden">
-        {/* Left Wing */}
-        <section className="col-span-12 xl:col-span-3 flex flex-col gap-2.5 justify-between h-full max-h-[calc(100vh-140px)] overflow-y-auto">
-          <div className="hud-cut-card p-3 flex flex-col gap-2">
-            <div className="flex items-center justify-between pb-1 border-b border-[#62e6ff]/15">
-              <span className="font-hud text-xs font-semibold text-[#62e6ff] tracking-wider uppercase">Tactical modules</span>
-              <span className="text-[9px] font-mono text-[#62e6ff]/80 px-1.5 py-0.2 rounded bg-[#62e6ff]/10 border border-[#62e6ff]/30">08 armed</span>
-            </div>
-            <div className="grid grid-cols-2 gap-1.5 text-[11px] pt-1">
-              <div className="p-2 rounded bg-slate-900/80 border border-[#62e6ff]/40 flex flex-col gap-1">
-                <span className="text-slate-400 text-[10px]">Runtime Service</span>
-                <span id="runtime-status-badge" className={`font-mono text-xs font-bold ${status?.status === 'OK' ? 'text-emerald-400' : 'text-red-400'}`}>
-                  {loading ? 'CHECKING...' : status?.status || 'UNKNOWN'}
-                </span>
-              </div>
-              <div className="p-2 rounded bg-slate-900/80 border border-[#62e6ff]/40 flex flex-col gap-1">
-                <span className="text-slate-400 text-[10px]">Emergency Lock</span>
-                <span id="emergency-status-badge" className={`font-mono text-xs font-bold ${status?.emergencyStop ? 'text-red-400 animate-pulse' : 'text-emerald-400'}`}>
-                  {status?.emergencyStop ? 'ARMED' : 'CLEAR'}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="hud-cut-card p-3 flex flex-col gap-2">
-            <div className="flex items-center justify-between pb-1 border-b border-[#62e6ff]/15">
-              <span className="font-hud text-xs font-semibold text-[#62e6ff] tracking-wider uppercase">Arc Telemetry</span>
-              <span className="text-[9px] font-mono text-[#62e6ff]/80">3.8 GHz · 16 cores</span>
-            </div>
-            <div className="grid grid-cols-3 gap-2 pt-1 text-center">
-              <div className="flex flex-col items-center">
-                <span className="font-hud font-bold text-xs text-[#62e6ff]">32%</span>
-                <span className="text-[9px] font-mono text-slate-400 uppercase">Synapse</span>
-              </div>
-              <div className="flex flex-col items-center">
-                <span className="font-hud font-bold text-xs text-emerald-400">65%</span>
-                <span className="text-[9px] font-mono text-slate-400 uppercase">Memory</span>
-              </div>
-              <div className="flex flex-col items-center">
-                <span className="font-hud font-bold text-xs text-amber-400 glow-amber">98%</span>
-                <span className="text-[9px] font-mono text-slate-400 uppercase">Reactor</span>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Center Wing */}
-        <section className="col-span-12 xl:col-span-6 flex flex-col justify-between items-center text-center relative pointer-events-none py-4">
-          <div className="flex flex-col items-center gap-1 z-20 pointer-events-auto">
-            <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#62e6ff]/10 border border-[#62e6ff]/40 text-[9px] font-mono text-[#62e6ff] tracking-widest uppercase">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#62e6ff] animate-ping"></span>
-              <span>STANDBY</span>
-            </div>
-            <h1 className="font-hud font-extrabold text-4xl sm:text-5xl tracking-[0.45em] text-white my-1 drop-shadow-[0_0_24px_rgba(98,230,255,0.5)]">
-              R.A.Q.I.B
-            </h1>
-            <p className="text-[10px] font-mono text-[#62e6ff]/80 tracking-wider max-w-xl px-4 leading-relaxed">
-              Arc core · 98.4% flux · Stark-Sat 09 online · quantum core 1.21 GW · repulsor matrix 100% · neural load 18.4 TFLOPS · Shield-512 · 42.894°N 71.021°W
-            </p>
-          </div>
-
-          <div className="flex-1 w-full min-h-[220px]"></div>
-
-          <div className="z-20 pointer-events-auto mb-2">
-            <div className="px-5 py-2 rounded-full bg-[#050b14]/75 backdrop-blur-md border border-[#62e6ff]/30 shadow-[0_0_20px_rgba(98,230,255,0.15)] flex items-center gap-1.5">
-              <span className="text-sm font-mono text-[#62e6ff] tracking-wide">
-                {feedback}<span className="inline-block w-2 h-4 bg-[#62e6ff] ml-1 cursor-blink align-middle"></span>
-              </span>
-            </div>
-          </div>
-        </section>
-
-        {/* Right Wing */}
-        <section className="col-span-12 xl:col-span-3 flex flex-col gap-2.5 justify-between h-full max-h-[calc(100vh-140px)] overflow-y-auto">
-          <div className="hud-cut-card p-3 flex flex-col gap-2">
-            <div className="flex items-center justify-between pb-1 border-b border-[#62e6ff]/15">
-              <span className="font-hud text-xs font-semibold text-[#62e6ff] tracking-wider uppercase">Live Intel Stream</span>
-              <span className="text-[9px] font-mono text-emerald-400 px-1.5 py-0.2 rounded bg-emerald-950/40 border border-emerald-500/30">secure · 120 fps</span>
-            </div>
-            <div className="p-2 rounded bg-slate-900/60 border border-[#62e6ff]/25 flex flex-col gap-1 text-[10px]">
-              <span className="text-slate-200 font-medium">PolicyEngine Governance</span>
-              <span className="text-slate-400 text-[9px]">Routing policy_decision set to none (No AI decision making)</span>
-            </div>
-          </div>
-        </section>
-      </main>
-
-      {/* Footer Dock */}
-      <footer className="relative z-30 w-full px-5 py-2.5 bg-[#050912]/90 backdrop-blur-xl border-t border-[#62e6ff]/20 flex flex-col md:flex-row items-center justify-between gap-3">
-        <div className="flex items-center gap-3 text-[10px] font-mono text-slate-400">
-          <div>Local grid · <span className="text-[#62e6ff]">Africa/Lagos</span></div>
-          <span className="text-slate-700">|</span>
-          <div>Satellite link · <span className="text-emerald-400 font-medium">5G quantum</span></div>
+      {/* DOCK */}
+      <footer className="dock">
+        <div className="env">
+          <small>Local grid · <span>Africa/Lagos</span></small>
+          <small>Weather · <span>28°C overcast</span></small>
+          <small>Execution · <span>RAQIB Autonomous Engine</span></small>
         </div>
 
-        <form onSubmit={handleDirectiveSubmit} className="flex-1 max-w-2xl w-full flex items-center justify-between px-3 py-1.5 rounded-full bg-[#081322] border border-[#62e6ff]/50 shadow-[0_0_20px_rgba(98,230,255,0.25)] focus-within:border-[#62e6ff] transition-all">
-          <button type="button" className="w-7 h-7 rounded-full bg-[#62e6ff]/20 border border-[#62e6ff]/70 flex items-center justify-center text-[#62e6ff] hover:bg-[#62e6ff] hover:text-black transition-colors">
-            <span className="material-symbols-outlined text-[16px]">mic</span>
-          </button>
-          <input
-            type="text"
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            className="bg-transparent border-none text-xs text-slate-200 placeholder:text-slate-500 focus:outline-none w-full px-2 font-mono"
-            placeholder="Speak or type a directive…"
-          />
-          <kbd className="text-[9px] font-mono text-[#62e6ff]/80 bg-slate-900 px-1.5 py-0.5 rounded border border-[#62e6ff]/30">⌘K</kbd>
-        </form>
+        <div className="cm">
+          <form className="cmd" onSubmit={(e) => { e.preventDefault(); handleDirective(prompt); }}>
+            <button type="button" className="mic" id="mic">
+              <span className="ms">mic</span>
+            </button>
+            <div className="wv" id="wv">
+              <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+            </div>
+            <input
+              id="q"
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              placeholder="Demande à RAQIB : analyser un projet, planifier une fonctionnalité…"
+            />
+            <kbd>⌘K</kbd>
+          </form>
 
-        <button onClick={() => setFeedback("Executive Briefing: All 25/25 system tests PASS.")} className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500 text-amber-400 font-hud text-xs font-semibold tracking-wider shadow-[0_0_16px_rgba(245,158,11,0.3)] transition-all">
-          <span className="material-symbols-outlined text-[16px]">play_circle</span>
-          <span>Executive Briefing</span>
+          <div className="chips">
+            <button onClick={() => handleDirective("Analyse l’architecture du projet")}>Analyse l’architecture</button>
+            <button onClick={() => handleDirective("Découpe cette fonctionnalité en tâches")}>Découper une fonctionnalité</button>
+            <button onClick={() => handleDirective("Prépare une stratégie de tests")}>Préparer les tests</button>
+            <button onClick={() => handleDirective("Prépare la prochaine release")}>Préparer une release</button>
+          </div>
+        </div>
+
+        <button className="bf" onClick={() => handleDirective("Synthèse projet")}>
+          <span className="ms">summarize</span><span>Synthèse projet</span>
         </button>
       </footer>
-    </div>
+    </>
   );
 }

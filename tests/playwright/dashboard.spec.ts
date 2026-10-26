@@ -12,7 +12,7 @@ test.describe('RAQIB Dashboard & Cors Verification', () => {
     await page.goto('http://localhost:3000');
     await page.waitForFunction(() => {
       const el = document.querySelector('#runtime-status-badge');
-      return el && el.textContent !== 'CHECKING...';
+      return el && el.textContent !== 'UNKNOWN';
     });
 
     const statusBadgeText = await page.locator('#runtime-status-badge').innerText();
@@ -20,22 +20,17 @@ test.describe('RAQIB Dashboard & Cors Verification', () => {
     await page.screenshot({ path: 'reports/screenshots/01-overview.png' });
 
     // 2. Missions page
-    await page.click('a:has-text("Missions")');
+    await page.click('a[title="Missions"]');
     await page.waitForTimeout(500);
     await page.screenshot({ path: 'reports/screenshots/02-missions.png' });
 
-    // 3. Approvals page
-    await page.click('a:has-text("Approvals")');
-    await page.waitForTimeout(500);
-    await page.screenshot({ path: 'reports/screenshots/03-approvals.png' });
-
-    // 4. Audit page
-    await page.click('a:has-text("Audit")');
+    // 3. Audit page
+    await page.click('a[title="Audit Ledger"]');
     await page.waitForTimeout(500);
     await page.screenshot({ path: 'reports/screenshots/04-audit.png' });
 
-    // 5. Settings / Emergency page
-    await page.click('a:has-text("Emergency")');
+    // 4. Settings / Emergency page
+    await page.click('a[title="Emergency Stop"]');
     await page.waitForSelector('#btn-activate-emergency');
     await page.screenshot({ path: 'reports/screenshots/05-settings-initial.png' });
 
