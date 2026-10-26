@@ -17,21 +17,35 @@ export default function AuditPage() {
   }, []);
 
   return (
-    <div>
-      <h1>Audit Ledger — Traçabilité Append-Only</h1>
+    <div className="hud-panel rounded-2xl p-6 flex flex-col gap-4">
+      <div className="flex items-center justify-between border-b border-outline-variant/40 pb-3">
+        <div className="flex items-center gap-3">
+          <span className="material-symbols-outlined text-primary text-[24px]">history_edu</span>
+          <div>
+            <h1 className="text-lg font-mono font-bold text-primary neon-cyan-text m-0">Audit Ledger — Journal Inaltérable</h1>
+            <p className="text-xs text-on-surface-variant font-mono m-0">Traçabilité Append-Only SQLite (aucun UPDATE/DELETE possible)</p>
+          </div>
+        </div>
+        <span className="font-mono text-xs text-tertiary px-3 py-1 rounded-full bg-tertiary/10 border border-tertiary/30">
+          {events.length} ÉVÉNEMENTS LOGGUÉS
+        </span>
+      </div>
+
       {loading ? (
-        <p>Chargement des événements d'audit...</p>
+        <p className="text-xs font-mono text-outline">Chargement du journal d'audit...</p>
       ) : events.length === 0 ? (
-        <p style={{ color: '#94a3b8' }}>Aucun événement enregistré dans le journal d'audit.</p>
+        <div className="p-8 text-center bg-surface-container-low/50 rounded-xl border border-outline-variant/30">
+          <p className="text-xs font-mono text-outline">Aucun événement enregistré dans le journal d'audit.</p>
+        </div>
       ) : (
-        <div style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+        <div className="flex flex-col gap-3">
           {events.map((evt) => (
-            <div key={evt.id} className="audit-event-card" style={{ background: '#1e293b', padding: '1rem', borderRadius: '6px', borderLeft: '4px solid #38bdf8' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: '#94a3b8' }}>
-                <span>[{evt.timestamp}] <strong>{evt.type}</strong></span>
-                <span>Acteur: {evt.actor}</span>
+            <div key={evt.id} className="audit-event-card p-3.5 rounded-xl bg-surface-container-low border-l-4 border-l-primary-container border border-outline-variant/30 flex flex-col gap-1.5">
+              <div className="flex justify-between text-xs font-mono text-outline">
+                <span>[{evt.timestamp}] <strong className="text-primary">{evt.type}</strong></span>
+                <span>Acteur: <strong className="text-on-surface">{evt.actor}</strong></span>
               </div>
-              <pre style={{ margin: '0.5rem 0 0 0', fontSize: '0.85rem', color: '#e2e8f0', overflowX: 'auto' }}>
+              <pre className="m-0 p-2 rounded bg-surface-container-lowest text-xs font-mono text-on-surface overflow-x-auto border border-outline-variant/20">
                 {JSON.stringify(evt.data, null, 2)}
               </pre>
             </div>

@@ -26,30 +26,40 @@ export default function SettingsPage() {
   };
 
   return (
-    <div>
-      <h1>Paramètres & Urgence</h1>
-      <div style={{ background: '#1e293b', padding: '1.5rem', borderRadius: '8px', border: '1px solid #7f1d1d', marginTop: '1.5rem' }}>
-        <h3 style={{ color: '#f87171' }}>⚠️ Bouton d'Arrêt d'Urgence (Emergency Stop)</h3>
-        <p style={{ color: '#cbd5e1' }}>
-          L'activation bloque immédiatement et sans exception toutes les actions d'écriture et d'exécution dans RAQIB.
+    <div className="hud-panel rounded-2xl p-6 flex flex-col gap-6">
+      <div className="flex items-center gap-3 border-b border-outline-variant/40 pb-3">
+        <span className="material-symbols-outlined text-error text-[24px]">gavel</span>
+        <div>
+          <h1 className="text-lg font-mono font-bold text-primary neon-cyan-text m-0">Paramètres & Interrupteur d'Urgence</h1>
+          <p className="text-xs text-on-surface-variant font-mono m-0">Gouvernance absolue et coupe-circuit immédiat</p>
+        </div>
+      </div>
+
+      <div className="p-6 rounded-xl bg-error-container/20 border border-error/50 flex flex-col gap-3">
+        <h3 className="text-sm font-mono font-bold text-error m-0 flex items-center gap-2">
+          <span className="material-symbols-outlined text-[20px]">warning</span>
+          Bouton d'Arrêt d'Urgence (Emergency Stop)
+        </h3>
+        <p className="text-xs text-on-surface leading-relaxed m-0">
+          L'activation écrit le verrou <code className="font-mono bg-surface-container-high px-1 py-0.5 rounded text-error">data/emergency.lock</code> et bloque immédiatement et sans exception toutes les actions d'écriture et d'exécution dans RAQIB.
         </p>
-        <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+        <div className="flex items-center gap-3 mt-2">
           <button
             id="btn-activate-emergency"
             onClick={() => toggleEmergency('activate')}
-            style={{ padding: '0.75rem 1.5rem', background: '#dc2626', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}
+            className="px-4 py-2 rounded-lg bg-error hover:bg-red-600 text-black font-mono text-xs font-bold transition-all shadow-[0_0_12px_rgba(255,180,171,0.4)] cursor-pointer"
           >
             ACTIVER EMERGENCY STOP
           </button>
           <button
             id="btn-deactivate-emergency"
             onClick={() => toggleEmergency('deactivate')}
-            style={{ padding: '0.75rem 1.5rem', background: '#16a34a', color: '#fff', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}
+            className="px-4 py-2 rounded-lg bg-tertiary/20 hover:bg-tertiary/30 border border-tertiary text-tertiary font-mono text-xs font-bold transition-all cursor-pointer"
           >
             DÉSACTIVER (RÉINITIALISER)
           </button>
         </div>
-        {msg && <p id="emergency-toggle-message" style={{ marginTop: '1rem', fontWeight: 'bold', color: '#38bdf8' }}>{msg}</p>}
+        {msg && <p id="emergency-toggle-message" className="text-xs font-mono font-bold text-primary-container mt-2">{msg}</p>}
       </div>
     </div>
   );
