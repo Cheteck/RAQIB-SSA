@@ -8,7 +8,13 @@
     "services/*"
   ],
   "scripts": {
-    "test:freellmapi": "node scripts/test-freellmapi.js"
+    "dev": "tsc --watch",
+    "build": "tsc",
+    "start:audit": "npm run build && node dist/scripts/run-audit-001.js",
+    "test:freellmapi": "node scripts/test-freellmapi.js",
+    "test:audit": "npm run build && node dist/scripts/run-audit-001.js",
+    "lint": "echo 'No linter configured yet'",
+    "clean": "rimraf dist"
   },
   "dependencies": {
     "better-sqlite3": "^13.0.3",
@@ -20,6 +26,7 @@
     "@types/better-sqlite3": "^9.6.0",
     "@types/express": "^5.0.6",
     "@types/node": "^26.6.5",
+    "rimraf": "^6.0.1",
     "ts-node": "^10.9.2",
     "typescript": "^7.0.2"
   }

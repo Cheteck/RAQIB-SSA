@@ -28,7 +28,7 @@ async function main() {
   await ledger.init();
 
   // 2. Vérification par le Policy Engine
-  const policy = new PolicyEngine();
+  const policy = new PolicyEngine({ dbPath: DB_PATH, logger: ledger });
   const decision = policy.authorize({
     missionId: 'RAQIB-001',
     actor: 'raqib-core',

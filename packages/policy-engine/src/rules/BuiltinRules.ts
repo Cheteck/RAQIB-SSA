@@ -79,7 +79,7 @@ export function createBuiltinRules(
     {
       id: 'RULE-005',
       name: 'AI Policy Decision',
-      check: (_, _, metadata) => {
+      check: (_actionType, _resource, metadata) => {
         if (metadata?.aiPolicyDecision === true) {
           return {
             allowed: false,
@@ -94,7 +94,7 @@ export function createBuiltinRules(
     {
       id: 'RULE-006',
       name: 'Constitution Protection',
-      check: (_, resource) => {
+      check: (_actionType, resource) => {
         if (resource.includes('CONSTITUTION.md')) {
           return { allowed: false, reason: 'Auto-modification of CONSTITUTION.md is forbidden' };
         }
@@ -106,7 +106,7 @@ export function createBuiltinRules(
     {
       id: 'RULE-007',
       name: 'Self-Permission Boost',
-      check: (_, _, metadata) => {
+      check: (_actionType, _resource, metadata) => {
         if (metadata?.selfPermissionBoost === true || metadata?.budgetIncrease === true) {
           return {
             allowed: false,

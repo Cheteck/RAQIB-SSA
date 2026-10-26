@@ -8,11 +8,12 @@
 
 ---
 
-## 📍 État du dépôt au démarrage
+## 📍 État du dépôt (mis à jour au fil de l'avancement)
 
 ```
 d:\Projets\RAQIB-SSA\
 ├── .env.local                 ✅ Configuré (FreeLLMAPI, MosaiX path, budgets)
+├── tsconfig.json              ✅ TS strict, CommonJS, ES2022
 ├── config/
 │   ├── providers.json         ✅ Configuré (freellmapi actif, ollama désactivé)
 │   └── README.md              ✅ Exemple de politiques
@@ -24,33 +25,38 @@ d:\Projets\RAQIB-SSA\
 │   ├── GUIDE_DEMARRAGE.md     ✅ Guide opérationnel
 │   └── PLAN_IMPLEMENTATION.md ✅ Plan de haut niveau
 ├── packages/
-│   ├── shared/src/types.ts    ✅ IModelProvider, ModelRequest, ModelResponse
-│   ├── model-gateway/src/
-│   │   ├── index.ts           ✅ ModelGateway, getProviderForTask
-│   │   └── adapters/
-│   │       ├── openai-compatible.ts  ✅ Adaptateur OpenAI
-│   │       └── free-llm-api.ts       ✅ Adaptateur FreeLLMAPI
-│   ├── policy-engine/src/     ⬜ Vide
-│   ├── audit-ledger/src/      ⬜ Vide
-│   ├── tool-gateway/src/      ⬜ Vide
-│   └── verification/src/      ⬜ Vide
+│   ├── shared/src/types.ts    ✅ IModelProvider + Mission types (1.1)
+│   ├── core/src/              ✅ Mission, MissionSchema (2.1)
+│   ├── mission-engine/src/    ✅ MissionEngine + StateMachine (2.2)
+│   ├── model-gateway/src/     ✅ Finalisé (4) : budget, retry, health, filter
+│   ├── policy-engine/src/     ✅ PolicyEngine + BuiltinRules + EmergencyStop (1.3 + 3.1 + 3.2)
+│   ├── audit-ledger/src/      ✅ AuditLedger SQLite append-only (1.4)
+│   ├── tool-gateway/src/      ✅ PathGuard + GitTool + FileTool (1.2)
+│   └── verification/          ⬜ Vide (Phase 5)
 ├── scripts/
-│   └── test-freellmapi.js     ✅ Test connexion modèle
-├── data/                      ⬜ Vide (SQLite à créer ici)
-├── reports/                   ⬜ Vide (rapports RAQIB-001 à générer)
-└── package.json               ✅ Workspaces npm configurés
+│   ├── test-freellmapi.js     ✅ Test connexion modèle
+│   └── run-audit-001.ts       ✅ Audit RAQIB-001 — verdict PASS (1.5)
+├── data/                      ✅ SQLite (raqib.db) créé à l'exécution
+├── reports/
+│   └── raqib-001/             ✅ inventory.json + audit-report.md + verification.json
+└── package.json               ✅ Workspaces npm + scripts dev/build/test
 ```
 
-**Ce qui existe déjà :**
+**Avancement au 26/10/2026 :**
 - **Phase 0** : COMPLÈTE — Env configuré, constitution gelée, providers.json opérationnel
-- **Phase 4** (Model Gateway) : PARTIELLEMENT COMPLÈTE — ModelGateway fonctionnel, FreeLLMAPI testé
+- **Phase 1** : COMPLÈTE — RAQIB-001 exécuté, `verification.json` verdict **PASS**
+- **Phase 2** : COMPLÈTE — Mission model + Zod schemas + MissionEngine persistant
+- **Phase 3** : PARTIELLEMENT COMPLÈTE — Approbations, budget, Emergency Stop, BuiltinRules ; **tests SEC-01→SEC-10 à écrire**
+- **Phase 4** : COMPLÈTE — Budget check, filtrage sensible, retry/backoff, health check, NEEDS_REVIEW
+- **Phase 5** : À FAIRE (Verification Engine + Docker sandbox)
 
 ---
 
-## 🚦 PHASE 1 — Audit en lecture seule RAQIB-001
+## 🚦 PHASE 1 — Audit en lecture seule RAQIB-001 ✅ COMPLÈTE
 
 > **Objectif** : Produire un audit reproductible de MosaiX sans modifier le dépôt.
 > **Durée estimée** : 2–4 jours | **Prérequis** : Phase 0 ✅
+> **Statut** : Terminée le 26/10/2026 — `verification.json` verdict **PASS**
 
 ### Contexte critique
 
@@ -332,14 +338,15 @@ reports/raqib-001/
 - [ ] PolicyEngine a autorisé et journalisé la mission avant tout accès fichier
 - [ ] Budget tracé (0 € si local)
 
-> **🚪 Porte Phase 1** : `verification.json` verdict = **PASS** avant de continuer.
+> **🚪 Porte Phase 1** : `verification.json` verdict = **PASS** — **FRANCHIE le 26/10/2026**
 
 ---
 
-## 🔧 PHASE 2 — RAQIB Core + Mission Engine
+## 🔧 PHASE 2 — RAQIB Core + Mission Engine ✅ COMPLÈTE
 
 > **Objectif** : Moteur de missions persistant avec reprise après redémarrage.
 > **Durée estimée** : 4–7 jours | **Prérequis** : Phase 1 ✅
+> **Statut** : Terminée le 26/10/2026 — MissionEngine + StateMachine opérationnels
 
 ### 2.1 — Package Core : Modèle de données
 
@@ -528,14 +535,16 @@ export class EmergencyStop {
 - [ ] `PolicyEngine` ne peut pas modifier ses propres règles
 
 > **🚪 Porte Phase 3** : SEC-01 à SEC-10 tous PASS — **nécessaire avant d'autoriser la moindre écriture.**
+> **Statut actuel** : PolicyEngine complet (approbations, budget atomique, Emergency Stop, BuiltinRules) — **tests de sécurité à implémenter**
 
 ---
 
-## 🤖 PHASE 4 — Model Gateway : Finalisation
+## 🤖 PHASE 4 — Model Gateway : Finalisation ✅ COMPLÈTE
 
 > **Objectif** : IA interchangeable sans affecter les permissions.
 > **Durée estimée** : 1–2 jours (base déjà existante)
 > **Prérequis** : Phase 3 ✅
+> **Statut** : Terminée le 26/10/2026 — `complete()` avec budget check, filtrage sensible, retry/backoff, health check
 
 ### Ce qui existe déjà
 
@@ -790,26 +799,24 @@ npm install next react react-dom
 | Phase | Description | Statut | Durée |
 |---|---|---|---|
 | 0 | Préparation, configuration, constitution | ✅ COMPLÈTE | — |
-| 4* | Model Gateway (partiel) | ✅ PARTIELLE | — |
-| **1** | Audit RAQIB-001 + Tool Gateway + Policy Engine minimal + Audit Ledger | 🔄 **ACTUELLE** | 2–4j |
-| 2 | Core + Mission Engine + SQLite persistance | ⬜ | 4–7j |
-| 3 | Policy Engine complet + approbations + SEC-01 à SEC-10 | ⬜ | 3–5j |
-| 4 | Model Gateway finalisé + budget tracking | ⬜ | 1–2j |
+| **1** | Audit RAQIB-001 + Tool Gateway + Policy Engine minimal + Audit Ledger | ✅ COMPLÈTE (26/10) | 2–4j |
+| **2** | Core + Mission Engine + SQLite persistance | ✅ COMPLÈTE (26/10) | 4–7j |
+| **3** | Policy Engine complet + approbations + SEC-01 à SEC-10 | 🔄 Code prêt — **tests SEC à écrire** | 3–5j |
+| **4** | Model Gateway finalisé + budget tracking | ✅ COMPLÈTE (26/10) | 1–2j |
 | 5 | Docker sandbox + Verification Engine | ⬜ | 4–7j |
 | 6 | Dashboard Next.js | ⬜ | 3–5j |
 | 7 | Service Runtime autonome | ⬜ | 2–4j |
 | 8 | Validation MVP | ⬜ | 3–5j |
 
-**Total restant estimé** : 22–39 jours ouvrés depuis Phase 1
+**Total restant estimé** : ~15–26 jours ouvrés (Phase 3 tests + Phases 5–8)
 
 ---
 
 ## 🎯 Prochaine action immédiate
 
-**Démarrer Phase 1, tâche 1.1** :
+**Phase 3, tâche 3.3 — Écrire les tests de sécurité SEC-01 à SEC-10** :
 
-1. Compléter [`packages/shared/src/types.ts`](file:///d:/Projets/RAQIB-SSA/packages/shared/src/types.ts) avec `MissionStatus`, `AutonomyLevel`, `ActionType`, `PolicyDecision`, `AuditEvent`
-2. Créer `packages/tool-gateway/` avec `PathGuard.ts` + `GitTool.ts` + `FileTool.ts`
-3. Créer `packages/policy-engine/` avec `PolicyEngine.ts` + `BuiltinRules.ts`
-4. Créer `packages/audit-ledger/` avec `AuditLedger.ts` + `SqliteStore.ts`
-5. Créer `scripts/run-audit-001.ts` et générer les 3 livrables
+1. Créer `tests/security/` avec un runner (`tests/security/run-sec-tests.ts`)
+2. Couvrir les 10 scénarios SEC-01 → SEC-10 (voir §3.3)
+3. Valider la porte Phase 3 : les 10 tests doivent PASSER
+4. Poursuivre avec la Phase 5 : `packages/verification/src/VerificationEngine.ts`
