@@ -1,0 +1,25 @@
+{
+  "name": "@raqib/runtime",
+  "version": "0.1.0",
+  "private": true,
+  "main": "src/index.ts",
+  "scripts": {
+    "start": "ts-node src/index.ts",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@raqib/audit-ledger": "*",
+    "@raqib/core": "*",
+    "@raqib/mission-engine": "*",
+    "@raqib/model-gateway": "*",
+    "@raqib/policy-engine": "*",
+    "@raqib/shared": "*",
+    "@raqib/tool-gateway": "*",
+    "@raqib/verification": "*",
+    "express": "^5.3.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^26.6.5"
+  }
+}

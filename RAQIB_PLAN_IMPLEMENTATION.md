@@ -46,9 +46,9 @@ d:\Projets\RAQIB-SSA\
 - **Phase 0** : COMPLÈTE — Env configuré, constitution gelée, providers.json opérationnel
 - **Phase 1** : COMPLÈTE — RAQIB-001 exécuté, `verification.json` verdict **PASS**
 - **Phase 2** : COMPLÈTE — Mission model + Zod schemas + MissionEngine persistant
-- **Phase 3** : PARTIELLEMENT COMPLÈTE — Approbations, budget, Emergency Stop, BuiltinRules ; **tests SEC-01→SEC-10 à écrire**
+- **Phase 3** : COMPLÈTE — Approbations, budget, Emergency Stop, BuiltinRules et suite de tests de sécurité SEC-01→SEC-10 valides (10 PASS)
 - **Phase 4** : COMPLÈTE — Budget check, filtrage sensible, retry/backoff, health check, NEEDS_REVIEW
-- **Phase 5** : À FAIRE (Verification Engine + Docker sandbox)
+- **Phase 5** : COMPLÈTE — Verification Engine + Docker Sandbox (avec fallback sécurisé) implémentés et vérifiés par tests unitaires
 
 ---
 
@@ -801,12 +801,12 @@ npm install next react react-dom
 | 0 | Préparation, configuration, constitution | ✅ COMPLÈTE | — |
 | **1** | Audit RAQIB-001 + Tool Gateway + Policy Engine minimal + Audit Ledger | ✅ COMPLÈTE (26/10) | 2–4j |
 | **2** | Core + Mission Engine + SQLite persistance | ✅ COMPLÈTE (26/10) | 4–7j |
-| **3** | Policy Engine complet + approbations + SEC-01 à SEC-10 | 🔄 Code prêt — **tests SEC à écrire** | 3–5j |
+| **3** | Policy Engine complet + approbations + SEC-01 à SEC-10 | ✅ COMPLÈTE (SEC-01 à SEC-10 PASS) | 3–5j |
 | **4** | Model Gateway finalisé + budget tracking | ✅ COMPLÈTE (26/10) | 1–2j |
-| 5 | Docker sandbox + Verification Engine | ⬜ | 4–7j |
-| 6 | Dashboard Next.js | ⬜ | 3–5j |
-| 7 | Service Runtime autonome | ⬜ | 2–4j |
-| 8 | Validation MVP | ⬜ | 3–5j |
+| **5** | Docker sandbox + Verification Engine | ✅ COMPLÈTE (Verification Engine & DockerSandbox) | 4–7j |
+| **6** | Dashboard Next.js | ✅ COMPLÈTE (Next.js App Router apps/dashboard) | 3–5j |
+| **7** | Service Runtime autonome | ✅ COMPLÈTE (RaqibRuntime + API Server Express) | 2–4j |
+| **8** | Validation MVP | 🔄 En cours de validation finale | 3–5j |
 
 **Total restant estimé** : ~15–26 jours ouvrés (Phase 3 tests + Phases 5–8)
 

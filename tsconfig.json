@@ -6,7 +6,37 @@
     "strict": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
-    "outDir": "./dist"
+    "outDir": "./dist",
+    "paths": {
+      "@raqib/shared": [
+        "./packages/shared/src/types.ts"
+      ],
+      "@raqib/policy-engine": [
+        "./packages/policy-engine/src/index.ts"
+      ],
+      "@raqib/core": [
+        "./packages/core/src/index.ts"
+      ],
+      "@raqib/mission-engine": [
+        "./packages/mission-engine/src/index.ts"
+      ],
+      "@raqib/model-gateway": [
+        "./packages/model-gateway/src/index.ts"
+      ],
+      "@raqib/tool-gateway": [
+        "./packages/tool-gateway/src/index.ts"
+      ],
+      "@raqib/audit-ledger": [
+        "./packages/audit-ledger/src/index.ts"
+      ],
+      "@raqib/verification": [
+        "./packages/verification/src/index.ts"
+      ]
+    }
   },
-  "include": ["packages/**/*", "scripts/**/*"]
+  "include": [
+    "packages/**/*",
+    "scripts/**/*",
+    "tests/**/*"
+  ]
 }

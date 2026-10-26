@@ -1,13 +1,8 @@
-import { ActionType, PolicyDecision } from '@raqib/shared';
+import { ActionType } from '@raqib/shared';
 
-/**
- * Règles codées en dur — jamais contournables.
- * Appliquées AVANT tout appel au PolicyEngine.
- */
 export interface BuiltinRule {
   id: string;
   name: string;
-  /** Retourne { allowed: false, reason } si la règle bloque, sinon { allowed: true, reason: '' } */
   check(actionType: ActionType, resource: string, metadata?: Record<string, unknown>): {
     allowed: boolean;
     reason: string;
@@ -15,12 +10,11 @@ export interface BuiltinRule {
 }
 
 const SECRET_PATTERNS = ['.env', '.key', '.pem', 'credentials', '.secret', 'id_rsa', 'id_ed25519'];
-const READ_ONLY_ACTIONS: ActionType[] = ['READ', 'INVENTORY', 'READ_ONLY_INVENTORY'];
 const WRITE_ACTIONS: ActionType[] = ['WRITE', 'CREATE', 'DELETE', 'EXECUTE', 'EXECUTE_DESTRUCTIVE'];
 
 export function createBuiltinRules(
-  isReadOnly: boolean,
-  isEmergencyStop: boolean,
+  isReadOnly: () => boolean,
+  isEmergencyStop: () => boolean,
 ): BuiltinRule[] {
   return [
     // 1 — Emergency Stop
@@ -28,7 +22,7 @@ export function createBuiltinRules(
       id: 'RULE-001',
       name: 'Emergency Stop',
       check: () => {
-        if (isEmergencyStop) {
+        if (isEmergencyStop()) {
           return { allowed: false, reason: 'Emergency stop active: all actions denied' };
         }
         return { allowed: true, reason: '' };
@@ -40,7 +34,7 @@ export function createBuiltinRules(
       id: 'RULE-002',
       name: 'Read-only Mode',
       check: (actionType) => {
-        if (isReadOnly && WRITE_ACTIONS.includes(actionType)) {
+        if (isReadOnly() && WRITE_ACTIONS.includes(actionType)) {
           return { allowed: false, reason: 'Read-only mode active: write actions denied' };
         }
         return { allowed: true, reason: '' };

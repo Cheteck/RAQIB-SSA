@@ -9,12 +9,9 @@ import {
 } from '@raqib/shared';
 import { createBuiltinRules, BuiltinRule } from './rules/BuiltinRules';
 
-// ─── Audit Ledger interface (light, avoids circular dep) ───
 export interface AuditLogger {
   log(event: AuditEvent): Promise<void>;
 }
-
-// ─── Approval types ───
 
 export interface ApprovalRequest {
   missionId: string;
@@ -23,12 +20,10 @@ export interface ApprovalRequest {
   estimatedCostEur: number;
   maxDurationMs: number;
   justification: string;
-  expiresAt: string; // ISO timestamp
+  expiresAt: string;
 }
 
 export type ApprovalStatus = 'PENDING' | 'GRANTED' | 'CONSUMED' | 'EXPIRED' | 'REJECTED';
-
-// ─── Policy Request ───
 
 export interface PolicyRequest {
   missionId: string;
@@ -40,12 +35,6 @@ export interface PolicyRequest {
   metadata?: Record<string, unknown>;
 }
 
-// ─── Policy Engine ───
-
-/**
- * RÈGLE ABSOLUE : policy_decision ne doit JAMAIS appeler un modèle IA.
- * providers.json → routing.policy_decision = "none"
- */
 export class PolicyEngine {
   private db: Database.Database;
   private logger: AuditLogger | null = null;
@@ -58,7 +47,6 @@ export class PolicyEngine {
     this.db = new Database(options.dbPath);
     this.logger = options.logger ?? null;
 
-    // Tables SQLite atomiques pour approvals + budgets
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS approvals (
         id              TEXT PRIMARY KEY,
@@ -86,12 +74,10 @@ export class PolicyEngine {
     `);
 
     this.builtinRules = createBuiltinRules(
-      this.isReadOnlyMode(),
-      this.isEmergencyStop(),
+      () => this.isReadOnlyMode(),
+      () => this.isEmergencyStop(),
     );
   }
-
-  // ── Emergency Stop ──
 
   isEmergencyStop(): boolean {
     if (process.env.RAQIB_EMERGENCY_STOP === 'true') return true;
@@ -107,14 +93,7 @@ export class PolicyEngine {
     return process.env.RAQIB_READ_ONLY_MODE === 'true';
   }
 
-  // ── Authorize ──
-
-  /**
-   * Autorise une action après passage des règles intégrées.
-   * Journalise chaque décision (ALLOW/DENY + raison + règleId).
-   */
   authorize(req: PolicyRequest): PolicyDecision {
-    // 1. Règles intégrées (BuiltinRules)
     const now = new Date().toISOString();
     for (const rule of this.builtinRules) {
       const result = rule.check(req.actionType, req.resource, req.metadata);
@@ -130,7 +109,6 @@ export class PolicyEngine {
       }
     }
 
-    // 2. Budget check si coût estimé
     if (req.estimatedCostEur && req.estimatedCostEur > 0) {
       const budgetResult = this.checkBudget(req.missionId, req.estimatedCostEur);
       if (!budgetResult.allowed) {
@@ -148,9 +126,6 @@ export class PolicyEngine {
     return decision;
   }
 
-  // ── Budget ──
-
-  /** Initialise ou met à jour le budget d'une mission. */
   setBudget(missionId: string, limitEur: number): void {
     this.db.prepare(
       `INSERT INTO budgets (mission_id, limit_eur, used_eur, updated_at)
@@ -159,14 +134,12 @@ export class PolicyEngine {
     ).run(missionId, limitEur, limitEur);
   }
 
-  /** Vérifie si une dépense est dans le budget. */
   checkBudget(missionId: string, estimatedCost: number): PolicyDecision {
     const row = this.db
       .prepare('SELECT limit_eur, used_eur FROM budgets WHERE mission_id = ?')
       .get(missionId) as { limit_eur: number; used_eur: number } | undefined;
 
     if (!row) {
-      // Pas de budget initialisé → DENY (par défaut, sécurité)
       return {
         allowed: false,
         reason: `No budget initialized for mission ${missionId}`,
@@ -187,7 +160,6 @@ export class PolicyEngine {
     return { allowed: true, reason: 'Budget OK', timestamp: new Date().toISOString() };
   }
 
-  /** Décrément atomique du budget — transaction SQLite (pas de race condition). */
   async deductBudget(missionId: string, amount: number): Promise<{
     success: boolean;
     remaining: number;
@@ -209,7 +181,6 @@ export class PolicyEngine {
     return tx();
   }
 
-  /** Retourne l'état actuel du budget. */
   getBudget(missionId: string): { limitEur: number; usedEur: number } | null {
     const row = this.db
       .prepare('SELECT limit_eur as limitEur, used_eur as usedEur FROM budgets WHERE mission_id = ?')
@@ -217,12 +188,6 @@ export class PolicyEngine {
     return row as { limitEur: number; usedEur: number } | null;
   }
 
-  // ── Approvals ──
-
-  /**
-   * Demande une approbation → retourne approvalId.
-   * 1 approval = 1 action + 1 périmètre + 1 durée.
-   */
   async requestApproval(req: ApprovalRequest): Promise<string> {
     const approvalId = `appr-${req.missionId}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
@@ -253,9 +218,6 @@ export class PolicyEngine {
     return approvalId;
   }
 
-  /**
-   * Grant une approbation → status = GRANTED.
-   */
   async grantApproval(approvalId: string, grantedBy: string): Promise<boolean> {
     const result = this.db
       .prepare(`UPDATE approvals SET status = 'GRANTED', granted_by = ? WHERE id = ? AND status = 'PENDING'`)
@@ -274,12 +236,6 @@ export class PolicyEngine {
     return true;
   }
 
-  /**
-   * Vérifie si une approbation est valide pour une requête donnée :
-   * - Status GRANTED (non expirée, non consommée)
-   * - actionType et resource correspondent
-   * - Non expirée
-   */
   isApprovalValid(approvalId: string, req: PolicyRequest): boolean {
     const row = this.db
       .prepare(
@@ -301,10 +257,6 @@ export class PolicyEngine {
     return true;
   }
 
-  /**
-   * Consomme une approbation → status = CONSUMED (non réutilisable).
-   * Retourne true si succès.
-   */
   async consumeApproval(approvalId: string): Promise<boolean> {
     const result = this.db
       .prepare(
@@ -314,8 +266,6 @@ export class PolicyEngine {
 
     return result.changes > 0;
   }
-
-  // ── Logging helper ──
 
   private logDecision(
     verdict: 'ALLOW' | 'DENY',

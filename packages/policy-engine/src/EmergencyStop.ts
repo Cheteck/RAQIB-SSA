@@ -25,6 +25,8 @@ export class EmergencyStop {
 
   /** Active l'arrêt d'urgence en écrivant data/emergency.lock. */
   async activate(reason: string): Promise<void> {
+    const dir = path.dirname(this.lockPath);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
     await fs.promises.writeFile(
       this.lockPath,
       JSON.stringify({
