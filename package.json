@@ -8,7 +8,7 @@
     "services/*"
   ],
   "scripts": {
-    "dev": "concurrently -n runtime,dash -c blue,magenta \"npm run dev:runtime\" \"npm run dev:dashboard\"",
+    "dev": "npx concurrently -n runtime,dash -c blue,magenta \"npm run dev:runtime\" \"npm run dev:dashboard\"",
     "build": "tsc -p tsconfig.build.json",
     "start:audit": "npm run build && node dist/scripts/run-audit-001.js",
     "test:freellmapi": "node scripts/test-freellmapi.js",
@@ -21,7 +21,7 @@
     "dev:runtime": "tsx services/runtime/src/index.ts",
     "start:dashboard": "npm run start --workspace=@raqib/dashboard",
     "dev:dashboard": "npm run dev --workspace=@raqib/dashboard",
-    "start:all": "concurrently -n runtime,dash -c blue,magenta \"npm run start:runtime\" \"npm run start:dashboard\""
+    "start:all": "npx concurrently -n runtime,dash -c blue,magenta \"npm run start:runtime\" \"npm run start:dashboard\""
   },
   "dependencies": {
     "better-sqlite3": "^13.0.3",
