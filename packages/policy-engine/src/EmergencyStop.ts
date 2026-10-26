@@ -1,4 +1,4 @@
-import fs from 'fs/promises';
+import fs from 'fs';
 import path from 'path';
 
 /**
@@ -20,16 +20,12 @@ export class EmergencyStop {
     if (process.env.RAQIB_EMERGENCY_STOP === 'true') return true;
 
     // Fichier lock
-    try {
-      return fs.stat(this.lockPath).then(() => true);
-    } catch {
-      return false;
-    }
+    return fs.existsSync(this.lockPath);
   }
 
   /** Active l'arrêt d'urgence en écrivant data/emergency.lock. */
   async activate(reason: string): Promise<void> {
-    await fs.writeFile(
+    await fs.promises.writeFile(
       this.lockPath,
       JSON.stringify({
         activatedAt: new Date().toISOString(),
@@ -43,7 +39,7 @@ export class EmergencyStop {
   /** Désactive l'arrêt d'urgence (supprime le lock, log dans audit). */
   async deactivate(confirmedBy: string): Promise<void> {
     try {
-      await fs.unlink(this.lockPath);
+      await fs.promises.unlink(this.lockPath);
     } catch {
       // Fichier n'existe pas, ok
     }
