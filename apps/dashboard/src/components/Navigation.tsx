@@ -6,14 +6,14 @@ import { useState, useEffect } from 'react';
 
 export default function Navigation() {
   const pathname = usePathname();
-  const [timeStr, setTimeStr] = useState<string>('--:--:--');
+  const [clockStr, setClockStr] = useState<string>('--:--:--');
   const [dateStr, setDateStr] = useState<string>('');
 
   useEffect(() => {
     const updateTime = () => {
       const now = new Date();
-      setTimeStr(now.toLocaleTimeString('en-US'));
-      setDateStr(now.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }));
+      setClockStr(now.toLocaleTimeString('en-US', { hour12: true }));
+      setDateStr(now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }));
     };
     updateTime();
     const interval = setInterval(updateTime, 1000);
@@ -23,58 +23,68 @@ export default function Navigation() {
   const isActive = (path: string) => pathname === path;
 
   return (
-    <header className="sticky top-0 z-50 w-full h-[58px] bg-[#04060b]/90 backdrop-blur-xl border-b border-primary-container/20 px-6 flex items-center justify-between shadow-[0_4px_24px_rgba(0,0,0,0.8)]">
-      {/* BRAND & LOGO */}
+    <header className="relative z-30 w-full px-5 py-3 flex items-center justify-between border-b border-[#62e6ff]/20 bg-[#050912]/80 backdrop-blur-md">
+      {/* LEFT: RAQIB HUD BRANDING */}
       <div className="flex items-center gap-3">
         <Link href="/" className="flex items-center gap-3 no-underline">
-          <svg width="32" height="32" viewBox="0 0 34 34" fill="none" stroke="#62e6ff">
-            <circle cx="17" cy="17" r="15" strokeDasharray="4 3" opacity=".6">
-              <animateTransform attributeName="transform" type="rotate" from="0 17 17" to="360 17 17" dur="14s" repeatCount="indefinite" />
-            </circle>
-            <circle cx="17" cy="17" r="9" />
-            <circle cx="17" cy="17" r="3" fill="#7dffc8" stroke="none" />
-          </svg>
+          <div className="relative w-8 h-8 flex items-center justify-center">
+            <svg className="w-full h-full animate-radar text-[#62e6ff] opacity-80" viewBox="0 0 40 40">
+              <circle cx="20" cy="20" fill="none" r="17" stroke="currentColor" strokeDasharray="8 6" strokeWidth="1.2"></circle>
+              <circle cx="20" cy="20" fill="none" opacity="0.6" r="12" stroke="currentColor" strokeDasharray="2 4" strokeWidth="1"></circle>
+              <line stroke="currentColor" strokeWidth="1.5" x1="20" x2="20" y1="2" y2="8"></line>
+              <line stroke="currentColor" strokeWidth="1.5" x1="20" x2="20" y1="32" y2="38"></line>
+              <line stroke="currentColor" strokeWidth="1.5" x1="2" x2="8" y1="20" y2="20"></line>
+              <line stroke="currentColor" strokeWidth="1.5" x1="32" x2="38" y1="20" y2="20"></line>
+            </svg>
+            <span className="absolute w-2 h-2 rounded-full bg-[#62e6ff] shadow-[0_0_8px_#62e6ff]"></span>
+          </div>
           <div className="flex flex-col">
             <div className="flex items-center gap-2">
-              <span className="font-oxanium text-lg font-bold tracking-widest text-white neon-cyan-text">RAQIB AI</span>
-              <span className="font-mono text-[9px] px-1.5 py-0.5 border border-[#7dffc8]/40 text-[#7dffc8]">MARK LXXXV</span>
-              <span className="font-mono text-[9px] px-1.5 py-0.5 border border-white/14 text-[#7f95a6]">OS v1.0</span>
+              <span className="font-hud font-bold text-lg tracking-widest glow-cyan leading-none">RAQIB</span>
+              <span className="text-[9px] font-mono text-[#62e6ff] px-1.5 py-0.2 rounded border border-[#62e6ff]/50 uppercase tracking-widest bg-[#62e6ff]/10">MARK LXXXV</span>
+              <span className="text-[9px] font-mono text-slate-400 px-1 py-0.2 rounded border border-slate-700 uppercase tracking-widest bg-slate-900/60">CORE v4.9.2</span>
             </div>
-            <span className="font-mono text-[9px] tracking-widest text-[#7f95a6] uppercase">STRATEGIC GOVERNANCE TACTICAL HUD</span>
+            <span className="text-[9px] font-mono tracking-wider text-slate-400 uppercase mt-0.5">Avengers Compound // strategic tactical HUD</span>
           </div>
         </Link>
       </div>
 
-      {/* CENTER CLOCK */}
-      <div className="hidden md:flex flex-col items-center">
-        <span className="font-mono text-[9px] text-[#7f95a6] tracking-widest uppercase">{dateStr}</span>
-        <span className="font-oxanium text-2xl font-light tracking-widest text-white neon-cyan-text">{timeStr}</span>
+      {/* CENTER: OXANIUM CHRONOMETER */}
+      <div className="flex flex-col items-center justify-center">
+        <span className="text-[9px] font-mono text-slate-400 tracking-wider">{dateStr}</span>
+        <div className="font-hud font-bold text-2xl tracking-widest glow-cyan my-[-2px]">{clockStr}</div>
+        <span className="text-[9px] font-mono text-[#62e6ff]/70 tracking-widest">Africa/Lagos · sector 7G</span>
       </div>
 
-      {/* MODULE LINKS & OPERATOR */}
-      <div className="flex items-center gap-2">
-        <Link href="/" className={`px-3 py-1.5 font-mono text-xs font-medium transition-all ${isActive('/') ? 'text-white border-b-2 border-[#62e6ff] bg-[#62e6ff]/10' : 'text-[#7f95a6] hover:text-white'}`}>
-          Command Core
-        </Link>
-        <Link href="/missions" className={`px-3 py-1.5 font-mono text-xs font-medium transition-all ${isActive('/missions') ? 'text-white border-b-2 border-[#62e6ff] bg-[#62e6ff]/10' : 'text-[#7f95a6] hover:text-white'}`}>
-          Missions
-        </Link>
-        <Link href="/approvals" className={`px-3 py-1.5 font-mono text-xs font-medium transition-all ${isActive('/approvals') ? 'text-white border-b-2 border-[#62e6ff] bg-[#62e6ff]/10' : 'text-[#7f95a6] hover:text-white'}`}>
-          Approvals
-        </Link>
-        <Link href="/audit" className={`px-3 py-1.5 font-mono text-xs font-medium transition-all ${isActive('/audit') ? 'text-white border-b-2 border-[#62e6ff] bg-[#62e6ff]/10' : 'text-[#7f95a6] hover:text-white'}`}>
-          Audit Ledger
-        </Link>
-        <Link href="/settings" className={`px-3 py-1.5 font-mono text-xs font-medium transition-all ${isActive('/settings') ? 'text-[#ff6b5e] border-b-2 border-[#ff6b5e] bg-[#ff6b5e]/10' : 'text-[#7f95a6] hover:text-[#ff6b5e]'}`}>
-          Emergency
-        </Link>
+      {/* RIGHT: NAVIGATION MODULES & PROFILE */}
+      <div className="flex items-center gap-3">
+        {/* Navigation Tabs */}
+        <div className="flex items-center gap-1.5 font-mono text-xs">
+          <Link href="/" className={`px-2.5 py-1 rounded transition-colors ${isActive('/') ? 'bg-[#62e6ff]/20 text-[#62e6ff] border border-[#62e6ff]/50' : 'text-slate-400 hover:text-slate-200'}`}>
+            Command
+          </Link>
+          <Link href="/missions" className={`px-2.5 py-1 rounded transition-colors ${isActive('/missions') ? 'bg-[#62e6ff]/20 text-[#62e6ff] border border-[#62e6ff]/50' : 'text-slate-400 hover:text-slate-200'}`}>
+            Missions
+          </Link>
+          <Link href="/approvals" className={`px-2.5 py-1 rounded transition-colors ${isActive('/approvals') ? 'bg-[#62e6ff]/20 text-[#62e6ff] border border-[#62e6ff]/50' : 'text-slate-400 hover:text-slate-200'}`}>
+            Approvals
+          </Link>
+          <Link href="/audit" className={`px-2.5 py-1 rounded transition-colors ${isActive('/audit') ? 'bg-[#62e6ff]/20 text-[#62e6ff] border border-[#62e6ff]/50' : 'text-slate-400 hover:text-slate-200'}`}>
+            Audit
+          </Link>
+          <Link href="/settings" className={`px-2.5 py-1 rounded transition-colors ${isActive('/settings') ? 'bg-red-950/40 text-red-400 border border-red-500/40' : 'text-slate-400 hover:text-red-400'}`}>
+            Emergency
+          </Link>
+        </div>
 
-        {/* OPERATOR PILL */}
-        <div className="flex items-center gap-2 pl-3 ml-2 border-l border-white/10">
-          <span className="material-symbols-outlined text-[#62e6ff] text-[20px]">shield_person</span>
+        {/* Stark Commander Profile Pill */}
+        <div className="flex items-center gap-2 px-2.5 py-1 rounded bg-[#0a1424] border border-[#62e6ff]/30">
+          <div className="w-6 h-6 rounded bg-[#62e6ff]/15 border border-[#62e6ff]/50 flex items-center justify-center text-[#62e6ff]">
+            <span className="material-symbols-outlined text-[14px]">shield</span>
+          </div>
           <div className="flex flex-col text-left">
-            <span className="font-oxanium text-xs font-semibold text-white tracking-wide">F. OPERATOR</span>
-            <span className="font-mono text-[9px] text-[#7f95a6]">Commander</span>
+            <span className="font-hud font-bold text-[11px] text-[#62e6ff] leading-none">T. STARK</span>
+            <span className="text-[8px] font-mono text-slate-400 leading-tight">Commander</span>
           </div>
         </div>
       </div>

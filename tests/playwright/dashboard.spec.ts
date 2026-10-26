@@ -10,7 +10,10 @@ test.describe('RAQIB Dashboard & Cors Verification', () => {
 
     // 1. Overview page
     await page.goto('http://localhost:3000');
-    await page.waitForSelector('#runtime-status-badge');
+    await page.waitForFunction(() => {
+      const el = document.querySelector('#runtime-status-badge');
+      return el && el.textContent !== 'CHECKING...';
+    });
 
     const statusBadgeText = await page.locator('#runtime-status-badge').innerText();
     expect(statusBadgeText).toBe('OK');
@@ -27,7 +30,7 @@ test.describe('RAQIB Dashboard & Cors Verification', () => {
     await page.screenshot({ path: 'reports/screenshots/03-approvals.png' });
 
     // 4. Audit page
-    await page.click('a:has-text("Audit Ledger")');
+    await page.click('a:has-text("Audit")');
     await page.waitForTimeout(500);
     await page.screenshot({ path: 'reports/screenshots/04-audit.png' });
 

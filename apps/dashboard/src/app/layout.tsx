@@ -2,18 +2,16 @@ import './globals.css';
 import Navigation from '../components/Navigation';
 
 export const metadata = {
-  title: 'RAQIB — AI Command Center & Security Control',
-  description: 'Supervision & Safety Governance for AI Engineering Agents',
+  title: 'RAQIB // J.A.R.V.I.S Tactical HUD — Stitch Design',
+  description: 'RAQIB Strategic Governance & AI Control Center',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr" className="dark">
-      <body className="bg-[#06090e] text-on-surface font-sans text-sm antialiased selection:bg-primary-container selection:text-black min-h-screen flex flex-col justify-between">
+    <html lang="en" className="dark">
+      <body className="w-screen h-screen crt-overlay bg-[#04060b] select-none flex flex-col justify-between relative overflow-hidden font-mono">
         <Navigation />
-        <main className="flex-1 w-full max-w-[1920px] mx-auto p-3 lg:p-6">
-          {children}
-        </main>
+        {children}
       </body>
     </html>
   );

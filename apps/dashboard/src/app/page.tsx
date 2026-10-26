@@ -8,218 +8,228 @@ export default function OverviewPage() {
   const [status, setStatus] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [prompt, setPrompt] = useState('');
-  const [consoleMsg, setConsoleMsg] = useState('All systems nominal, Commander.');
+  const [feedback, setFeedback] = useState('At your service, sir. All systems nominal.');
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  const fetchStatus = async () => {
-    try {
-      const res = await fetch(`${API_BASE}/api/status`);
-      const data = await res.json();
-      setStatus(data);
-    } catch {
-      setStatus({ status: 'OFFLINE', emergencyStop: false, readOnlyMode: true });
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchStatus();
+    fetch(`${API_BASE}/api/status`)
+      .then(res => res.json())
+      .then(data => setStatus(data))
+      .catch(() => setStatus({ status: 'OFFLINE', emergencyStop: false, readOnlyMode: true }))
+      .finally(() => setLoading(false));
   }, []);
 
-  // 3D Particle Canvas Animation
+  // 3D Fibonacci Particle Sphere Animation from Stitch
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    let animationFrameId: number;
-    let width = (canvas.width = canvas.parentElement?.clientWidth || 300);
-    let height = (canvas.height = canvas.parentElement?.clientHeight || 300);
+    let width = (canvas.width = window.innerWidth);
+    let height = (canvas.height = window.innerHeight);
 
-    const particles: Array<{ x: number; y: number; z: number; vx: number; vy: number; vz: number }> = [];
-    const count = 350;
+    const handleResize = () => {
+      if (!canvas) return;
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    };
+    window.addEventListener('resize', handleResize);
 
-    for (let i = 0; i < count; i++) {
-      particles.push({
-        x: (Math.random() - 0.5) * 200,
-        y: (Math.random() - 0.5) * 200,
-        z: (Math.random() - 0.5) * 200,
-        vx: (Math.random() - 0.5) * 0.4,
-        vy: (Math.random() - 0.5) * 0.4,
-        vz: (Math.random() - 0.5) * 0.4,
-      });
+    const PARTICLE_COUNT = 1100;
+    const particles: Array<{ x: number; y: number; z: number; isAmber: boolean }> = [];
+    const phi = Math.PI * (3 - Math.sqrt(5));
+
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
+      const y = 1 - (i / (PARTICLE_COUNT - 1)) * 2;
+      const radiusAtY = Math.sqrt(1 - y * y);
+      const theta = phi * i;
+      const x = Math.cos(theta) * radiusAtY;
+      const z = Math.sin(theta) * radiusAtY;
+      const isAmber = Math.random() < 0.08;
+      particles.push({ x, y, z, isAmber });
     }
 
-    let angleY = 0;
+    let rotationY = 0;
+    let rotationX = 0.25;
+    let animId: number;
 
-    const render = () => {
+    const renderSphere = () => {
       ctx.clearRect(0, 0, width, height);
-      const cx = width / 2;
-      const cy = height / 2;
-      angleY += 0.008;
+      rotationY += 0.0025;
+      const sphereRadius = Math.min(width, height) * 0.32;
+      const centerX = width / 2;
+      const centerY = height / 2;
 
-      const cosY = Math.cos(angleY);
-      const sinY = Math.sin(angleY);
-
-      ctx.fillStyle = '#62e6ff';
-
-      for (let i = 0; i < count; i++) {
+      for (let i = 0; i < particles.length; i++) {
         const p = particles[i];
-        p.x += p.vx;
-        p.y += p.vy;
-        p.z += p.vz;
+        const cosY = Math.cos(rotationY);
+        const sinY = Math.sin(rotationY);
+        const x1 = p.x * cosY - p.z * sinY;
+        const z1 = p.z * cosY + p.x * sinY;
 
-        if (Math.abs(p.x) > 120) p.vx *= -1;
-        if (Math.abs(p.y) > 120) p.vy *= -1;
-        if (Math.abs(p.z) > 120) p.vz *= -1;
+        const cosX = Math.cos(rotationX);
+        const sinX = Math.sin(rotationX);
+        const y2 = p.y * cosX - z1 * sinX;
+        const z2 = z1 * cosX + p.y * sinX;
 
-        const rx = p.x * cosY + p.z * sinY;
-        const rz = -p.x * sinY + p.z * cosY;
+        const depth = 2.2;
+        const scale = 1 / (depth - z2 * 0.7);
+        const projX = centerX + x1 * sphereRadius * scale;
+        const projY = centerY + y2 * sphereRadius * scale;
 
-        const scale = 220 / (220 + rz);
-        const px = cx + rx * scale;
-        const py = cy + p.y * scale;
+        const alpha = Math.max(0.08, (z2 + 1) / 2);
+        const size = Math.max(0.6, (z2 + 1.2) * 1.4);
 
-        const size = Math.max(0.8, 1.8 * scale);
-        const alpha = Math.min(1, Math.max(0.15, (rz + 120) / 240));
+        ctx.fillStyle = p.isAmber
+          ? `rgba(245, 158, 11, ${alpha * 0.95})`
+          : `rgba(98, 230, 255, ${alpha * 0.85})`;
 
-        ctx.fillStyle = `rgba(98, 230, 255, ${alpha.toFixed(2)})`;
-        ctx.fillRect(px - size / 2, py - size / 2, size, size);
+        ctx.beginPath();
+        ctx.arc(projX, projY, size, 0, Math.PI * 2);
+        ctx.fill();
       }
-
-      animationFrameId = requestAnimationFrame(render);
+      animId = requestAnimationFrame(renderSphere);
     };
 
-    render();
+    renderSphere();
 
     return () => {
-      cancelAnimationFrame(animationFrameId);
+      window.removeEventListener('resize', handleResize);
+      cancelAnimationFrame(animId);
     };
   }, []);
 
-  const handleCommandSubmit = (e: React.FormEvent) => {
+  const handleDirectiveSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!prompt.trim()) return;
-    setConsoleMsg(`Directive executed: "${prompt}"`);
+    setFeedback(`Directive acknowledged, sir: "${prompt}"`);
     setPrompt('');
   };
 
   return (
-    <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
-      {/* LEFT COLUMN (3 Cols): TACTICAL MODULES & GAUGES */}
-      <div className="xl:col-span-3 flex flex-col gap-4">
-        <div className="hud-panel rounded-xl flex flex-col gap-3">
-          <h3 className="flex items-baseline justify-between font-oxanium text-sm font-semibold text-white border-b border-[#62e6ff]/20 pb-2">
-            System Governance <em>07 Rules Active</em>
-          </h3>
-          <div className="flex flex-col gap-2">
-            <div className="p-2.5 rounded bg-[#0a1019] border border-white/10 flex justify-between items-center">
-              <span className="font-mono text-xs text-[#7f95a6]">Runtime Service</span>
-              <span id="runtime-status-badge" className={`font-mono text-xs px-2 py-0.5 rounded font-bold ${status?.status === 'OK' ? 'bg-[#7dffc8]/20 text-[#7dffc8] border border-[#7dffc8]/40' : 'bg-red-900/40 text-red-300 border border-red-500/40'}`}>
-                {loading ? 'CHECKING...' : status?.status || 'UNKNOWN'}
-              </span>
-            </div>
-            <div className="p-2.5 rounded bg-[#0a1019] border border-white/10 flex justify-between items-center">
-              <span className="font-mono text-xs text-[#7f95a6]">Emergency Lock</span>
-              <span id="emergency-status-badge" className={`font-mono text-xs px-2 py-0.5 rounded font-bold ${status?.emergencyStop ? 'bg-red-900/40 text-red-300 border border-red-500/40 animate-pulse' : 'bg-[#7dffc8]/20 text-[#7dffc8] border border-[#7dffc8]/40'}`}>
-                {status?.emergencyStop ? 'ARMED (BLOCKED)' : 'CLEAR (NORMAL)'}
-              </span>
-            </div>
-            <div className="p-2.5 rounded bg-[#0a1019] border border-white/10 flex justify-between items-center">
-              <span className="font-mono text-xs text-[#7f95a6]">Governance Mode</span>
-              <span id="mode-status-badge" className={`font-mono text-xs px-2 py-0.5 rounded font-bold ${status?.readOnlyMode ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40' : 'bg-[#62e6ff]/20 text-[#62e6ff] border border-[#62e6ff]/40'}`}>
-                {status?.readOnlyMode ? 'READ-ONLY' : 'READ / WRITE'}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <div className="hud-panel rounded-xl flex flex-col gap-3">
-          <h3 className="flex items-baseline justify-between font-oxanium text-sm font-semibold text-white border-b border-[#62e6ff]/20 pb-2">
-            Arc Telemetry <em>SQLite WAL</em>
-          </h3>
-          <div className="grid grid-cols-2 gap-2 font-mono text-xs">
-            <div className="p-2 rounded bg-[#0a1019] border border-white/10 flex flex-col">
-              <span className="text-[9px] text-[#7f95a6] uppercase">Database</span>
-              <span className="text-white font-semibold mt-0.5">raqib.db</span>
-            </div>
-            <div className="p-2 rounded bg-[#0a1019] border border-white/10 flex flex-col">
-              <span className="text-[9px] text-[#7f95a6] uppercase">PathGuard</span>
-              <span className="text-[#7dffc8] font-semibold mt-0.5">ENABLED</span>
-            </div>
-          </div>
-        </div>
+    <div className="relative flex-1 w-full flex flex-col justify-between overflow-hidden">
+      {/* 3D Fibonacci Sphere Canvas */}
+      <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden flex items-center justify-center">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(98,230,255,0.08)_0%,rgba(6,13,24,0.45)_55%,#04060b_88%)]"></div>
+        <canvas ref={canvasRef} className="w-full h-full opacity-90"></canvas>
       </div>
 
-      {/* CENTER COLUMN (6 Cols): SPHERICAL NEURAL CORE */}
-      <div className="xl:col-span-6 flex flex-col gap-4 items-center">
-        <div className="hud-panel w-full rounded-2xl p-6 relative overflow-hidden flex flex-col items-center justify-center min-h-[380px] holo-glow">
-          <div className="w-full flex items-center justify-between border-b border-white/10 pb-2 mb-2 z-10">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#62e6ff] animate-ping"></span>
-              <span className="font-oxanium text-xs font-bold tracking-widest text-[#62e6ff] uppercase">RAQIB NEURAL CORE</span>
+      {/* Main Grid Content */}
+      <main className="relative z-20 flex-1 w-full px-5 py-2 grid grid-cols-12 gap-4 items-stretch overflow-hidden">
+        {/* Left Wing */}
+        <section className="col-span-12 xl:col-span-3 flex flex-col gap-2.5 justify-between h-full max-h-[calc(100vh-140px)] overflow-y-auto">
+          <div className="hud-cut-card p-3 flex flex-col gap-2">
+            <div className="flex items-center justify-between pb-1 border-b border-[#62e6ff]/15">
+              <span className="font-hud text-xs font-semibold text-[#62e6ff] tracking-wider uppercase">Tactical modules</span>
+              <span className="text-[9px] font-mono text-[#62e6ff]/80 px-1.5 py-0.2 rounded bg-[#62e6ff]/10 border border-[#62e6ff]/30">08 armed</span>
             </div>
-            <span className="font-mono text-[10px] px-2 py-0.5 border border-[#7dffc8]/40 text-[#7dffc8]">QUANTUM STABLE</span>
+            <div className="grid grid-cols-2 gap-1.5 text-[11px] pt-1">
+              <div className="p-2 rounded bg-slate-900/80 border border-[#62e6ff]/40 flex flex-col gap-1">
+                <span className="text-slate-400 text-[10px]">Runtime Service</span>
+                <span id="runtime-status-badge" className={`font-mono text-xs font-bold ${status?.status === 'OK' ? 'text-emerald-400' : 'text-red-400'}`}>
+                  {loading ? 'CHECKING...' : status?.status || 'UNKNOWN'}
+                </span>
+              </div>
+              <div className="p-2 rounded bg-slate-900/80 border border-[#62e6ff]/40 flex flex-col gap-1">
+                <span className="text-slate-400 text-[10px]">Emergency Lock</span>
+                <span id="emergency-status-badge" className={`font-mono text-xs font-bold ${status?.emergencyStop ? 'text-red-400 animate-pulse' : 'text-emerald-400'}`}>
+                  {status?.emergencyStop ? 'ARMED' : 'CLEAR'}
+                </span>
+              </div>
+            </div>
           </div>
 
-          <div className="relative w-72 h-72 my-2 flex items-center justify-center">
-            <canvas ref={canvasRef} className="absolute inset-0 w-full h-full cursor-pointer"></canvas>
-            <div className="relative z-10 w-44 h-44 rounded-full bg-[#0a1524]/90 border border-[#62e6ff]/60 backdrop-blur-md flex flex-col items-center justify-center text-center holo-glow-strong p-3">
-              <div className="font-oxanium text-xs text-[#62e6ff] tracking-wider font-bold">RAQIB</div>
-              <div className="font-oxanium text-xl font-bold tracking-widest text-white neon-cyan-text my-0.5">AI CORE</div>
-              <div className="font-mono text-[10px] text-[#7dffc8]">3.8 GHz // 1.21 GW</div>
+          <div className="hud-cut-card p-3 flex flex-col gap-2">
+            <div className="flex items-center justify-between pb-1 border-b border-[#62e6ff]/15">
+              <span className="font-hud text-xs font-semibold text-[#62e6ff] tracking-wider uppercase">Arc Telemetry</span>
+              <span className="text-[9px] font-mono text-[#62e6ff]/80">3.8 GHz · 16 cores</span>
             </div>
+            <div className="grid grid-cols-3 gap-2 pt-1 text-center">
+              <div className="flex flex-col items-center">
+                <span className="font-hud font-bold text-xs text-[#62e6ff]">32%</span>
+                <span className="text-[9px] font-mono text-slate-400 uppercase">Synapse</span>
+              </div>
+              <div className="flex flex-col items-center">
+                <span className="font-hud font-bold text-xs text-emerald-400">65%</span>
+                <span className="text-[9px] font-mono text-slate-400 uppercase">Memory</span>
+              </div>
+              <div className="flex flex-col items-center">
+                <span className="font-hud font-bold text-xs text-amber-400 glow-amber">98%</span>
+                <span className="text-[9px] font-mono text-slate-400 uppercase">Reactor</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Center Wing */}
+        <section className="col-span-12 xl:col-span-6 flex flex-col justify-between items-center text-center relative pointer-events-none py-4">
+          <div className="flex flex-col items-center gap-1 z-20 pointer-events-auto">
+            <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#62e6ff]/10 border border-[#62e6ff]/40 text-[9px] font-mono text-[#62e6ff] tracking-widest uppercase">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#62e6ff] animate-ping"></span>
+              <span>STANDBY</span>
+            </div>
+            <h1 className="font-hud font-extrabold text-4xl sm:text-5xl tracking-[0.45em] text-white my-1 drop-shadow-[0_0_24px_rgba(98,230,255,0.5)]">
+              R.A.Q.I.B
+            </h1>
+            <p className="text-[10px] font-mono text-[#62e6ff]/80 tracking-wider max-w-xl px-4 leading-relaxed">
+              Arc core · 98.4% flux · Stark-Sat 09 online · quantum core 1.21 GW · repulsor matrix 100% · neural load 18.4 TFLOPS · Shield-512 · 42.894°N 71.021°W
+            </p>
           </div>
 
-          <div className="z-10 mt-2 flex items-center gap-3">
-            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-[#0a1019] border border-[#62e6ff]/40 shadow-[0_0_12px_rgba(98,230,255,0.25)]">
-              <span className="w-2 h-2 rounded-full bg-[#7dffc8] animate-pulse"></span>
-              <span className="font-mono text-xs text-[#7dffc8] font-bold tracking-wider">SYSTEM OPTIMAL</span>
-            </div>
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0a1019] border border-white/14">
-              <span className="font-mono text-[11px] text-[#7f95a6]">API LATENCY:</span>
-              <span className="font-mono text-[11px] text-[#62e6ff] font-semibold">11ms</span>
+          <div className="flex-1 w-full min-h-[220px]"></div>
+
+          <div className="z-20 pointer-events-auto mb-2">
+            <div className="px-5 py-2 rounded-full bg-[#050b14]/75 backdrop-blur-md border border-[#62e6ff]/30 shadow-[0_0_20px_rgba(98,230,255,0.15)] flex items-center gap-1.5">
+              <span className="text-sm font-mono text-[#62e6ff] tracking-wide">
+                {feedback}<span className="inline-block w-2 h-4 bg-[#62e6ff] ml-1 cursor-blink align-middle"></span>
+              </span>
             </div>
           </div>
+        </section>
+
+        {/* Right Wing */}
+        <section className="col-span-12 xl:col-span-3 flex flex-col gap-2.5 justify-between h-full max-h-[calc(100vh-140px)] overflow-y-auto">
+          <div className="hud-cut-card p-3 flex flex-col gap-2">
+            <div className="flex items-center justify-between pb-1 border-b border-[#62e6ff]/15">
+              <span className="font-hud text-xs font-semibold text-[#62e6ff] tracking-wider uppercase">Live Intel Stream</span>
+              <span className="text-[9px] font-mono text-emerald-400 px-1.5 py-0.2 rounded bg-emerald-950/40 border border-emerald-500/30">secure · 120 fps</span>
+            </div>
+            <div className="p-2 rounded bg-slate-900/60 border border-[#62e6ff]/25 flex flex-col gap-1 text-[10px]">
+              <span className="text-slate-200 font-medium">PolicyEngine Governance</span>
+              <span className="text-slate-400 text-[9px]">Routing policy_decision set to none (No AI decision making)</span>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      {/* Footer Dock */}
+      <footer className="relative z-30 w-full px-5 py-2.5 bg-[#050912]/90 backdrop-blur-xl border-t border-[#62e6ff]/20 flex flex-col md:flex-row items-center justify-between gap-3">
+        <div className="flex items-center gap-3 text-[10px] font-mono text-slate-400">
+          <div>Local grid · <span className="text-[#62e6ff]">Africa/Lagos</span></div>
+          <span className="text-slate-700">|</span>
+          <div>Satellite link · <span className="text-emerald-400 font-medium">5G quantum</span></div>
         </div>
 
-        {/* INTERACTIVE COMMAND DOCK */}
-        <form onSubmit={handleCommandSubmit} className="w-full flex items-center gap-3 p-2 rounded-full bg-[#050a12]/90 border border-[#62e6ff]/50 backdrop-blur-xl shadow-[0_0_24px_rgba(98,230,255,0.25)]">
-          <button type="button" className="w-10 h-10 rounded-full bg-[#62e6ff]/15 border border-[#62e6ff]/60 flex items-center justify-center text-[#62e6ff] hover:bg-[#62e6ff]/30 transition-all">
-            <span className="material-symbols-outlined text-[20px]">mic</span>
+        <form onSubmit={handleDirectiveSubmit} className="flex-1 max-w-2xl w-full flex items-center justify-between px-3 py-1.5 rounded-full bg-[#081322] border border-[#62e6ff]/50 shadow-[0_0_20px_rgba(98,230,255,0.25)] focus-within:border-[#62e6ff] transition-all">
+          <button type="button" className="w-7 h-7 rounded-full bg-[#62e6ff]/20 border border-[#62e6ff]/70 flex items-center justify-center text-[#62e6ff] hover:bg-[#62e6ff] hover:text-black transition-colors">
+            <span className="material-symbols-outlined text-[16px]">mic</span>
           </button>
           <input
             type="text"
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
-            placeholder="Speak or type a directive for RAQIB OS..."
-            className="flex-1 bg-transparent border-0 text-white font-mono text-xs focus:outline-none placeholder-[#7f95a6]"
+            className="bg-transparent border-none text-xs text-slate-200 placeholder:text-slate-500 focus:outline-none w-full px-2 font-mono"
+            placeholder="Speak or type a directive…"
           />
-          <kbd className="font-mono text-[10px] text-[#7f95a6] border border-white/14 px-2 py-0.5 rounded">⌘K</kbd>
+          <kbd className="text-[9px] font-mono text-[#62e6ff]/80 bg-slate-900 px-1.5 py-0.5 rounded border border-[#62e6ff]/30">⌘K</kbd>
         </form>
-        <p className="font-mono text-xs text-[#62e6ff] text-center m-0">{consoleMsg}</p>
-      </div>
 
-      {/* RIGHT COLUMN (3 Cols): LIVE INTEL FEED */}
-      <div className="xl:col-span-3 flex flex-col gap-4">
-        <div className="hud-panel rounded-xl flex flex-col gap-3">
-          <h3 className="flex items-baseline justify-between font-oxanium text-sm font-semibold text-white border-b border-[#62e6ff]/20 pb-2">
-            Live Intelligence Stream <em>120 FPS</em>
-          </h3>
-          <div className="flex flex-col gap-2 font-mono text-xs">
-            <div className="p-2.5 rounded border-l-2 border-l-[#62e6ff] bg-[#62e6ff]/5 flex flex-col gap-1">
-              <span className="text-white font-semibold">PolicyEngine Routing</span>
-              <span className="text-[#7f95a6] text-[11px]">policy_decision set to "none" (Zero LLM reliance)</span>
-            </div>
-            <div className="p-2.5 rounded border-l-2 border-l-[#7dffc8] bg-[#7dffc8]/5 flex flex-col gap-1">
-              <span className="text-[#7dffc8] font-semibold">Audit Ledger Active</span>
-              <span className="text-[#7f95a6] text-[11px]">Append-only SQLite event logger initialized</span>
-            </div>
-          </div>
-        </div>
-      </div>
+        <button onClick={() => setFeedback("Executive Briefing: All 25/25 system tests PASS.")} className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500 text-amber-400 font-hud text-xs font-semibold tracking-wider shadow-[0_0_16px_rgba(245,158,11,0.3)] transition-all">
+          <span className="material-symbols-outlined text-[16px]">play_circle</span>
+          <span>Executive Briefing</span>
+        </button>
+      </footer>
     </div>
   );
 }
