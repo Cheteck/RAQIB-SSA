@@ -1,0 +1,17 @@
+{
+  "name": "@raqib/mission-engine",
+  "version": "0.1.0",
+  "private": true,
+  "main": "src/index.ts",
+  "dependencies": {
+    "@raqib/shared": "*",
+    "@raqib/core": "*",
+    "@raqib/policy-engine": "*",
+    "@raqib/audit-ledger": "*",
+    "better-sqlite3": "^13.0.3",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.12"
+  }
+}
