@@ -8,16 +8,20 @@ import { useHud } from './HudContext';
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
 const NAV = [
-  { href: '/',          icon: 'grid_view',  label: 'Workspace',  title: 'Workspace overview' },
-  { href: '/missions',  icon: 'shield',     label: 'Missions',   title: 'Mission engine' },
-  { href: '/approvals', icon: 'how_to_reg', label: 'Approvals',  title: 'Approval matrix' },
-  { href: '/audit',     icon: 'sensors',    label: 'Audit',      title: 'Audit ledger', badge: true },
-  { href: '/settings',  icon: 'warning',    label: 'Emergency',  title: 'Emergency lock', danger: true },
+  { href: '/',          icon: 'grid_view',  label: 'Workspace',  title: 'Vue d\'ensemble' },
+  { href: '/missions',  icon: 'shield',     label: 'Missions',   title: 'Gestion des missions' },
+  { href: '/approvals', icon: 'how_to_reg', label: 'Approvals',  title: 'Matrice d\'approbation' },
+  { href: '/audit',     icon: 'sensors',    label: 'Audit',      title: 'Registre d\'audit', badge: true },
+  { href: '/context',   icon: 'data_object',label: 'Contexte',   title: 'Budget de contexte & tokens' },
+  { href: '/memory',    icon: 'memory',     label: 'Mémoire',    title: 'Mémoire multi-tier' },
+  { href: '/workflows', icon: 'account_tree',label: 'Workflows', title: 'Graphes d\'exécution' },
+  { href: '/skills',    icon: 'extension',  label: 'Skills',     title: 'Catalogue de compétences' },
+  { href: '/settings',  icon: 'warning',    label: 'Urgence',    title: 'Arrêt d\'urgence', danger: true },
 ];
 
 export default function Navigation() {
   const pathname = usePathname();
-  const { go, online, toggleTheme, theme } = useHud();
+  const { online, toggleTheme, theme } = useHud();
 
   const [time, setTime] = useState('--:--:--');
   const [date, setDate] = useState('');
@@ -27,8 +31,8 @@ export default function Navigation() {
   useEffect(() => {
     const tick = () => {
       const d = new Date();
-      setTime(d.toLocaleTimeString('en-US'));
-      setDate(d.toLocaleDateString('en-GB', {
+      setTime(d.toLocaleTimeString('fr-FR'));
+      setDate(d.toLocaleDateString('fr-FR', {
         weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
       }));
     };
@@ -80,8 +84,8 @@ export default function Navigation() {
         <div>
           <b>RAQIB</b>
           <span className="chip">WORKSPACE</span>
-          <span className="chip d">CORE v4.9</span>
-          <small>Strategic governance · AI control center</small>
+          <span className="chip d">CORE v2.0</span>
+          <small>Gouvernance stratégique · Centre de contrôle IA</small>
         </div>
       </div>
 

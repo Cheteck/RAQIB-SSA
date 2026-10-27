@@ -2,8 +2,11 @@ import './globals.css';
 import { HudProvider } from '../components/HudContext';
 import NeuralCanvas from '../components/NeuralCanvas';
 import HUDHeader from '../components/HUDHeader';
-import HUDDock from '../components/HUDDock';
+import ShellDock from '../components/ShellDock';
+import ShellRailLeft from '../components/ShellRailLeft';
+import ShellRailRight from '../components/ShellRailRight';
 import BootScreen from '../components/BootScreen';
+import ModuleOverlay from '../components/ModuleOverlay';
 
 export const metadata = {
   title: 'RAQIB // RAQIB AI Command Center',
@@ -19,8 +22,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <div className="vg"></div>
           <BootScreen />
           <HUDHeader />
-          <main className="relative z-10 w-full min-h-screen">{children}</main>
-          <HUDDock />
+          <div className="relative z-10 w-full min-h-[calc(100vh-80px)] flex pt-14 pb-20">
+            <ShellRailLeft />
+            <main className="flex-1 min-w-0 relative px-4">
+              <ModuleOverlay>{children}</ModuleOverlay>
+            </main>
+            <ShellRailRight />
+          </div>
+          <ShellDock />
         </HudProvider>
       </body>
     </html>

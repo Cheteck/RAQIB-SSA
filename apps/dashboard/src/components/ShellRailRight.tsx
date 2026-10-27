@@ -2,32 +2,42 @@
 
 import { useHud } from './HudContext';
 import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { useAudit } from '../hooks/useAudit';
 
-// Actions rapides (fidèles au template)
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+
 const QUICK_ACTIONS = [
-  { icon: 'account_tree', label: "Analyser l'architecture",  q: "Analyse l'architecture du projet" },
-  { icon: 'checklist',    label: 'Découper une fonctionnalité', q: 'Découpe cette fonctionnalité en tâches' },
-  { icon: 'bug_report',   label: 'Préparer les tests',      q: 'Prépare une stratégie de tests' },
-  { icon: 'rocket_launch',label: 'Préparer une release',    q: 'Prépare la prochaine release' },
+  { icon: 'account_tree', label: "Analyser une mission",      q: "Analyse la mission courante" },
+  { icon: 'checklist',    label: 'Vérifier les approbations', q: 'Consulte les approbations en attente' },
+  { icon: 'bug_report',   label: "Consulter l'audit",          q: 'Affiche le registre d\'audit immuable' },
+  { icon: 'rocket_launch',label: 'Lancer auto-amélioration',  q: 'Déclenche la mission de self-improvement' },
 ];
 
-// Points réseau de contexte
 const NP = [
   [12,16],[36,8],[60,18],[88,10],
   [20,42],[46,34],[72,44],[94,36],
   [10,68],[34,60],[58,70],[84,66],
 ];
 
-// Calculer les edges (liens entre points proches)
 const EDGES: [number,number,number,number][] = [];
 NP.forEach(([ax,ay], i) => NP.forEach(([bx,by], j) => {
   if (j > i && Math.hypot(ax-bx, ay-by) < 30) EDGES.push([ax,ay,bx,by]);
 }));
 
 export default function ShellRailRight() {
-  const { feed, turns, vectors, go } = useHud();
+  const { turns, go } = useHud();
   const pathname = usePathname();
   const isEmergency = pathname === '/settings';
+  const { events } = useAudit();
+  const [contextMetrics, setContextMetrics] = useState<any>(null);
+
+  useEffect(() => {
+    fetch(`${API_BASE}/api/context`)
+      .then((r) => r.json())
+      .then((d) => setContextMetrics(d))
+      .catch(() => setContextMetrics(null));
+  }, []);
 
   return (
     <aside className="rail r" id="R" aria-label="Journal, actions rapides et contexte">
@@ -36,36 +46,24 @@ export default function ShellRailRight() {
       <section className="p" style={{ '--i': 3 } as any}>
         <h3>
           Journal d'activité
-          <em>{feed.length > 0 ? `${feed.length} entrées` : 'Événements de démonstration'}</em>
+          <em>{events.length > 0 ? `${events.length} événements` : 'Registre d\'audit'}</em>
         </h3>
         <div className="feed" id="fd" aria-live="polite">
-          {feed.length === 0 ? (
-            <>
-              <div className="fi w">
-                <header><span>Connexion au dépôt</span><em>À FAIRE</em></header>
-                <p>Connecter un dépôt Git pour afficher les branches, commits et l'état réel du projet.</p>
-                <small>État : non connecté</small>
-              </div>
-              <div className="fi">
-                <header><span>Contexte projet</span><em>DÉMO</em></header>
-                <p>Les informations affichées illustrent l'interface. Aucun projet réel n'est chargé.</p>
-                <small>Données de démonstration</small>
-              </div>
-              <div className="fi">
-                <header><span>Exécution des commandes</span><em>LOCAL</em></header>
-                <p>Les commandes saisies ne sont pas exécutées sur un backend dans cette version.</p>
-                <small>Mode prototype frontend</small>
-              </div>
-            </>
+          {events.length === 0 ? (
+            <div className="fi">
+              <header><span>Audit Ledger</span><em>SYSTÈME</em></header>
+              <p>Aucun événement récent enregistré dans le registre immuable.</p>
+              <small>Prêt pour l'enregistrement</small>
+            </div>
           ) : (
-            feed.map((f) => (
-              <div key={f.key} className={`fi${f.w ? ' w' : ''}`}>
+            events.slice(0, 5).map((e) => (
+              <div key={e.id} className="fi">
                 <header>
-                  <span>{f.title}</span>
-                  <em>{f.tag}</em>
+                  <span>{e.type}</span>
+                  <em>{e.actor}</em>
                 </header>
-                <p>{f.body}</p>
-                <small>{f.meta}</small>
+                <p>{JSON.stringify(e.data).slice(0, 100)}</p>
+                <small>{new Date(e.timestamp).toLocaleTimeString()}</small>
               </div>
             ))
           )}
@@ -74,7 +72,7 @@ export default function ShellRailRight() {
 
       {/* ── Panneau 2 : Actions rapides ── */}
       <section className="p" style={{ '--i': 4 } as any}>
-        <h3>Actions rapides<em>Suggestions · simulation</em></h3>
+        <h3>Actions rapides<em>Directives d'exécution</em></h3>
         <div className="dir">
           {QUICK_ACTIONS.map((a) => (
             <button key={a.label} onClick={() => go(a.q)}>
@@ -106,14 +104,14 @@ export default function ShellRailRight() {
             ))}
           </svg>
           <div>
-            <small>Activité locale</small>
-            <b id="vc">{turns}</b>
-            <small><span id="tn">{turns}</span> demandes · backend non connecté</small>
+            <small>Context Tokens</small>
+            <b id="vc">{contextMetrics?.usedTokens ?? 0}</b>
+            <small><span id="tn">{turns}</span> interactions · Mode Sécurisé</small>
           </div>
         </div>
       </section>
 
-      {/* ── Panneau 4 (conditionnel) : Emergency info sur /settings ── */}
+      {/* ── Panneau 4 (conditionnel) : Emergency info ── */}
       {isEmergency && (
         <section className="p" style={{
           '--i': 6,
@@ -134,7 +132,7 @@ export default function ShellRailRight() {
             <span className="ms" style={{ color: 'rgb(var(--g))' }}>person</span>
             <div>
               <b>Signature fondateur uniquement</b>
-              <small>Désactivation requiert clé à usage unique</small>
+              <small>Désactivation requiert confirmation administrative</small>
             </div>
           </div>
         </section>

@@ -2,25 +2,18 @@
 
 import { useHud } from './HudContext';
 import { usePathname } from 'next/navigation';
-
-/**
- * Espace de réponse RAQIB — colonne centrale UNIQUEMENT.
- * 
- * Contenu : titre RAQIB + status label + output typewriter + timeline (home).
- * Jamais de contenu module ici.
- * 
- * Fidèle au template HTML :
- *   .mid
- *     .hd   → titre centré (haut)
- *     .bt   → output typewriter + .tl (bas, space-between)
- */
+import { useMissions } from '../hooks/useMissions';
 
 const SECTION_SUBTITLES: Record<string, string> = {
-  '/':          'Development workspace · runtime port 4000',
-  '/missions':  'Mission engine · tracking & autonomy control',
-  '/approvals': 'Approval matrix · single-use authorization',
-  '/audit':     'Audit ledger · append-only tamper-evident log',
-  '/settings':  'Emergency matrix · zero-trust safety protocol',
+  '/':          'Espace de développement · Port Runtime 4000',
+  '/missions':  'Moteur de missions · Suivi et contrôle d\'autonomie',
+  '/approvals': 'Matrice d\'approbation · Autorisation à usage unique',
+  '/audit':     'Registre d\'audit · Traçabilité immuable',
+  '/context':   'Context Engine · Budget de tokens & fenêtre glissante',
+  '/memory':    'Memory Engine · Mémoire court/long terme multi-tier',
+  '/workflows': 'Workflow Engine · Graphes d\'exécution multi-agents',
+  '/skills':    'Skills Registry · Catalogue de compétences sandboxées',
+  '/settings':  'Protocole d\'urgence · Sécurité Zero-Trust',
 };
 
 export default function ShellCenter() {
@@ -28,10 +21,10 @@ export default function ShellCenter() {
   const pathname = usePathname();
   const subtitle = SECTION_SUBTITLES[pathname] ?? SECTION_SUBTITLES['/'];
   const isHome = pathname === '/';
+  const { missions } = useMissions();
 
   return (
     <>
-      {/* Titre RAQIB — toujours centré, toujours visible */}
       <div className="hd">
         <span id="sl">
           <i className="dot" aria-hidden />
@@ -41,19 +34,24 @@ export default function ShellCenter() {
         <small>{subtitle}</small>
       </div>
 
-      {/* Output typewriter + timeline — en bas via space-between du .mid */}
       <div className="bt">
         <small id="echo">{echo}</small>
         <div id="out" aria-live="polite">{output}</div>
 
-        {/* Timeline visible uniquement sur la home */}
         {isHome && (
           <section className="p tl" style={{ '--i': 5 } as any}>
-            <h3>Mission chronos<em>active deck · 4 objectives</em></h3>
-            <div className="tm d"><i /><b>Initialisation du Runtime</b><small>09:30 AM · Done</small></div>
-            <div className="tm n"><i /><b>Vérification Policy Engine</b><small>12:00 PM · In progress</small></div>
-            <div className="tm"><i /><b>Audit Ledger Verification</b><small>02:00 PM · Queued</small></div>
-            <div className="tm"><i /><b>Validation finale MVP</b><small>04:30 PM · Queued</small></div>
+            <h3>Missions récentes<em>{missions.length} missions en cours</em></h3>
+            {missions.length === 0 ? (
+              <div className="tm d"><i /><b>Aucune mission enregistrée</b><small>Système prêt</small></div>
+            ) : (
+              missions.slice(0, 4).map((m: any) => (
+                <div key={m.id} className={`tm ${m.status === 'SUCCEEDED' ? 'd' : m.status === 'RUNNING' ? 'n' : ''}`}>
+                  <i />
+                  <b>{m.name || m.id}</b>
+                  <small>{m.status} · {m.createdAt ? new Date(m.createdAt).toLocaleTimeString() : 'Inconnu'}</small>
+                </div>
+              ))
+            )}
           </section>
         )}
       </div>

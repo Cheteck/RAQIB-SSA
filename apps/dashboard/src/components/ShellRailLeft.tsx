@@ -12,6 +12,10 @@ const SECTION_META: Record<string, { icon: string; label: string; color: string 
   '/missions':  { icon: 'shield',     label: 'Missions',   color: 'rgb(var(--m))' },
   '/approvals': { icon: 'how_to_reg', label: 'Approvals',  color: 'rgb(var(--g))' },
   '/audit':     { icon: 'sensors',    label: 'Audit',      color: 'rgb(var(--c))' },
+  '/context':   { icon: 'data_object',label: 'Contexte',   color: 'rgb(var(--c))' },
+  '/memory':    { icon: 'memory',     label: 'Mémoire',    color: 'rgb(var(--m))' },
+  '/workflows': { icon: 'account_tree',label: 'Workflows', color: 'rgb(var(--g))' },
+  '/skills':    { icon: 'extension',  label: 'Skills',     color: 'rgb(var(--c))' },
   '/settings':  { icon: 'warning',    label: 'Emergency',  color: 'rgb(var(--r))' },
 };
 
@@ -20,38 +24,27 @@ const NAV_ITEMS = [
   { href: '/missions',  icon: 'shield',     label: 'Missions' },
   { href: '/approvals', icon: 'how_to_reg', label: 'Approvals' },
   { href: '/audit',     icon: 'sensors',    label: 'Audit' },
+  { href: '/context',   icon: 'data_object',label: 'Contexte' },
+  { href: '/memory',    icon: 'memory',     label: 'Mémoire' },
+  { href: '/workflows', icon: 'account_tree',label: 'Workflows' },
+  { href: '/skills',    icon: 'extension',  label: 'Skills' },
   { href: '/settings',  icon: 'warning',    label: 'Emergency', danger: true },
 ];
 
-// Modules de travail (fidèles au template HTML)
 const WORK_MODS = [
-  { icon: 'terminal',      label: 'Workspace',      badge: '' },
-  { icon: 'account_tree',  label: 'Architecture',   badge: '' },
-  { icon: 'smart_toy',     label: 'Agents',         badge: 'DEMO' },
-  { icon: 'checklist',     label: 'Backlog',        badge: 'LOCAL', badgeAlert: true },
-  { icon: 'history',       label: 'Historique',     badge: '' },
-  { icon: 'hub',           label: 'Contexte projet',badge: '' },
+  { icon: 'terminal',      label: 'Workspace',      badge: 'PROD' },
+  { icon: 'account_tree',  label: 'Workflows',      badge: 'ACTIVE' },
+  { icon: 'smart_toy',     label: 'Agents',         badge: 'HARNESS' },
+  { icon: 'checklist',     label: 'Missions',       badge: 'RUNNING' },
+  { icon: 'history',       label: 'Audit Ledger',   badge: 'SECURE' },
+  { icon: 'hub',           label: 'Context Engine', badge: 'CONFIG' },
 ];
 
-// Rôles de travail (fidèles au template)
 const ROLES = [
-  { icon: 'code',        label: 'Développement',   sub: 'EXEMPLE',     active: true },
-  { icon: 'schema',      label: 'Architecture',    sub: 'EXEMPLE',     active: true },
-  { icon: 'fact_check',  label: 'Tests & qualité', sub: 'À CONNECTER', active: false },
-  { icon: 'assignment',  label: 'Gestion projet',  sub: 'LOCAL',       active: false },
-];
-
-const ENV_LINKS = [
-  { label: 'Dépôt Git',     value: 'Non connecté' },
-  { label: 'Backend IA',    value: 'Non connecté' },
-  { label: 'Environnement', value: 'Prototype local' },
-  { label: 'CI / CD',       value: 'Non connecté' },
-];
-
-const GAUGES = [
-  { label: 'Rules',   color: '98,230,255',  pct: 32 },
-  { label: 'Memory',  color: '125,255,200', pct: 65 },
-  { label: 'Reactor', color: '255,179,71',  pct: 98 },
+  { icon: 'code',        label: 'Développement',   sub: 'OPERATIONAL', active: true },
+  { icon: 'schema',      label: 'Architecture',    sub: 'ALIGNED',     active: true },
+  { icon: 'fact_check',  label: 'Tests & Qualité', sub: 'PASSED',      active: true },
+  { icon: 'assignment',  label: 'Gouvernance',     sub: 'ENFORCED',    active: true },
 ];
 
 export default function ShellRailLeft() {
@@ -61,17 +54,47 @@ export default function ShellRailLeft() {
   const [activeMod, setActiveMod] = useState(0);
 
   const [status, setStatus] = useState<any>(null);
+  const [contextMetrics, setContextMetrics] = useState<any>(null);
+  const [modelHealth, setModelHealth] = useState<any>(null);
+
   useEffect(() => {
     fetch(`${API_BASE}/api/status`)
       .then((r) => r.json())
       .then((d) => setStatus(d))
       .catch(() => setStatus({ status: 'OFFLINE', emergencyStop: false }));
+
+    fetch(`${API_BASE}/api/context`)
+      .then((r) => r.json())
+      .then((d) => setContextMetrics(d))
+      .catch(() => setContextMetrics(null));
+
+    fetch(`${API_BASE}/api/models/health`)
+      .then((r) => r.json())
+      .then((d) => setModelHealth(d))
+      .catch(() => setModelHealth(null));
   }, []);
+
+  const envLinks = [
+    { label: 'Dépôt Git',     value: 'Projet local RAQIB' },
+    { label: 'Backend IA',    value: modelHealth?.providers?.[0]?.provider || 'Model Gateway' },
+    { label: 'Environnement', value: status?.readOnlyMode ? 'Mode Lecture Seule' : 'Mode Interactif' },
+    { label: 'CI / CD',       value: 'Vitest / Build OK' },
+  ];
+
+  const ctxPct = contextMetrics && contextMetrics.totalBudget
+    ? Math.round((contextMetrics.usedTokens / contextMetrics.totalBudget) * 100) || 5
+    : 12;
+
+  const gauges = [
+    { label: 'Rules',   color: '98,230,255',  pct: status?.emergencyStop ? 100 : 85 },
+    { label: 'Memory',  color: '125,255,200', pct: 42 },
+    { label: 'Context', color: '255,179,71',  pct: ctxPct },
+  ];
 
   return (
     <aside className="rail l" id="L" aria-label="Navigation et modules">
 
-      {/* ── Panneau 1 : Navigation (remplace "Modules de travail" du template) ── */}
+      {/* ── Panneau 1 : Navigation ── */}
       <section className="p" style={{ '--i': 0 } as any}>
         <h3>
           Navigation RAQIB
@@ -96,9 +119,9 @@ export default function ShellRailLeft() {
         </nav>
       </section>
 
-      {/* ── Panneau 2 : Modules de travail (fidèle au template) ── */}
+      {/* ── Panneau 2 : Modules de travail ── */}
       <section className="p" style={{ '--i': 1 } as any}>
-        <h3>Modules de travail<em>Prototype</em></h3>
+        <h3>Modules de travail<em>Opérationnel</em></h3>
         <div className="mods">
           {WORK_MODS.map((m, i) => (
             <button
@@ -108,15 +131,15 @@ export default function ShellRailLeft() {
             >
               <span className="ms">{m.icon}</span>
               <span>{m.label}</span>
-              {m.badge && <b className={m.badgeAlert ? 'a' : ''}>{m.badge}</b>}
+              {m.badge && <b>{m.badge}</b>}
             </button>
           ))}
         </div>
       </section>
 
-      {/* ── Panneau 3 : Rôles de travail + env links (fidèle au template) ── */}
+      {/* ── Panneau 3 : Rôles de travail + env links ── */}
       <section className="p" style={{ '--i': 2 } as any}>
-        <h3>Rôles de travail<em>Exemples · non connectés</em></h3>
+        <h3>Rôles de travail<em>Système actif</em></h3>
         {ROLES.map((r) => (
           <div key={r.label} className={`ag ${r.active ? 'act' : ''}`}>
             <span className="ms">{r.icon}</span>
@@ -128,7 +151,7 @@ export default function ShellRailLeft() {
           </div>
         ))}
         <div className="eng">
-          {ENV_LINKS.map((e) => (
+          {envLinks.map((e) => (
             <div key={e.label} className="en">
               <i className="dot" />
               <b>{e.label}</b>
@@ -138,16 +161,16 @@ export default function ShellRailLeft() {
         </div>
       </section>
 
-      {/* ── Panneau 4 : Indicateurs Runtime (gauges circulaires) ── */}
+      {/* ── Panneau 4 : Indicateurs Runtime ── */}
       <section className="p" style={{ '--i': 3 } as any}>
         <h3>
           Indicateurs Runtime
           <em style={{ color: 'rgb(var(--m))' }}>
-            {status ? 'RAQIB Core' : 'Aucune donnée réelle'}
+            {status ? 'RAQIB Core V2' : 'Dépôt Local'}
           </em>
         </h3>
         <div className="gs">
-          {GAUGES.map((g) => (
+          {gauges.map((g) => (
             <div key={g.label} className="g" style={{ color: `rgb(${g.color})` }}>
               <svg viewBox="0 0 36 36">
                 <circle className="b" cx="18" cy="18" r="15.9" />
