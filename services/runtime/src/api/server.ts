@@ -127,7 +127,18 @@ export function createRuntimeServer(runtime: RaqibRuntime) {
     res.json({ events });
   });
 
-  // Budget
+  // Self-improvement mission
+  app.post('/api/missions/self-improve', async (req, res) => {
+    try {
+      const mission = await runtime.createSelfImprovementMission();
+      if (mission.status === 'APPROVED' || mission.status === 'PLANNED') {
+        await runtime.missionEngine.transitionStatus(mission.id, 'RUNNING', 'Self-improvement mission started');
+      }
+      res.status(201).json({ mission });
+    } catch (err: any) {
+      res.status(400).json({ error: err.message });
+    }
+  });
   app.get('/api/budget/:missionId', (req, res) => {
     const budget = runtime.policyEngine.getBudget(req.params.missionId);
     if (!budget) {
