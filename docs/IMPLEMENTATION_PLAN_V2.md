@@ -1,81 +1,69 @@
-# Plan d'implémentation — RAQIB v2.0 (PRD révisé)
+# RAQIB — Plan d'Implémentation v2.0 Enrichi LLM Harness (8 Phases)
 
-> Basé sur `RAQIB-PRD-v2.0-revise.md`. État actuel : fondations runtime + dashboard en place.
+Ce document définit la feuille de route d'implémentation opérationnelle en **8 phases** pour l'Agent Auto-Souverain **RAQIB**, basée sur le PRD révisé v2.0 (`RAQIB-PRD-v2.0-revise.md`) enrichi des patrons de conception d'**Harness LLM Open Source** (LangChain, DeepAgents, AutoGen).
 
-## Constat (ce qui existe déjà)
+---
 
-| Composant PRD | État actuel |
-|---|---|
-| RAQIB Core (missions, config) | ✅ MissionEngine + RaqibRuntime |
-| Policy Engine | ✅ PolicyEngine (rules, budgets, approvals) |
-| Model Gateway | ✅ + endpoint HTTP `/api/chat` |
-| Tool Gateway | ⚠️ Partiel (pas de sandbox Docker) |
-| Mission Engine | ✅ + step executor + self-improve mission |
-| Memory System | ❌ Non implémenté |
-| Audit Ledger | ✅ SQLite append-only |
-| Verification Engine | ⚠️ Existe, pas exposé HTTP |
-| Dashboard (Next.js) | ✅ Shell + pages + hooks |
-| Shell persistant | ✅ layout.tsx (ShellDock, Navigation, rails) |
-| Arrêt d'urgence | ✅ Endpoint + UI Settings |
-| Budget | ✅ Endpoints + PolicyEngine |
-| Approbations | ✅ Endpoints + page + hook |
-| Audit (filtres) | ⚠️ Endpoint basique, pas de filtres |
+## Vue d'ensemble des 8 phases d'implémentation (avec Harness LLM)
 
-## Phases proposées (alignées PRD)
+| Phase | Intitulé / Domaine Fonctionnel | Packages & Composants Cibles | Objectifs Majeurs & Enrichissements Harness LLM |
+| :--- | :--- | :--- | :--- |
+| **Phase 1** | **Core Domain Architecture, Data Models & Context Engine** | `packages/core`, `packages/shared` | Modèles typés (Mission, Plan, Action, Policy, Verification, Governance), schémas Zod, **Context Window Manager & Token Budget Control**. |
+| **Phase 2** | **Guardrails Engine, Dynamic Policy & Middleware Execution** | `packages/policy-engine` | Moteur de garde-fous, évaluation des niveaux d'autonomie (Level 0 à 4), **Hooks Middleware (`beforeAgent`, `afterAgent`)** et demandes d'approbation. |
+| **Phase 3** | **Evaluation Framework & Advanced Metrics Engine** | `packages/verification`, `packages/mission-engine` | Moteur de vérification indépendante post-exécution, contrôle d'intégrité (git diff, linter, tests, sécurité) et calcul de métriques. |
+| **Phase 4** | **Skills Engine & Multi-Tier Memory Framework** | `packages/mission-engine`, `packages/tool-gateway` | **Skills Registry (chargement dynamique/lazy `load_skill`)**, **Short-Term Checkpointer Memory (State Graphs)** & **Long-Term Episodic Memory**. |
+| **Phase 5** | **API Gateway, Dynamic Workflows & Services Runtime Layer** | `services/runtime`, `packages/model-gateway`, `packages/tool-gateway` | Serveur Runtime Express, **Workflow Engine (State Graph Multi-Agents)**, Model Gateway (OpenAI, Anthropic, Ollama) et Sandbox isolée. |
+| **Phase 6** | **Security, RBAC, Governance & Immutable Audit Logging** | `packages/audit-ledger`, `packages/policy-engine` | Registre d'audit append-only cryptographiquement sécurisé, gestion des rôles (Admin/Operator/Auditor) et Kill Switch / Mode Urgence. |
+| **Phase 7** | **Dashboard Supervision & Observability Layer** | `apps/dashboard` | Interconnexion de l'UI Next.js avec le runtime tout en conservant **scrupuleusement l'intégrité et le design visuel UI/UX d'origine** (Missions, Approvals, Audit, Emergency). |
+| **Phase 8** | **Quality Assurance, CI/CD Pipeline & End-to-End Verification** | `tests/`, `vitest.config.ts`, `.github/workflows` | Validation E2E complète, suite de tests d'intégration, conformité stricte au PRD v2.0 enrichi et livraison d'artefacts d'audit. |
 
-### Phase A — Stabiliser l'existant (1-2 j)
-- Vérifier que toutes les routes fonctionnent en accès direct et après rafraîchissement.
-- Ajouter transitions légères (opacity/translate, 250-400ms) dans ModuleOverlay (déjà partiellement).
-- Respecter `prefers-reduced-motion` (déjà dans CSS).
-- Tester l'arrêt d'urgence depuis le shell sur toutes les routes.
+---
 
-### Phase B — Audit MosaiX (RAQIB-001) (2-3 j)
-- Créer la mission `RAQIB-001` (lecture seule) via `POST /api/missions` ou un script seed.
-- Implémenter les steps : inventory, git status, manifests, tests/docs, risques, rapport, vérification non-modification.
-- Exposer `GET /api/missions/:id/steps` pour le détail.
-- Générer le rapport dans `reports/raqib-001/`.
+## Détail des Phases d'Implémentation Enrichies
 
-### Phase C — Exposer Verification + Memory (3-4 j)
-- Endpoint `POST /api/verify` et `GET /api/verify/:id`.
-- Implémenter `MemorySystem` (mémoire de mission, projet, institutionnelle, expérience) avec provenance.
-- Endpoint `GET /api/memory/:missionId`.
+### Phase 1: Core Domain Architecture, Data Models & Context Engine
+- **Objectifs Core :** Structurer le domaine métier de RAQIB avec typage TypeScript strict et validation Zod (`AgentMission`, `ExecutionPlan`, `ActionStep`, `PolicyRule`).
+- **Enrichissement Harness LLM (Context Engine) :**
+  - Implémentation du gestionnaire de fenêtre de contexte (Context Window Manager) avec élagage automatique des messages verbeux.
+  - Calculateur et contrôleur de budget de jetons (Token Budget Manager) prévenant les dérives.
 
-### Phase D — Dashboard temps réel (2-3 j)
-- SSE `/api/events` côté runtime.
-- Consommation côté dashboard (mise à jour instantanée audit/missions).
-- Filtres audit (type, date, pagination).
-- Error boundaries + skeletons.
+### Phase 2: Guardrails Engine, Dynamic Policy & Middleware Execution
+- **Objectifs Core :** Moteur d'évaluation des règles de sécurité et gouvernance pré-exécution avec niveaux d'autonomie (L0 à L4).
+- **Enrichissement Harness LLM (Middleware Hooks) :**
+  - Architecture Middleware pour intercepter le déroulement des agents avant l'appel modèle (`beforeAgent`) et après l'exécution (`afterAgent`).
+  - Validation automatique des garde-fous pour le code Shell, Git, Réseau et fichiers système.
 
-### Phase E — Self-improvement mission (RAQIB) (2-3 j)
-- Laisser RAQIB créer et exécuter `RAQIB-SELF-IMPROVE-001` via l'endpoint existant.
-- Ajouter `POST /api/missions/:id/run` (déjà fait) pour pilotage.
-- Générer le rapport `reports/raqib-self-improvement.md`.
+### Phase 3: Evaluation Framework & Advanced Metrics Engine
+- **Objectifs Core :** Moteur de vérification post-exécution (Syntaxe, Linter, Tests d'intégration, Analyse statique).
+- **Enrichissement Harness LLM :**
+  - Évaluation de l'intégrité du code via git diff et vérification par LLM-as-a-Judge en bac à sable.
+  - Génération automatique du score de complétude et de sécurité.
 
-### Phase F — Sécurité & tests (3-4 j)
-- Tests de sécurité (injection, budget, permissions, emergency stop).
-- Tests de résilience (reprise après crash, reconnexion).
-- Sandbox Docker (isolation réseau, pas de socket hôte).
-- Audit de non-régression.
+### Phase 4: Skills Engine & Multi-Tier Memory Framework
+- **Enrichissement Harness LLM (Skills Engine & Memory Engine) :**
+  - **Skills Registry :** Système de déclaration et de découverte dynamique de compétences réutilisables avec chargement lazy `load_skill(name)`.
+  - **Short-Term Checkpointer Memory :** Sauvegarde et reprise des états de conversations/missions par fil (`thread_id`) avec persistance SQLite.
+  - **Long-Term Episodic Memory :** Registre de mémoires persistantes synchronisées dynamiquement avec la sandbox de l'agent.
 
-### Phase G — Production (2-3 j)
-- Authentification (clé API).
-- `.env.example` documenté.
-- CI (GitHub Actions).
-- Dockerisation + docker-compose.
+### Phase 5: API Gateway, Dynamic Workflows & Services Runtime Layer
+- **Objectifs Core :** API Express REST, Model Gateway (OpenAI, Anthropic, Ollama local), Tool Gateway (Docker Sandbox).
+- **Enrichissement Harness LLM (Dynamic Workflows Engine) :**
+  - Modélisation de l'exécution des missions sous forme de graphes d'états orientés (State Graphs).
+  - Support de l'orchestration multi-agents avec sous-agents spécialisés (Audit Agent, Security Agent, Refactoring Agent).
 
-## Priorité immédiate
+### Phase 6: Security, RBAC, Governance & Immutable Audit Logging
+- **Objectifs Core :** Registre d'audit append-only avec hachage cryptographique (Merkle Chain).
+- **Enrichissement Harness LLM :**
+  - Traçabilité complète des appels de Skills, des prompts système injectés et des transitions de mémoire.
+  - Emergency Kill Switch coupant instantanément le runtime et désactivant l'accès aux Skills.
 
-1. **Phase B** — créer et exécuter RAQIB-001 (audit MosaiX) pour valider les fondations.
-2. **Phase C** — exposer Verification Engine.
-3. **Phase D** — temps réel.
+### Phase 7: Dashboard Supervision & Observability Layer
+- **Objectifs Core :** Intégrité et préservation totale du design et du code de l'interface Next.js existante dans `apps/dashboard`.
+- **Enrichissement Harness LLM (Visualisation du Harness) :**
+  - Restitution en temps réel des étapes du Workflow Engine (State Graph), de la mémoire consommée et des requêtes d'approbations en attente.
 
-## Risques
-
-- Le runtime bloque pendant les steps longs (execSync) → rendre le step executor asynchrone (exec + promisify).
-- Pas de sandbox Docker → exécution de code non isolée.
-- Pas de Memory System → RAQIB ne conserve pas de contexte entre missions.
-- Pas d'authentification → environnement local uniquement.
-
-## Prochaine action
-
-Créer la mission `RAQIB-001` (audit MosaiX) via l'endpoint existant et la laisser s'exécuter. Valider le rapport généré.
+### Phase 8: Quality Assurance, CI/CD Pipeline & End-to-End Verification
+- **Objectifs Core :** Execution de la suite complète de tests (unitaires, intégration, sécurité, sandbox, E2E).
+- **Enrichissement Harness LLM :**
+  - Banc de test de red-teaming (attaques par injection de prompt et tentatives de contournement de garde-fous).
+  - Validation de build (`npm run build`, `npm test`) et alignement PRD v2.0 révisé.

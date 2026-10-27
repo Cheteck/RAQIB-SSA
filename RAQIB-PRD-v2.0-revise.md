@@ -1199,3 +1199,27 @@ Le succès de RAQIB ne se mesurera pas au nombre d'agents ou de fonctionnalités
 Cette version 2.0 remplace le PRD fondateur comme référence produit. Les montants, délais, fournisseurs et choix techniques explicitement indiqués comme « proposés » ou « à confirmer » ne doivent pas être considérés comme des paramètres déjà configurés.
 
 Avant toute extension des permissions, le fondateur doit valider les décisions encore ouvertes de la section « Décisions à confirmer avant le développement ». Les évolutions ultérieures doivent être documentées et versionnées ; elles ne doivent pas être appliquées implicitement par un agent ou par une modification de l'interface.
+
+---
+
+# 12. Extensions d'Architecture Harness LLM : Skills, Workflows, Mémoire & Gestion du Contexte
+
+Inspiré des meilleurs frameworks et harnesses pour agents LLM entreprise (LangChain, DeepAgents, AutoGen, Agentic Workflows), RAQIB 2.0 intègre 4 piliers d'ingénierie d'agent avancés :
+
+## 12.1 Skills Engine (Registre et Exécution Dynamique des Compétences)
+- **Découverte & Chargement Réfléchi :** Injection dynamique des descripteurs de compétences dans le prompt système avec chargement « lazy » (`load_skill`) à la demande de l'agent.
+- **Isolations des Compétences :** Exécution sandboxée via Tool Gateway avec validation Zod du schéma d'entrée/sortie.
+- **Catalogue Modulaire :** Skills système (Git, Bash, SQLite) et Skills métiers MosaiX (Audit de codebase, détection d'opportunités, refactoring).
+
+## 12.2 Multi-Tier Memory Engine (Gestion de la Mémoire Court & Long Terme)
+- **Short-Term Memory (Checkpointer State) :** Persistance de l'état de conversation et du graphe de décision par fil (`thread_id`), garantissant la reprise après interruption.
+- **Long-Term Episodic & Semantic Memory :** Registre de mémoires persistantes (expériences passées, artefacts de missions précédentes, bases de connaissances projet) indexées et synchronisées.
+- **Memory Sync Hooks (`beforeAgent` / `afterAgent`) :** Synchronisation automatique entre le conteneur sandbox et le stockage global de mémoires.
+
+## 12.3 Dynamic Workflows Engine (Graphes Multi-Agents & Orchestration)
+- **Transition d'État & Re-routing :** Modélisation sous forme de graphe d'états orienté (State Graph) autorisant les branchements conditionnels, les boucles de rétroaction et la ré-évaluation automatique.
+- **Interception Middleware :** Middleware de sécurité pré-exécution (Guardrails) et post-exécution (Verification & Audit Ledger).
+
+## 12.4 Context Engine (Gestion de Fenêtre de Contexte & Budget de Tokens)
+- **Context Window Management :** Résolution dynamique des coûts de contexte, compression intelligente des historiques d'exécutions et élagage des logs verbeux.
+- **Allocation de Budget de Tokens :** Limitation explicite de la consommation de jetons par mission et par agent pour prévenir la dérive budgétaire.
