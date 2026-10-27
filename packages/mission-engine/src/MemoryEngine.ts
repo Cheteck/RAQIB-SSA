@@ -22,7 +22,7 @@ export interface SearchOptions {
 }
 
 export class MemoryEngine {
-  private db: Database.Database;
+  private db: Database.Database | null = null;
 
   constructor(dbPath: string) {
     this.db = new Database(dbPath);
@@ -56,6 +56,7 @@ export class MemoryEngine {
     value: unknown,
     options: { threadId?: string; type?: MemoryType; sensitivity?: string } = {}
   ): Promise<void> {
+    if (!this.db) throw new Error('MemoryEngine database connection closed');
     const threadId = options.threadId || null;
     const type = options.type || 'WORKING';
     const sensitivity = options.sensitivity || 'PUBLIC';
@@ -64,7 +65,7 @@ export class MemoryEngine {
     const strValue = typeof value === 'string' ? value : JSON.stringify(value);
 
     const tx = this.db.transaction(() => {
-      this.db.prepare(`
+      this.db!.prepare(`
         INSERT INTO memories (id, namespace, thread_id, type, key, value, sensitivity, updated_at)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(namespace, COALESCE(thread_id, ''), key) DO UPDATE SET
@@ -78,6 +79,7 @@ export class MemoryEngine {
   }
 
   async get<T = unknown>(namespace: string, key: string, threadId?: string): Promise<T | null> {
+    if (!this.db) throw new Error('MemoryEngine database connection closed');
     let row: { value: string } | undefined;
     if (threadId) {
       row = this.db.prepare(`
@@ -98,6 +100,7 @@ export class MemoryEngine {
   }
 
   async search(opts: SearchOptions): Promise<MemoryRecord[]> {
+    if (!this.db) throw new Error('MemoryEngine database connection closed');
     let sql = 'SELECT id, namespace, thread_id as threadId, type, key, value, sensitivity, updated_at as updatedAt FROM memories WHERE namespace = ?';
     const params: unknown[] = [opts.namespace];
 
@@ -123,5 +126,12 @@ export class MemoryEngine {
 
     const rows = this.db.prepare(sql).all(...params) as MemoryRecord[];
     return rows;
+  }
+
+  close(): void {
+    if (this.db) {
+      this.db.close();
+      this.db = null;
+    }
   }
 }

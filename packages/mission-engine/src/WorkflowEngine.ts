@@ -22,7 +22,7 @@ export class WorkflowEngine {
   private nodes: Map<string, WorkflowNode> = new Map();
   private edges: WorkflowEdge[] = [];
   private maxSteps: number;
-  private db?: Database.Database;
+  private db?: Database.Database | null = null;
 
   constructor(options: WorkflowOptions = {}) {
     this.maxSteps = options.maxSteps ?? 50;
@@ -103,5 +103,12 @@ export class WorkflowEngine {
       currentNodeId: row.currentNodeId,
       state: JSON.parse(row.stateJson),
     };
+  }
+
+  close(): void {
+    if (this.db) {
+      this.db.close();
+      this.db = null;
+    }
   }
 }

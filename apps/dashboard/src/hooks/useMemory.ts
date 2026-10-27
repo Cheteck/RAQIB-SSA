@@ -1,19 +1,17 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+import { api } from '../lib/api';
 
 export function useMemory(namespace: string = 'global', threadId?: string) {
   const [memories, setMemories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchMemories = () => {
-    let url = `${API_BASE}/api/memory?namespace=${encodeURIComponent(namespace)}`;
+    let url = `/api/memory?namespace=${encodeURIComponent(namespace)}`;
     if (threadId) url += `&threadId=${encodeURIComponent(threadId)}`;
 
-    fetch(url)
-      .then((res) => res.json())
+    api.get<{ memories: any[] }>(url)
       .then((data) => {
         setMemories(data.memories || []);
         setLoading(false);

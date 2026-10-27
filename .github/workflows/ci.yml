@@ -1,0 +1,33 @@
+name: RAQIB CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, master, 'feat-*', 'jules-*' ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Typecheck & Build Monorepo Packages
+        run: npm run build
+
+      - name: Build Next.js Dashboard
+        run: npm run build --workspace=@raqib/dashboard
+
+      - name: Execute Vitest Test Suite
+        run: ./node_modules/.bin/vitest run

@@ -188,5 +188,8 @@ export class RaqibRuntime {
       clearInterval(this.tickInterval);
     }
     this.policyEngine.close();
+    this.auditLedger.close();
+    this.memoryEngine.close();
+    this.workflowEngine.close();
   }
 }
