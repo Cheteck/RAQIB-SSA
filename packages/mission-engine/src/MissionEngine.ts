@@ -267,8 +267,8 @@ export class MissionEngine {
           verified: true,
         });
       }
-      this.persist(this.updateSteps(mission, step));
       mission.currentStepIndex += 1;
+      this.persist(this.updateSteps(mission, step));
 
       await this.ledger.log({
         id: `evt-step-done-${missionId}-${step.id}-${Date.now()}`,
@@ -296,8 +296,8 @@ export class MissionEngine {
     if (outcome.status === 'SKIPPED') {
       step.status = 'SKIPPED';
       step.completedAt = new Date().toISOString();
-      this.persist(this.updateSteps(mission, step));
       mission.currentStepIndex += 1;
+      this.persist(this.updateSteps(mission, step));
       return {
         missionId,
         stepIndex: mission.currentStepIndex - 1,
@@ -468,3 +468,4 @@ export class MissionEngine {
     this.db.close();
   }
 }
+

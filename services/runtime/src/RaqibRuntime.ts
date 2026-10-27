@@ -58,6 +58,7 @@ export class RaqibRuntime {
           return { status: 'DONE', result: out.slice(0, 500), proof: 'tsc --noEmit OK' };
         }
         if (name.includes('build dashboard') || name.includes('build')) {
+          try { fs.rmSync(path.join(process.cwd(), 'apps', 'dashboard', '.next'), { recursive: true, force: true }); } catch {}
           const out = execSync('npm run build --workspace=@raqib/dashboard 2>&1', { cwd: process.cwd(), timeout: 300000, encoding: 'utf8' });
           return { status: 'DONE', result: out.slice(-500), proof: 'dashboard build OK' };
         }

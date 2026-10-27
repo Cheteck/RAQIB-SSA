@@ -73,8 +73,8 @@ export default function HUDHeader() {
         <div className="who">
           <span className="ms">shield_person</span>
           <div>
-            <b>T. STARK</b>
-            <small>Commander</small>
+            <b>RAQIB</b>
+            <small>Operator</small>
           </div>
         </div>
       </div>

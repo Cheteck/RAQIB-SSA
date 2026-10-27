@@ -143,7 +143,7 @@ export default function Navigation() {
         <div className="who">
           <span className="ms" aria-hidden>shield_person</span>
           <div>
-            <b>COMMANDER</b>
+            <b>RAQIB</b>
             <small>Local runtime</small>
           </div>
         </div>
