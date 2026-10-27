@@ -2,26 +2,21 @@ import { IModelProvider, ModelRequest, ModelResponse, AuditEvent } from '@raqib/
 import { OpenAICompatibleAdapter } from './adapters/openai-compatible';
 import { FreeLLMAPIAdapter } from './adapters/free-llm-api';
 
-// ─── Audit Logger interface ───
 export interface AuditLogger {
   log(event: AuditEvent): Promise<void>;
 }
 
-// ─── Budget Checker interface ───
 export interface BudgetChecker {
   checkBudget(missionId: string, estimatedCost: number): { allowed: boolean; reason: string };
   deductBudget(missionId: string, amount: number): Promise<{ success: boolean; remaining: number }>;
 }
 
-// ─── Provider Health ───
 export interface ProviderHealth {
   id: string;
   healthy: boolean;
   latencyMs?: number;
   error?: string;
 }
-
-// ─── Model Gateway ───
 
 export class ModelGateway {
   private providers = new Map<string, IModelProvider>();
@@ -59,45 +54,46 @@ export class ModelGateway {
     return this.providers.get(id);
   }
 
-  getProviderForTask(taskType: string): IModelProvider | undefined {
-    // policy_decision must never use a model
+  getProviderForTask(taskType: string): { provider: IModelProvider; providerId: string } | undefined {
     if (taskType === 'policy_decision') {
       return undefined;
     }
     const routing = this.config.routing || {};
-    const providerId = routing[taskType] || this.config.defaultProvider;
-    if (!providerId || providerId === 'none') return undefined;
-    return this.providers.get(providerId);
+    let target = routing[taskType] || routing['default'] || this.config.defaultProvider;
+
+    if (!target) return undefined;
+
+    if (Array.isArray(target)) {
+      for (const providerId of target) {
+        const p = this.providers.get(providerId);
+        if (p) return { provider: p, providerId };
+      }
+      return undefined;
+    }
+
+    const provider = this.providers.get(target);
+    return provider ? { provider, providerId: target } : undefined;
   }
 
   listProviders(): string[] {
     return Array.from(this.providers.keys());
   }
 
-  /**
-   * Complète une requête modèle avec :
-   * - Vérification budget AVANT l'appel
-   * - Filtrage des données sensibles
-   * - Coût tracé APRÈS l'appel
-   * - Timeout respecté
-   * - Retry avec backoff
-   * - Erreur gérée sans crash → retourne NEEDS_REVIEW
-   */
   async complete(req: ModelRequest, missionId: string): Promise<{
     response?: ModelResponse;
     error?: string;
     needsReview?: boolean;
   }> {
-    const provider = this.getProviderForTask(req.taskType || 'default');
-    if (!provider) {
+    const resolved = this.getProviderForTask(req.taskType || 'default');
+    if (!resolved) {
       return { error: 'No provider available for task', needsReview: true };
     }
 
-    const providerConfig = this.providerConfigs.get(provider.name) || {};
+    const { provider, providerId } = resolved;
+    const providerConfig = this.providerConfigs.get(providerId) || {};
     const maxRetries = providerConfig.maxRetries ?? 1;
     const timeoutMs = providerConfig.timeoutMs ?? 90000;
 
-    // 1. Budget check BEFORE call
     const estimatedCost = req.maxTokens ? (req.maxTokens / 1000) * 0.001 : 0.01;
     if (this.budgetChecker) {
       const budgetResult = this.budgetChecker.checkBudget(missionId, estimatedCost);
@@ -114,16 +110,14 @@ export class ModelGateway {
       }
     }
 
-    // 2. Filter sensitive data from messages
     const filteredReq = this.filterSensitiveData(req);
 
-    // 3. Execute with retry + backoff (timeout géré par l'adaptateur via timeoutMs)
     let lastError: Error | null = null;
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       try {
-        const response = await provider.complete({ ...filteredReq, timeoutMs });
+        const targetModel = req.model || providerConfig.model || providerConfig.models?.[0] || 'auto';
+        const response = await provider.complete({ ...filteredReq, model: targetModel, timeoutMs });
 
-        // 4. Log cost AFTER successful call
         if (response.cost && this.budgetChecker) {
           await this.budgetChecker.deductBudget(missionId, response.cost.total);
         }
@@ -136,7 +130,7 @@ export class ModelGateway {
           actor: 'raqib-core',
           data: {
             provider: provider.name,
-            model: req.model,
+            model: targetModel,
             cost: response.cost,
             latencyMs: response.latencyMs,
           },
@@ -152,7 +146,6 @@ export class ModelGateway {
       }
     }
 
-    // All retries failed → NEEDS_REVIEW
     await this.logger?.log({
       id: `evt-model-error-${Date.now()}`,
       timestamp: new Date().toISOString(),
@@ -165,7 +158,6 @@ export class ModelGateway {
     return { error: lastError?.message ?? 'Unknown error', needsReview: true };
   }
 
-  /** Filtre les patterns sensibles des messages avant envoi au provider. */
   private filterSensitiveData(req: ModelRequest): ModelRequest {
     const patterns = this.config.safety?.filterSensitivePatterns || [
       '.env',
@@ -192,7 +184,6 @@ export class ModelGateway {
     };
   }
 
-  /** Désactive un provider sans redémarrage. */
   disableProvider(id: string): void {
     const provider = this.providers.get(id);
     if (provider) {
@@ -201,7 +192,6 @@ export class ModelGateway {
     }
   }
 
-  /** Health check d'un provider. */
   async checkProvider(id: string): Promise<ProviderHealth> {
     const provider = this.providers.get(id);
     const cfg = this.providerConfigs.get(id);
@@ -212,9 +202,8 @@ export class ModelGateway {
 
     const start = Date.now();
     try {
-      // Simple health check: call with minimal prompt
       await provider.complete({
-        model: cfg?.model || 'auto',
+        model: cfg?.model || cfg?.models?.[0] || 'auto',
         messages: [{ role: 'user', content: 'ping' }],
         maxTokens: 1,
         timeoutMs: 5000,

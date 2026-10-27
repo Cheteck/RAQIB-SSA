@@ -1,16 +1,22 @@
 {
+  "defaultProvider": "freellmapi",
   "providers": {
     "freellmapi": {
-      "type": "freellmapi",
+      "name": "FreeLLMAPI",
+      "type": "openai-compatible",
       "enabled": true,
       "baseUrl": "https://freellmapi.com/api/v1",
+      "apiKeyEnv": "FREE_LLM_API_KEY",
+      "model": "free-gpt-4o",
       "models": ["free-gpt-4o", "free-claude-3-5-sonnet"]
     },
     "openai-local": {
+      "name": "OllamaLocal",
       "type": "openai-compatible",
       "enabled": true,
       "baseUrl": "http://localhost:11434/v1",
       "apiKey": "ollama",
+      "model": "llama3",
       "models": ["llama3", "mistral"]
     }
   },

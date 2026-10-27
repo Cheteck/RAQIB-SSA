@@ -61,4 +61,23 @@ describe('Runtime API Harness Endpoints Suite', () => {
     expect(execRes.status).toBe(200);
     expect(execRes.body.result.status).toBe('clean');
   });
+
+  it('GET /api/models/health returns model gateway provider health', async () => {
+    const res = await request(app).get('/api/models/health');
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body.providers)).toBe(true);
+  });
+
+  it('POST /api/chat handles prompt completions via Model Gateway', async () => {
+    const res = await request(app)
+      .post('/api/chat')
+      .send({ prompt: 'Bonjour RAQIB' });
+
+    expect([200, 502]).toContain(res.status);
+    if (res.status === 200) {
+      expect(res.body.text).toBeDefined();
+    } else {
+      expect(res.body.error).toBeDefined();
+    }
+  });
 });

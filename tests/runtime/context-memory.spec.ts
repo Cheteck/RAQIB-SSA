@@ -7,6 +7,7 @@ import { MemoryEngine } from '../../packages/mission-engine/src/MemoryEngine';
 describe('ContextEngine & MemoryEngine Test Suite', () => {
   const testDataDir = path.join(process.cwd(), 'data', 'test-context-memory');
   const dbPath = path.join(testDataDir, 'memory-test.db');
+  let memory: MemoryEngine;
 
   beforeEach(() => {
     if (fs.existsSync(testDataDir)) {
@@ -16,6 +17,9 @@ describe('ContextEngine & MemoryEngine Test Suite', () => {
   });
 
   afterEach(() => {
+    if (memory) {
+      memory.close();
+    }
     if (fs.existsSync(testDataDir)) {
       fs.rmSync(testDataDir, { recursive: true, force: true });
     }
@@ -60,7 +64,7 @@ describe('ContextEngine & MemoryEngine Test Suite', () => {
 
   describe('MemoryEngine', () => {
     it('supports short-term checkpointing by threadId and retrieval', async () => {
-      const memory = new MemoryEngine(dbPath);
+      memory = new MemoryEngine(dbPath);
       await memory.checkpoint('thread-100', 'mission-state', 'step-1', { progress: 50 });
 
       const state = await memory.getLatestCheckpoint<{ progress: number }>('thread-100', 'mission-state', 'step-1');
@@ -68,7 +72,7 @@ describe('ContextEngine & MemoryEngine Test Suite', () => {
     });
 
     it('isolates memories across different threads and namespaces', async () => {
-      const memory = new MemoryEngine(dbPath);
+      memory = new MemoryEngine(dbPath);
       await memory.put('ns-1', 'key-a', 'val-thread-1', { threadId: 't-1' });
       await memory.put('ns-1', 'key-a', 'val-thread-2', { threadId: 't-2' });
 
@@ -80,7 +84,7 @@ describe('ContextEngine & MemoryEngine Test Suite', () => {
     });
 
     it('searches episodic and semantic memories with filters', async () => {
-      const memory = new MemoryEngine(dbPath);
+      memory = new MemoryEngine(dbPath);
       await memory.put('audit-logs', 'entry-1', 'Critical security finding', { type: 'EPISODIC' });
       await memory.put('audit-logs', 'entry-2', 'Normal operation tick', { type: 'WORKING' });
 

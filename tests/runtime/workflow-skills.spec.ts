@@ -8,6 +8,7 @@ import { z } from 'zod';
 describe('WorkflowEngine & SkillsRegistry Suite', () => {
   const testDataDir = path.join(process.cwd(), 'data', 'test-workflow-skills');
   const dbPath = path.join(testDataDir, 'workflow-test.db');
+  let engine: WorkflowEngine;
 
   beforeEach(() => {
     if (fs.existsSync(testDataDir)) {
@@ -17,6 +18,9 @@ describe('WorkflowEngine & SkillsRegistry Suite', () => {
   });
 
   afterEach(() => {
+    if (engine) {
+      engine.close();
+    }
     if (fs.existsSync(testDataDir)) {
       fs.rmSync(testDataDir, { recursive: true, force: true });
     }
@@ -24,7 +28,7 @@ describe('WorkflowEngine & SkillsRegistry Suite', () => {
 
   describe('WorkflowEngine', () => {
     it('executes state transitions based on priorities and conditions', async () => {
-      const engine = new WorkflowEngine({ dbPath });
+      engine = new WorkflowEngine({ dbPath });
 
       engine.addNode({
         id: 'start',
@@ -56,7 +60,7 @@ describe('WorkflowEngine & SkillsRegistry Suite', () => {
     });
 
     it('throws error when max steps limit is exceeded', async () => {
-      const engine = new WorkflowEngine({ maxSteps: 3 });
+      engine = new WorkflowEngine({ maxSteps: 3 });
 
       engine.addNode({
         id: 'loop-a',

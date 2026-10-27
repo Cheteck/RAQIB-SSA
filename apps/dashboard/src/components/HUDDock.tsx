@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useHud } from './HudContext';
+import { api } from '../lib/api';
 
 export default function HUDDock() {
   const { go } = useHud();
@@ -9,6 +10,7 @@ export default function HUDDock() {
   const barsRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [tz, setTz] = useState('');
+  const [providerHealth, setProviderHealth] = useState<string>('Vérification…');
 
   useEffect(() => {
     setTz(Intl.DateTimeFormat().resolvedOptions().timeZone);
@@ -20,6 +22,19 @@ export default function HUDDock() {
     };
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
+  }, []);
+
+  useEffect(() => {
+    api.get<{ providers: Array<{ id: string; healthy: boolean; latencyMs?: number }> }>('/api/models/health')
+      .then((data) => {
+        const active = data.providers?.find((p) => p.healthy);
+        if (active) {
+          setProviderHealth(`${active.id} (${active.latencyMs ?? 0}ms)`);
+        } else {
+          setProviderHealth('Mode Secours');
+        }
+      })
+      .catch(() => setProviderHealth('Déconnecté'));
   }, []);
 
   const onSubmit = useCallback(
@@ -38,7 +53,7 @@ export default function HUDDock() {
         <small>Zone locale · <span>{tz}</span></small>
         <small>Runtime · <span>Actif</span></small>
         <small>Context Engine · <span>128k max</span></small>
-        <small>Model Gateway · <span>Prêt</span></small>
+        <small>Model Gateway · <span>{providerHealth}</span></small>
       </div>
       <div className="cm">
         <form className="cmd" onSubmit={onSubmit} autoComplete="off">
