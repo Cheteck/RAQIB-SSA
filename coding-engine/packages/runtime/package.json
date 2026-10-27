@@ -1,0 +1,13 @@
+{
+  "name": "@coding-engine/runtime",
+  "version": "0.1.0",
+  "main": "src/index.ts",
+  "dependencies": {
+    "@coding-engine/core": "*",
+    "@coding-engine/providers": "*",
+    "@coding-engine/project": "*",
+    "@coding-engine/tools": "*",
+    "@coding-engine/execution": "*",
+    "@coding-engine/validation": "*"
+  }
+}

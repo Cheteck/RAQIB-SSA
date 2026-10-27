@@ -1223,3 +1223,17 @@ Inspiré des meilleurs frameworks et harnesses pour agents LLM entreprise (LangC
 ## 12.4 Context Engine (Gestion de Fenêtre de Contexte & Budget de Tokens)
 - **Context Window Management :** Résolution dynamique des coûts de contexte, compression intelligente des historiques d'exécutions et élagage des logs verbeux.
 - **Allocation de Budget de Tokens :** Limitation explicite de la consommation de jetons par mission et par agent pour prévenir la dérive budgétaire.
+
+
+---
+
+# 13. Décision d'Architecture MVP : Intégration d'OpenCode comme Moteur de Codage
+
+## 13.1 Contexte et Décision Stratégique
+Pour le MVP, **RAQIB intègre OpenCode comme moteur de codage initial**.
+La décision de conserver OpenCode à long terme, de le forker ou de développer un moteur de codage maison sera prise ultérieurement sur la base de critères techniques et fonctionnels vérifiables.
+
+## 13.2 Principes d'Architecture de l'Intégration OpenCode
+1. **Moteur de Codage Abstrait (`ICodingEngineAdapter`) :** OpenCode est encapsulé derrière un adaptateur abstrait dans `packages/tool-gateway`. L'orchestrateur de RAQIB interagit uniquement avec cette interface.
+2. **Souveraineté des Données Métier :** Le portefeuille de projets, les objectifs, le budget, la mémoire et l'état des missions appartiennent exclusivement à RAQIB. OpenCode agit en tant qu'exécuteur de tâches de codage éphémères sous la supervision de RAQIB.
+3. **Gouvernance et Sécurité Enforced :** Toutes les commandes et modifications de code générées via l'adaptateur OpenCode doivent passer par les garde-fous du `PolicyEngine` et l'isolation du `DockerSandbox`.

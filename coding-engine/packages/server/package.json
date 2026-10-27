@@ -1,0 +1,11 @@
+{
+  "name": "@coding-engine/server",
+  "version": "0.1.0",
+  "main": "src/index.ts",
+  "dependencies": {
+    "@coding-engine/core": "*",
+    "@coding-engine/runtime": "*",
+    "@coding-engine/storage": "*",
+    "express": "^5.3.0"
+  }
+}

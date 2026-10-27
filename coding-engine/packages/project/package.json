@@ -1,0 +1,8 @@
+{
+  "name": "@coding-engine/project",
+  "version": "0.1.0",
+  "main": "src/index.ts",
+  "dependencies": {
+    "@coding-engine/core": "*"
+  }
+}

@@ -6,7 +6,8 @@
   "include": [
     "packages/**/*",
     "scripts/**/*",
-    "services/**/*"
+    "services/**/*",
+    "coding-engine/packages/**/*"
   ],
   "exclude": [
     "tests/**/*",
