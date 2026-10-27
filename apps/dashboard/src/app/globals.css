@@ -667,7 +667,10 @@ h3 em {
   letter-spacing: 0.42em;
   margin: 4px 0 6px -0.42em;
   color: #fff;
-  text-shadow: 0 0 30px rgba(var(--s), 0.55);
+  text-shadow: 0 0 30px rgba(var(--s), 0.55), 0 0 60px rgba(var(--s), 0.25);
+  box-shadow: 0 0 40px -8px rgba(var(--s), 0.35);
+  border-radius: 8px;
+  padding: 0 12px;
 }
 
 .bt {
