@@ -601,7 +601,17 @@ h3 em {
   justify-content: space-between;
   align-items: center;
   min-width: 0;
-  padding-bottom: 6px;
+  /* Padding bottom = hauteur dock (cmd ~54px + chips ~32px + padding 18px + gradient) */
+  padding-top: 8px;
+  padding-bottom: 120px;
+  overflow: hidden;
+}
+
+.hd {
+  text-align: center;
+  max-width: 620px;
+  width: 100%;          /* prend toute la largeur disponible pour centrer le contenu */
+  align-self: center;   /* centre dans la flexbox */
 }
 
 .hd {
@@ -861,4 +871,299 @@ kbd {
 
 .bf .ms {
   color: rgb(var(--g));
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SHELL PERSISTANT — navigation unifiée
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Responsive ──────────────────────────────────────────────── */
+@media (max-width: 1199px) {
+  .st {
+    display: block;
+    height: auto;
+    padding: 70px 14px 150px;
+    perspective: none;
+  }
+
+  .mid {
+    height: calc(100vh - 220px);
+    min-height: 440px;
+    margin-bottom: 14px;
+  }
+
+  .rail,
+  .rail.l,
+  .rail.r {
+    transform: none;
+    max-height: none;
+    overflow: visible;
+    margin-bottom: 12px;
+  }
+
+  .fm .rail {
+    display: none;
+  }
+
+  .tl {
+    display: none;
+  }
+
+  .top .pill,
+  .clk small,
+  .who div,
+  .brand small {
+    display: none;
+  }
+
+  .dock {
+    grid-template-columns: 1fr;
+    padding: 0 12px 12px;
+  }
+
+  .env,
+  .chips {
+    display: none;
+  }
+
+  .bf {
+    position: fixed;
+    right: 12px;
+    top: 10px;
+    padding: 6px 12px;
+    font-size: 11px;
+    z-index: 30;
+  }
+
+  .bf span:last-child {
+    display: none;
+  }
+
+  .top {
+    padding: 0 12px;
+  }
+
+  .clk b {
+    font-size: 20px;
+  }
+
+  .module-overlay {
+    position: fixed;
+    inset: 58px 0 80px 0;
+    width: 100%;
+    left: 0;
+    right: 0;
+  }
+}
+
+/* ── prefers-reduced-motion ─────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .p {
+    opacity: 1;
+  }
+
+  .module-overlay {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* ── Focus mode — masquer rails ET overlay module ────────────── */
+.fm .rail {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.fm .rail.l {
+  transform: translateX(-60px) rotateY(20deg);
+}
+
+.fm .rail.r {
+  transform: translateX(60px) rotateY(-20deg);
+}
+
+/* En focus mode : overlay module caché, seul le centre RAQIB reste */
+.fm .module-overlay {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(60px);
+}
+
+/* ── Module overlay ──────────────────────────────────────────
+   Positionné en fixed sur la zone du rail droit.
+   Calcul : left = 24 (padding) + col1 (max 320px) + gap (24px) + col2 (1fr min ~400px)
+   On utilise CSS grid-area pour rester aligné sur la grille.
+   En pratique : left = calc(minmax(280px,320px) + 1fr + 24px*2)
+   Simple et robuste : on utilise la même grille que .dock/.st.
+   ──────────────────────────────────────────────────────────── */
+
+.module-overlay {
+  position: fixed;
+  /*
+   * S'aligner exactement sur la colonne 3 (.rail.r) du .st.
+   * La grille = padding(24) + col1(max 320px) + gap(24) + col2(1fr) + gap(24) + col3(max 320px) + padding(24)
+   * On ne peut pas calculer 1fr en CSS pur, donc on reproduit la même grille
+   * sur un pseudo-conteneur fixed qui couvre toute la largeur.
+   * L'overlay est display:grid avec les mêmes colonnes, et on place l'inner en grid-column: 3.
+   */
+  top: 74px;
+  left: 0;
+  right: 0;
+  bottom: 115px; /* au-dessus du dock complet (cmd + chips + padding) */
+  z-index: 10;
+  pointer-events: none; /* le conteneur lui-même ne bloque pas les clics */
+  display: grid;
+  grid-template-columns: minmax(280px, 320px) 1fr minmax(280px, 320px);
+  gap: 24px;
+  padding: 0 24px;
+  transition:
+    opacity 0.25s ease,
+    transform 0.3s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.module-overlay__inner {
+  grid-column: 3; /* se place dans la 3e colonne = zone rail droit */
+  pointer-events: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ── Navigation — liens .ib dans le header ───────────────────── */
+
+.nav-ib {
+  display: grid;
+  place-items: center;
+  text-decoration: none;
+}
+
+.nav-ib--danger.on,
+.nav-ib--danger:hover {
+  color: rgb(var(--r)) !important;
+  background: rgba(var(--r), 0.1) !important;
+}
+
+/* ── Workspace content — slot interne des pages modules ──────── */
+
+.workspace-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-bottom: 8px;
+}
+
+/* ── Missions grid ───────────────────────────────────────────── */
+
+.missions-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.mission-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: rgba(98, 230, 255, 0.06) !important;
+}
+
+.mission-budget {
+  height: 3px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 2px;
+  overflow: hidden;
+  margin: 4px 0 2px;
+}
+
+.mission-budget__bar {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.8s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+/* ── Panel entrance animation ────────────────────────────────── */
+.on .p {
+  animation: pon 0.9s both;
+  animation-delay: calc(var(--i, 0) * 110ms);
+}
+
+@keyframes pon {
+  0%   { opacity: 0; }
+  18%  { opacity: 0.9; }
+  28%  { opacity: 0.15; }
+  42%  { opacity: 0.8; }
+  55%  { opacity: 0.4; }
+  100% { opacity: 1; }
+}
+
+/* ── Transitions module overlay ─────────────────────────────── */
+.module-overlay[data-phase="exit"] {
+  animation: mo-exit 200ms cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+
+.module-overlay[data-phase="enter"] {
+  animation: mo-enter 300ms cubic-bezier(0, 0, 0.2, 1) forwards;
+}
+
+@keyframes mo-exit {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-6px); }
+}
+
+@keyframes mo-enter {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Focus mode — masquer tout sauf le centre RAQIB ─────────── */
+/*
+ * En mode focus (body.fm) :
+ *  - rails masqués avec animation
+ *  - overlay module masqué
+ *  - .mid prend toute la largeur (les colonnes disparaissent mais
+ *    la grille existe encore, donc on force le span)
+ */
+.fm .rail {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.fm .rail.l {
+  transform: translateX(-60px) rotateY(20deg);
+}
+
+.fm .rail.r {
+  transform: translateX(60px) rotateY(-20deg);
+}
+
+.fm .module-overlay {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Le .mid span toutes les colonnes en focus mode */
+.fm .mid {
+  grid-column: 1 / -1;
+}
+
+/* ── .on .tl opacity ─────────────────────────────────────────── */
+.on .tl {
+  opacity: 1;
+}
+
+/* ── prefers-reduced-motion override pour .tl ───────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .tl {
+    opacity: 1;
+  }
 }

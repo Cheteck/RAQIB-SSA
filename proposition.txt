@@ -1,0 +1,134 @@
+Si le dépôt RAQIB a été créé avec Node.js et npm, je te conseille de ne pas changer de gestionnaire de paquets immédiatement. Tu peux conserver l'écosystème actuel et obtenir un lancement moderne, rapide et fiable du runtime RAQIB et du dashboard Next.js.
+
+Mon choix dépend surtout de la structure actuelle du dépôt :
+
+- Si RAQIB utilise déjà npm et un `package-lock.json` : conserve npm.
+- Si le projet est un monorepo avec plusieurs packages : utilise les workspaces natifs de npm.
+- Pour lancer les deux applications simultanément : ajoute Turborepo si tu veux une orchestration évolutive, ou `concurrently` si tu veux la solution la plus légère.
+
+Pour ton projet, je privilégierais Node.js + npm Workspaces + Turborepo, sans migration vers pnpm tant qu'elle n'apporte pas de bénéfice concret.
+
+## 1. Configuration concrète que je recommande
+
+Si le dépôt contient déjà `apps/dashboard` et un package pour le runtime, ajoute Turborepo à la racine :
+
+bash
+
+```
+npm install -D turbo
+```
+
+Configure ensuite `turbo.json` :
+
+json
+
+```
+
+{
+  "$schema": "https://turborepo.dev/schema.json",
+  "tasks": {
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": [
+        "dist/**",
+        ".next/**",
+        "!.next/cache/**"
+      ]
+    },
+    "test": {
+      "cache": false
+    }
+  }
+}
+```
+
+À la racine, conserve les scripts existants et ajoute :
+
+json
+
+```
+{
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "test": "turbo run test"
+  }
+}
+```
+
+Les packages concernés doivent chacun posséder un script `dev` qui démarre réellement leur serveur. Turborepo est compatible avec npm et permet d'adopter cette orchestration progressivement.
+
+Turborepo
+
++1
+
+Si les applications ne sont pas encore déclarées comme workspaces, ajoute leurs chemins à la propriété `workspaces` du `package.json` racine, par exemple :
+
+json
+
+```
+{
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ]
+}
+```
+
+Adapte les chemins à la structure réelle du dépôt. Les workspaces npm permettent de gérer plusieurs packages depuis une seule racine.
+
+npm Docs
+
+## 2. Si tu veux simplement lancer deux commandes
+
+Si RAQIB est encore un dépôt simple et que tu ne souhaites pas introduire Turborepo maintenant, une solution encore plus légère est `concurrently` :
+
+bash
+
+```
+npm install -D concurrently
+```
+
+Puis, à la racine :
+
+json
+
+```
+{
+  "scripts": {
+    "dev": "concurrently -k -n RUNTIME,DASHBOARD \"npm run dev:runtime\" \"npm run dev:dashboard\"",
+    "dev:runtime": "npm --prefix packages/runtime run dev",
+    "dev:dashboard": "npm --prefix apps/dashboard run dev"
+  }
+}
+```
+
+Ici, `packages/runtime` est un exemple : remplace-le par le répertoire réel de RAQIB. Cette option est pratique pour deux processus, mais elle offre moins de fonctionnalités d'orchestration et de cache que Turborepo.
+
+## 3. Ma décision pour ton projet
+
+| Situation de RAQIB | Solution |
+| --- | --- |
+| Deux serveurs, structure simple | npm + concurrently |
+| Runtime, dashboard et plusieurs packages partagés | npm Workspaces + Turborepo |
+| Plusieurs services, base de données et infrastructure locale | npm + Turborepo, avec Docker Compose pour les dépendances nécessaires |
+
+Je choisirais npm Workspaces + Turborepo si tu prévois de continuer à développer le Verification Engine, le Tool Gateway, la sandbox et les autres services de RAQIB.
+
+Avant de modifier les fichiers, vérifie simplement :
+
+bash
+
+```
+node --version
+npm --version
+npm pkg get workspaces
+```
+
+Puis examine les scripts de démarrage présents dans les `package.json`. Cela permettra de brancher le runtime et le dashboard sur la configuration commune sans supposer leurs chemins ou leurs commandes.
+
+Documentation officielle : [npm Workspaces](<https://docs.npmjs.com/cli/using-npm/workspaces/?utm_source=chatgpt.com>) · [Turborepo](<https://turborepo.dev/docs?utm_source=chatgpt.com>).

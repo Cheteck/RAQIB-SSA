@@ -1,0 +1,1634 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1,viewport-fit=cover"
+    />
+    <title>RAQIB // Development & Project Workspace</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Oxanium:wght@300;500;700&family=JetBrains+Mono:wght@400;600&family=Geist:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@300,0&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --ink: #04060b;
+        --c: 98, 230, 255;
+        --m: 125, 255, 200;
+        --g: 255, 179, 71;
+        --r: 255, 107, 94;
+        --s: 98, 230, 255;
+        --tx: #d9e6ef;
+        --mu: #7f95a6;
+        --mx: 0;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      html,
+      body {
+        background: var(--ink);
+        color: var(--tx);
+        font:
+          13px/1.45 Geist,
+          system-ui,
+          sans-serif;
+        overflow-x: hidden;
+        overscroll-behavior: none;
+      }
+      ::-webkit-scrollbar {
+        display: none;
+      }
+      button {
+        font: inherit;
+        color: inherit;
+        background: none;
+        border: 0;
+        cursor: pointer;
+      }
+      button:focus-visible,
+      input:focus-visible {
+        outline: 2px solid rgb(var(--c));
+        outline-offset: 2px;
+      }
+      small,
+      .mono {
+        font:
+          400 10.5px/1.3 "JetBrains Mono",
+          monospace;
+        color: var(--mu);
+      }
+      .ms {
+        font-family: "Material Symbols Outlined";
+        font-size: 18px;
+        display: inline-block;
+        width: 1em;
+        height: 1em;
+        overflow: hidden;
+        line-height: 1;
+        white-space: nowrap;
+        vertical-align: middle;
+        font-weight: 300;
+      }
+      #c {
+        position: fixed;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+        cursor: pointer;
+      }
+      .vg {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 1;
+        background:
+          radial-gradient(
+            ellipse at 50% 48%,
+            transparent 30%,
+            rgba(2, 4, 8, 0.88) 100%
+          ),
+          repeating-linear-gradient(
+            0deg,
+            rgba(255, 255, 255, 0.016) 0 1px,
+            transparent 1px 3px
+          );
+      }
+      /* boot */
+      #boot {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 14vh;
+        z-index: 9;
+        text-align: center;
+        pointer-events: none;
+      }
+      #bt {
+        font:
+          400 11px/1.8 "JetBrains Mono",
+          monospace;
+        color: rgb(var(--c));
+        white-space: pre;
+        display: inline-block;
+        text-align: left;
+        text-shadow: 0 0 10px rgba(var(--c), 0.6);
+      }
+      /* header */
+      .top {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 58px;
+        z-index: 20;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 0 24px;
+        background: linear-gradient(
+          180deg,
+          rgba(4, 6, 11, 0.92),
+          rgba(4, 6, 11, 0)
+        );
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .brand b {
+        font: 700 17px Oxanium;
+        letter-spacing: 0.18em;
+        color: #fff;
+        text-shadow: 0 0 14px rgba(var(--c), 0.7);
+      }
+      .chip {
+        font: 600 9px "JetBrains Mono";
+        padding: 1px 6px;
+        border: 1px solid rgba(var(--m), 0.4);
+        color: rgb(var(--m));
+        margin-left: 8px;
+      }
+      .chip.d {
+        border-color: rgba(255, 255, 255, 0.14);
+        color: var(--mu);
+      }
+      .brand div > small {
+        display: block;
+      }
+      .clk {
+        text-align: center;
+        line-height: 1.15;
+      }
+      .clk b {
+        display: block;
+        font: 300 26px Oxanium;
+        letter-spacing: 0.14em;
+        color: #fff;
+        text-shadow: 0 0 18px rgba(var(--c), 0.55);
+      }
+      .tr {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .pill {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font: 400 10px "JetBrains Mono";
+        color: rgb(var(--m));
+        padding: 4px 12px;
+        border: 1px solid rgba(var(--m), 0.28);
+        border-radius: 99px;
+        margin-right: 6px;
+        transition: 0.4s;
+      }
+      .pill.eng {
+        color: rgb(var(--g));
+        border-color: rgba(var(--g), 0.5);
+      }
+      .dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: currentColor;
+        box-shadow: 0 0 8px currentColor;
+        flex: none;
+      }
+      .ib {
+        width: 34px;
+        height: 34px;
+        display: grid;
+        place-items: center;
+        color: var(--mu);
+        position: relative;
+        border-radius: 8px;
+        transition: 0.2s;
+      }
+      .ib:hover,
+      .ib.on {
+        color: rgb(var(--c));
+        background: rgba(var(--c), 0.1);
+      }
+      .ib em {
+        position: absolute;
+        top: 6px;
+        right: 6px;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: rgb(var(--m));
+        animation: ping 1.8s infinite;
+      }
+      .who {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-left: 6px;
+        padding-left: 12px;
+        border-left: 1px solid rgba(255, 255, 255, 0.1);
+        color: rgb(var(--c));
+      }
+      .who b {
+        font: 600 11px Oxanium;
+        letter-spacing: 0.1em;
+        color: var(--tx);
+        display: block;
+      }
+      @keyframes ping {
+        0% {
+          box-shadow: 0 0 0 0 rgba(var(--m), 0.7);
+        }
+        100% {
+          box-shadow: 0 0 0 9px transparent;
+        }
+      }
+      /* stage */
+      .st {
+        position: relative;
+        z-index: 5;
+        display: grid;
+        grid-template-columns: minmax(280px, 320px) 1fr minmax(280px, 320px);
+        gap: 24px;
+        padding: 74px 24px 0;
+        height: 100vh;
+        perspective: 1500px;
+        pointer-events: none;
+      }
+      .st > * {
+        pointer-events: auto;
+      }
+      .rail {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        overflow-y: auto;
+        max-height: calc(100vh - 210px);
+        padding: 2px;
+        transition:
+          opacity 0.5s,
+          transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
+      }
+      .rail.l {
+        transform-origin: left center;
+        transform: rotateY(calc(9deg + var(--mx) * 4deg));
+      }
+      .rail.r {
+        transform-origin: right center;
+        transform: rotateY(calc(-9deg + var(--mx) * 4deg));
+      }
+      .fm .rail {
+        opacity: 0;
+        pointer-events: none;
+      }
+      .fm .rail.l {
+        transform: translateX(-60px) rotateY(20deg);
+      }
+      .fm .rail.r {
+        transform: translateX(60px) rotateY(-20deg);
+      }
+      /* panels */
+      .p {
+        position: relative;
+        padding: 12px 14px 14px;
+        background: linear-gradient(
+          160deg,
+          rgba(14, 26, 40, 0.6),
+          rgba(5, 10, 18, 0.8)
+        );
+        backdrop-filter: blur(14px) saturate(1.4);
+        box-shadow: inset 0 0 0 1px rgba(var(--c), 0.15);
+        clip-path: polygon(
+          0 0,
+          calc(100% - 14px) 0,
+          100% 14px,
+          100% 100%,
+          14px 100%,
+          0 calc(100% - 14px)
+        );
+        flex: none;
+        opacity: 0;
+      }
+      .p::after,
+      .p::before {
+        content: "";
+        position: absolute;
+        width: 14px;
+        height: 14px;
+      }
+      .p::after {
+        top: 0;
+        right: 0;
+        background: linear-gradient(
+          225deg,
+          transparent 47%,
+          rgba(var(--c), 0.7) 49% 53%,
+          transparent 55%
+        );
+      }
+      .p::before {
+        bottom: 0;
+        left: 0;
+        background: linear-gradient(
+          45deg,
+          transparent 47%,
+          rgba(var(--c), 0.7) 49% 53%,
+          transparent 55%
+        );
+      }
+      .on .p {
+        animation: pon 0.9s both;
+        animation-delay: calc(var(--i) * 110ms);
+      }
+      @keyframes pon {
+        0% {
+          opacity: 0;
+        }
+        18% {
+          opacity: 0.9;
+        }
+        28% {
+          opacity: 0.15;
+        }
+        42% {
+          opacity: 0.8;
+        }
+        55% {
+          opacity: 0.4;
+        }
+        100% {
+          opacity: 1;
+        }
+      }
+      h3 {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 8px;
+        font: 500 13px Oxanium;
+        letter-spacing: 0.06em;
+        color: #fff;
+        margin-bottom: 10px;
+        padding-bottom: 7px;
+        border-bottom: 1px solid rgba(var(--c), 0.14);
+      }
+      h3 em {
+        font: 400 10px "JetBrains Mono";
+        color: rgb(var(--m));
+        font-style: normal;
+        text-align: right;
+      }
+      .mods {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+      }
+      .mods button {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        padding: 7px 9px;
+        color: var(--mu);
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        border-radius: 6px;
+        transition: 0.2s;
+        text-align: left;
+      }
+      .mods button:hover {
+        color: var(--tx);
+        border-color: rgba(var(--c), 0.4);
+      }
+      .mods button.on {
+        color: #fff;
+        background: rgba(var(--c), 0.14);
+        border-color: rgba(var(--c), 0.6);
+        box-shadow: 0 0 14px rgba(var(--c), 0.2);
+      }
+      .mods span:nth-child(2) {
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .mods b {
+        font: 600 10px "JetBrains Mono";
+        padding: 0 5px;
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 3px;
+      }
+      .mods b.a {
+        background: #93000a;
+        color: #ffb4ab;
+      }
+      .ag {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        padding: 6px 0;
+        border-bottom: 1px dashed rgba(255, 255, 255, 0.06);
+        color: var(--mu);
+      }
+      .ag div {
+        flex: 1;
+      }
+      .ag b {
+        display: block;
+        font-weight: 500;
+        color: var(--tx);
+      }
+      .ag.act {
+        color: rgb(var(--c));
+      }
+      .ag.act small {
+        color: rgb(var(--m));
+      }
+      .eq {
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        height: 16px;
+      }
+      .eq i {
+        width: 2px;
+        height: 3px;
+        background: currentColor;
+        opacity: 0.5;
+      }
+      .act .eq i {
+        opacity: 1;
+        animation: eq 0.9s ease-in-out infinite alternate;
+      }
+      .eq i:nth-child(2) {
+        animation-delay: 0.15s;
+      }
+      .eq i:nth-child(3) {
+        animation-delay: 0.3s;
+      }
+      .eq i:nth-child(4) {
+        animation-delay: 0.45s;
+      }
+      @keyframes eq {
+        to {
+          height: 15px;
+        }
+      }
+      .eng {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+        margin-top: 10px;
+      }
+      .en {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        column-gap: 7px;
+        align-items: center;
+        padding: 6px 8px;
+        border: 1px solid rgba(var(--c), 0.18);
+        border-radius: 6px;
+        color: rgb(var(--m));
+      }
+      .en b {
+        font-weight: 500;
+        color: var(--tx);
+      }
+      .en small {
+        grid-column: 2;
+      }
+      .gs {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+      }
+      .g {
+        position: relative;
+        text-align: center;
+      }
+      .g svg {
+        width: 100%;
+        transform: rotate(-90deg);
+      }
+      .g circle {
+        fill: none;
+        stroke-width: 2.6;
+      }
+      .g .b {
+        stroke: rgba(255, 255, 255, 0.07);
+      }
+      .g .f {
+        stroke-linecap: round;
+        transition: stroke-dasharray 1.2s cubic-bezier(0.2, 0.7, 0.2, 1);
+        filter: drop-shadow(0 0 3px currentColor);
+      }
+      .g b {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 34%;
+        font: 600 13px "JetBrains Mono";
+      }
+      /* feed */
+      .feed {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        max-height: 270px;
+        overflow-y: auto;
+      }
+      .fi {
+        padding: 8px 10px;
+        border-left: 2px solid rgba(var(--c), 0.5);
+        background: rgba(var(--c), 0.05);
+      }
+      .fi.w {
+        border-color: rgb(var(--r));
+        background: rgba(var(--r), 0.07);
+      }
+      .fi.n {
+        animation: fl 1.2s;
+      }
+      @keyframes fl {
+        0% {
+          background: rgba(var(--g), 0.35);
+        }
+      }
+      .fi header {
+        display: flex;
+        justify-content: space-between;
+        gap: 6px;
+        font-weight: 500;
+        color: #fff;
+      }
+      .fi header em {
+        font: 600 9px "JetBrains Mono";
+        font-style: normal;
+        color: rgb(var(--c));
+      }
+      .fi.w header em {
+        color: rgb(var(--r));
+      }
+      .fi p {
+        color: var(--mu);
+        font-size: 12px;
+        margin: 2px 0 3px;
+      }
+      .fi button {
+        font: 400 10px "JetBrains Mono";
+        color: rgb(var(--c));
+        text-decoration: underline;
+        margin-left: 8px;
+      }
+      .dir {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+      }
+      .dir button {
+        display: flex;
+        gap: 7px;
+        align-items: center;
+        padding: 9px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 6px;
+        text-align: left;
+        transition: 0.2s;
+      }
+      .dir button:hover {
+        border-color: rgba(var(--g), 0.7);
+        background: rgba(var(--g), 0.08);
+        color: #fff;
+      }
+      .dir .ms {
+        color: rgb(var(--g));
+      }
+      .cs {
+        display: grid;
+        grid-template-columns: 1fr 110px;
+        gap: 12px;
+        align-items: center;
+      }
+      #cn {
+        width: 100%;
+        height: 92px;
+      }
+      #cn line {
+        stroke: rgba(var(--c), 0.35);
+        stroke-width: 0.5;
+        transition: stroke 1.4s;
+      }
+      #cn.fl line {
+        stroke: rgb(var(--g));
+        transition: 0s;
+      }
+      #cn circle {
+        fill: rgb(var(--c));
+        animation: tw 3s ease-in-out infinite;
+      }
+      @keyframes tw {
+        50% {
+          opacity: 0.25;
+        }
+      }
+      .cs b {
+        display: block;
+        font: 600 15px "JetBrains Mono";
+        color: #fff;
+        text-shadow: 0 0 10px rgba(var(--c), 0.6);
+      }
+      /* centre */
+      .mid {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: center;
+        min-width: 0;
+        padding-bottom: 6px;
+      }
+      .hd {
+        text-align: center;
+        max-width: 620px;
+      }
+      #sl {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font: 600 11px "JetBrains Mono";
+        letter-spacing: 0.2em;
+        color: rgb(var(--s));
+        text-shadow: 0 0 12px rgba(var(--s), 0.6);
+      }
+      .hd h1 {
+        font: 200 clamp(30px, 4.2vw, 54px) Oxanium;
+        letter-spacing: 0.42em;
+        margin: 4px 0 6px -0.42em;
+        color: #fff;
+        text-shadow: 0 0 30px rgba(var(--s), 0.55);
+      }
+      .bt {
+        width: 100%;
+        max-width: 760px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        align-items: center;
+      }
+      #echo {
+        min-height: 15px;
+      }
+      #out {
+        min-height: 3.3em;
+        max-width: 62ch;
+        text-align: center;
+        font: 300 clamp(16px, 1.5vw, 21px)/1.5 Oxanium;
+        color: #fff;
+        text-shadow: 0 0 16px rgba(var(--s), 0.35);
+      }
+      #out::after {
+        content: "▍";
+        color: rgb(var(--s));
+        animation: bl 1s steps(2) infinite;
+      }
+      @keyframes bl {
+        50% {
+          opacity: 0;
+        }
+      }
+      .tl {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        width: 100%;
+        gap: 0;
+        padding: 12px 8px 12px;
+        opacity: 0;
+      }
+      .tl h3 {
+        grid-column: 1/-1;
+      }
+      .tm {
+        position: relative;
+        padding: 12px 10px 0 0;
+      }
+      .tm::before {
+        content: "";
+        position: absolute;
+        top: 3px;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: rgba(var(--c), 0.2);
+      }
+      .tm i {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--mu);
+      }
+      .tm.d i {
+        background: rgb(var(--m));
+        box-shadow: 0 0 8px rgb(var(--m));
+      }
+      .tm.n i {
+        background: rgb(var(--c));
+        box-shadow:
+          0 0 0 4px rgba(var(--c), 0.2),
+          0 0 12px rgb(var(--c));
+      }
+      .tm b {
+        display: block;
+        font-weight: 500;
+        color: var(--tx);
+        font-size: 12px;
+      }
+      .tm.n b {
+        color: #fff;
+      }
+      /* dock */
+      .dock {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 20;
+        display: grid;
+        grid-template-columns: minmax(280px, 320px) 1fr minmax(280px, 320px);
+        gap: 24px;
+        align-items: end;
+        padding: 0 24px 18px;
+        pointer-events: none;
+        background: linear-gradient(0deg, rgba(4, 6, 11, 0.9), transparent);
+      }
+      .dock > * {
+        pointer-events: auto;
+      }
+      .env {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        color: var(--mu);
+      }
+      .env span {
+        color: var(--tx);
+      }
+      .cm {
+        max-width: 720px;
+        width: 100%;
+        margin: 0 auto;
+      }
+      .cmd {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 10px 8px 8px;
+        border-radius: 99px;
+        background: rgba(5, 10, 18, 0.82);
+        backdrop-filter: blur(16px);
+        box-shadow:
+          0 0 0 1px rgba(var(--s), 0.5),
+          0 0 36px rgba(var(--s), 0.22);
+        transition: box-shadow 0.5s;
+      }
+      .mic {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        color: rgb(var(--s));
+        background: rgba(var(--s), 0.14);
+        box-shadow: inset 0 0 0 1px rgba(var(--s), 0.6);
+        flex: none;
+      }
+      .wv {
+        display: flex;
+        align-items: center;
+        gap: 3px;
+        height: 26px;
+        flex: none;
+      }
+      .wv i {
+        width: 2px;
+        height: 22px;
+        background: rgb(var(--s));
+        border-radius: 2px;
+        transform: scaleY(0.12);
+        box-shadow: 0 0 6px rgba(var(--s), 0.8);
+      }
+      #q {
+        flex: 1;
+        min-width: 0;
+        background: none;
+        border: 0;
+        color: #fff;
+        font: 400 14px Geist;
+        outline: 0;
+      }
+      #q::placeholder {
+        color: var(--mu);
+      }
+      kbd {
+        font: 400 10px "JetBrains Mono";
+        color: var(--mu);
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        padding: 1px 6px;
+        border-radius: 4px;
+      }
+      .chips {
+        display: flex;
+        gap: 6px;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-top: 8px;
+      }
+      .chips button {
+        font: 400 10px "JetBrains Mono";
+        color: var(--mu);
+        padding: 3px 10px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 99px;
+        transition: 0.2s;
+      }
+      .chips button:hover {
+        color: #fff;
+        border-color: rgba(var(--s), 0.6);
+      }
+      .bf {
+        justify-self: end;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 18px;
+        border-radius: 99px;
+        font: 500 12px Oxanium;
+        letter-spacing: 0.06em;
+        color: #fff;
+        background: rgba(var(--g), 0.14);
+        box-shadow:
+          inset 0 0 0 1px rgba(var(--g), 0.65),
+          0 0 24px rgba(var(--g), 0.18);
+        transition: 0.2s;
+      }
+      .bf:hover {
+        background: rgba(var(--g), 0.28);
+      }
+      .bf .ms {
+        color: rgb(var(--g));
+      }
+      @media (max-width: 1199px) {
+        .st {
+          display: block;
+          height: auto;
+          padding: 70px 14px 150px;
+          perspective: none;
+        }
+        .mid {
+          height: calc(100vh - 220px);
+          min-height: 440px;
+          margin-bottom: 14px;
+        }
+        .rail,
+        .rail.l,
+        .rail.r {
+          transform: none;
+          max-height: none;
+          overflow: visible;
+          margin-bottom: 12px;
+        }
+        .fm .rail {
+          display: none;
+        }
+        .tl {
+          display: none;
+        }
+        .top .pill,
+        .clk small,
+        .who div,
+        .brand small {
+          display: none;
+        }
+        .dock {
+          grid-template-columns: 1fr;
+          padding: 0 12px 12px;
+        }
+        .env,
+        .chips {
+          display: none;
+        }
+        .bf {
+          position: fixed;
+          right: 12px;
+          top: 10px;
+          padding: 6px 12px;
+          font-size: 11px;
+          z-index: 30;
+        }
+        .bf span:last-child {
+          display: none;
+        }
+        .top {
+          padding: 0 12px;
+        }
+        .clk b {
+          font-size: 20px;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          animation: none !important;
+          transition: none !important;
+        }
+        .p {
+          opacity: 1;
+        }
+        .tl {
+          opacity: 1;
+        }
+      }
+      .on .tl {
+        opacity: 1;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas
+      id="c"
+      aria-label="Noyau visuel RAQIB — cliquer pour la commande vocale"
+    ></canvas>
+    <div class="vg"></div>
+    <div id="boot"><pre id="bt"></pre></div>
+
+    <header class="top">
+      <div class="brand">
+        <svg
+          width="34"
+          height="34"
+          viewBox="0 0 34 34"
+          fill="none"
+          stroke="#62e6ff"
+        >
+          <circle cx="17" cy="17" r="15" stroke-dasharray="4 3" opacity=".6">
+            <animateTransform
+              attributeName="transform"
+              type="rotate"
+              from="0 17 17"
+              to="360 17 17"
+              dur="14s"
+              repeatCount="indefinite"
+            />
+          </circle>
+          <circle cx="17" cy="17" r="9" />
+          <circle cx="17" cy="17" r="3" fill="#7dffc8" stroke="none" />
+        </svg>
+        <div>
+          <b>RAQIB</b><span class="chip">WORKSPACE</span
+          ><span class="chip d">PREVIEW</span
+          ><small>Software engineering · Project workspace</small>
+        </div>
+      </div>
+      <div class="clk">
+        <small id="dt"></small><b id="tm">--:--:--</b><small id="tz"></small>
+      </div>
+      <div class="tr">
+        <span class="pill" id="def"
+          ><i class="dot"></i
+          ><span id="dft">Espace de travail · mode démonstration</span></span
+        >
+        <button class="ib" id="bF" title="Focus mode — hide panels">
+          <span class="ms">grid_view</span>
+        </button>
+        <button class="ib" id="bS" title="Project overview">
+          <span class="ms">shield</span>
+        </button>
+        <button class="ib" id="bA" title="Review priorities">
+          <span class="ms">sensors</span><em></em>
+        </button>
+        <div class="who">
+          <span class="ms">person</span>
+          <div><b>WORKSPACE</b><small>Local preview</small></div>
+        </div>
+      </div>
+    </header>
+
+    <div class="st">
+      <aside class="rail l" id="L"></aside>
+      <section class="mid">
+        <div class="hd">
+          <span id="sl"><i class="dot"></i><span id="st">BOOTING</span></span>
+          <h1>RAQIB</h1>
+          <small
+            >Development workspace · project data not connected · local
+            prototype</small
+          >
+        </div>
+        <div class="bt">
+          <small id="echo"></small>
+          <div id="out" aria-live="polite"></div>
+          <section class="p tl" id="TL" style="--i: 5"></section>
+        </div>
+      </section>
+      <aside class="rail r" id="R"></aside>
+    </div>
+
+    <footer class="dock">
+      <div class="env">
+        <small>Local grid · <span id="tz2"></span></small
+        ><small>Weather · <span>28°C overcast</span></small
+        ><small>Satellite link · <span>5G quantum</span></small
+        ><small>Execution · <span>Simulation only</span></small>
+      </div>
+      <div class="cm">
+        <form class="cmd" id="f" autocomplete="off">
+          <button
+            type="button"
+            class="mic"
+            id="mic"
+            aria-label="Talk to RAQIB (Space)"
+          >
+            <span class="ms">mic</span>
+          </button>
+          <div class="wv" id="wv">
+            <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+          </div>
+          <input
+            id="q"
+            placeholder="Demande à RAQIB : analyser un projet, planifier une fonctionnalité…"
+            aria-label="Demande à RAQIB"
+          /><kbd>⌘K</kbd>
+        </form>
+        <div class="chips">
+          <button data-q="Analyse l’architecture du projet">
+            Analyser l’architecture</button
+          ><button data-q="Découpe cette fonctionnalité en tâches">
+            Découper une fonctionnalité</button
+          ><button data-q="Prépare une stratégie de tests">
+            Préparer les tests</button
+          ><button data-q="Prépare la prochaine release">
+            Préparer une release
+          </button>
+        </div>
+      </div>
+      <button class="bf" id="bf">
+        <span class="ms">summarize</span><span>Synthèse projet</span>
+      </button>
+    </footer>
+
+    <script>
+      const $ = (i) => document.getElementById(i),
+        qa = (s, e = document) => [...e.querySelectorAll(s)];
+      const RM = matchMedia("(prefers-reduced-motion:reduce)").matches;
+      const ic = (n) => `<span class="ms">${n}</span>`;
+      let pi = 0;
+      const P = (t, b, body) =>
+        `<section class="p" style="--i:${pi++}"><h3>${t}<em>${b || ""}</em></h3>${body}</section>`;
+      const now12 = () =>
+        new Date().toLocaleTimeString("fr-FR", {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+
+      /* ---------- data ---------- */
+      const MODS = [
+        ["terminal", "Workspace"],
+        ["account_tree", "Architecture"],
+        ["smart_toy", "Agents", "DEMO"],
+        ["checklist", "Backlog", "LOCAL", "a"],
+        ["history", "Historique"],
+        ["hub", "Contexte projet"],
+      ];
+      const FL = [
+        ["code", "Développement", "EXEMPLE", 1],
+        ["schema", "Architecture", "EXEMPLE", 1],
+        ["fact_check", "Tests & qualité", "À CONNECTER", 0],
+        ["assignment", "Gestion de projet", "LOCAL", 0],
+      ];
+      const EN = [
+        ["Dépôt Git", "Non connecté"],
+        ["Backend IA", "Non connecté"],
+        ["Environnement", "Prototype local"],
+        ["CI / CD", "Non connecté"],
+      ];
+      const GA = [
+        ["Build", "98,230,255"],
+        ["Tests", "125,255,200"],
+        ["Couverture", "255,179,71"],
+      ];
+      const FD = [
+        {
+          w: 1,
+          t: "Connexion au dépôt",
+          tag: "À FAIRE",
+          b: "Connecter un dépôt Git pour afficher les branches, commits, pull requests et l’état réel du projet.",
+          m: "État : non connecté",
+        },
+        {
+          t: "Contexte projet",
+          tag: "DÉMO",
+          b: "Les informations affichées ici illustrent l’interface. Aucun projet réel n’est chargé.",
+          m: "Données de démonstration",
+        },
+        {
+          t: "Exécution des commandes",
+          tag: "LOCAL",
+          b: "Les commandes saisies ne sont pas exécutées sur un backend dans cette version.",
+          m: "Mode prototype frontend",
+        },
+      ];
+      const DIR = [
+        ["account_tree", "Analyser l’architecture"],
+        ["checklist", "Découper une fonctionnalité"],
+        ["bug_report", "Préparer les tests"],
+        ["rocket_launch", "Préparer une release"],
+      ];
+      const TLN = [
+        ["d", "Charger un projet", "—", "À connecter"],
+        ["n", "Définir les objectifs du sprint", "—", "Exemple"],
+        ["", "Préparer le plan de tests", "—", "Exemple"],
+        ["", "Préparer la prochaine release", "—", "Exemple"],
+      ];
+      const NP = [
+        [12, 16],
+        [36, 8],
+        [60, 18],
+        [88, 10],
+        [20, 42],
+        [46, 34],
+        [72, 44],
+        [94, 36],
+        [10, 68],
+        [34, 60],
+        [58, 70],
+        [84, 66],
+      ];
+      const RS = [
+        [
+          /architect|architecture|structure/i,
+          "Je peux préparer une revue d’architecture, mais aucun dépôt ni fichier projet n’est connecté. Connecte le contexte du projet pour obtenir une analyse réelle.",
+          "Revue d’architecture demandée",
+        ],
+        [
+          /fonctionnalit|tâche|taches|task|backlog|sprint/i,
+          "Je peux aider à découper cette demande en tâches, dépendances et critères d’acceptation. Dans cette prévisualisation, rien n’est ajouté à un backlog externe.",
+          "Découpage de fonctionnalité demandé",
+        ],
+        [
+          /test|qualit|bug|lint|coverage/i,
+          "Je peux proposer une stratégie de tests et les cas à couvrir. Aucun test n’a été lancé : l’environnement d’exécution n’est pas connecté.",
+          "Plan de tests demandé",
+        ],
+        [
+          /release|déploi|deploy|livraison|publication/i,
+          "Je peux préparer une checklist de release et les vérifications nécessaires. Aucun déploiement n’a été effectué.",
+          "Préparation de release demandée",
+        ],
+        [
+          /brief|synthèse|résumé|status|état|bonjour|salut|raqib/i,
+          "RAQIB est en mode prévisualisation locale. Le noyau visuel et les interactions sont actifs, mais aucun backend IA, dépôt Git ou gestionnaire de projet n’est connecté.",
+          "État de l’espace de travail",
+        ],
+      ];
+
+      /* ---------- panels ---------- */
+      $("L").innerHTML =
+        P(
+          "Modules de travail",
+          "Prototype",
+          `<div class="mods">${MODS.map((m, i) => `<button class="${i ? "" : "on"}" data-m="${m[1]}">${ic(m[0])}<span>${m[1]}</span>${m[2] ? `<b class="${m[3] || ""}">${m[2]}</b>` : ""}</button>`).join("")}</div>`,
+        ) +
+        P(
+          "Rôles de travail",
+          "Exemples · non connectés",
+          FL.map(
+            (a) =>
+              `<div class="ag ${a[3] ? "act" : ""}">${ic(a[0])}<div><b>${a[1]}</b><small>${a[2]}</small></div><span class="eq"><i></i><i></i><i></i><i></i></span></div>`,
+          ).join("") +
+            `<div class="eng">${EN.map((e) => `<div class="en"><i class="dot"></i><b>${e[0]}</b><small>${e[1]}</small></div>`).join("")}</div>`,
+        ) +
+        P(
+          "Indicateurs projet",
+          "Aucune donnée réelle",
+          `<div class="gs">${GA.map((g, i) => `<div class="g" style="color:rgb(${g[1]})"><svg viewBox="0 0 36 36"><circle class="b" cx="18" cy="18" r="15.9"/><circle class="f" id="gc${i}" cx="18" cy="18" r="15.9" stroke="rgb(${g[1]})" style="stroke-dasharray:0 100"/></svg><b id="gv${i}">—</b><small>${g[0]}</small></div>`).join("")}</div>`,
+        );
+
+      const fi = (f, n) =>
+        `<div class="fi ${f.w ? "w" : ""} ${n ? "n" : ""}"><header><span>${f.t}</span><em>${f.tag}</em></header><p>${f.b}</p><small>${f.m}${f.fix ? '<button data-q="Authorize fix">Authorize fix</button>' : ""}</small></div>`;
+      const edges = [];
+      NP.forEach((a, i) =>
+        NP.forEach((b, j) => {
+          if (j > i && Math.hypot(a[0] - b[0], a[1] - b[1]) < 30)
+            edges.push(
+              `<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}"/>`,
+            );
+        }),
+      );
+      $("R").innerHTML =
+        P(
+          "Journal d’activité",
+          "Événements de démonstration",
+          `<div class="feed" id="fd">${FD.map((f) => fi(f)).join("")}</div>`,
+        ) +
+        P(
+          "Actions rapides",
+          "Suggestions · simulation",
+          `<div class="dir">${DIR.map((d) => `<button data-q="${d[1]}">${ic(d[0])}<span>${d[1]}</span></button>`).join("")}</div>`,
+        ) +
+        P(
+          "Réseau de contexte",
+          '<span id="sy">—</span> liens',
+          `<div class="cs"><svg id="cn" viewBox="0 0 100 80">${edges.join("")}${NP.map((p, i) => `<circle cx="${p[0]}" cy="${p[1]}" r="${i % 4 ? 1.6 : 2.4}" style="animation-delay:${i * 0.35}s"/>`).join("")}</svg><div><small>Activité locale</small><b id="vc">0</b><small><span id="tn">0</span> demandes · backend non connecté</small></div></div>`,
+        );
+      $("TL").innerHTML =
+        `<h3>Plan de travail<em>exemples · à confirmer</em></h3>` +
+        TLN.map(
+          (t) =>
+            `<div class="tm ${t[0]}"><i></i><b>${t[1]}</b><small>${t[2]} · ${t[3]}</small></div>`,
+        ).join("");
+
+      /* ---------- core renderer ---------- */
+      const cv = $("c"),
+        g = cv.getContext("2d");
+      let W, H, D;
+      const rs = () => {
+        D = Math.min(devicePixelRatio || 1, 2);
+        W = innerWidth;
+        H = innerHeight;
+        cv.width = W * D;
+        cv.height = H * D;
+        g.setTransform(D, 0, 0, D, 0, 0);
+      };
+      addEventListener("resize", rs);
+      rs();
+      const N = 1100,
+        PT = [],
+        ga = Math.PI * (3 - Math.sqrt(5));
+      for (let i = 0; i < N; i++) {
+        const y = 1 - (2 * (i + 0.5)) / N,
+          r = Math.sqrt(1 - y * y),
+          a = ga * i;
+        PT.push({
+          x: Math.cos(a) * r,
+          y,
+          z: Math.sin(a) * r,
+          sx: (Math.random() - 0.5) * 4,
+          sy: (Math.random() - 0.5) * 4,
+          sz: (Math.random() - 0.5) * 4,
+        });
+      }
+      const RG = [
+        { n: 150, r: 1.38, v: 0.5, tx: 1.2, tz: 0.3, g: 0 },
+        { n: 190, r: 1.62, v: -0.32, tx: 0.4, tz: -0.7, g: 1 },
+        { n: 230, r: 1.9, v: 0.2, tx: -0.9, tz: 0.5, g: 0 },
+      ];
+      const TC = {
+        idle: [98, 230, 255],
+        listening: [125, 255, 200],
+        thinking: [255, 179, 71],
+        speaking: [215, 248, 255],
+      };
+      const SL = {
+        idle: "STANDBY",
+        listening: "LISTENING",
+        thinking: "PROCESSING",
+        speaking: "TRANSMITTING",
+      };
+      let S = "idle",
+        col = [98, 230, 255],
+        asm = RM ? 1 : 0,
+        amp = 0,
+        tamp = 0,
+        rot = 0,
+        mx = 0,
+        my = 0,
+        mxT = 0,
+        myT = 0,
+        t0 = performance.now();
+      let cx, cy, R, cr, sr, cxr, sxr;
+      const o = {};
+      const pj = (X, Y, Z) => {
+        const x1 = X * cr + Z * sr,
+          z1 = -X * sr + Z * cr,
+          y1 = Y * cxr - z1 * sxr,
+          z2 = Y * sxr + z1 * cxr,
+          f = 2.6 / (2.6 - z2);
+        o.x = cx + x1 * R * f;
+        o.y = cy + y1 * R * f;
+        o.f = f;
+        o.d = (z2 + 1.4) / 2.8;
+      };
+      addEventListener("pointermove", (e) => {
+        mxT = e.clientX / W - 0.5;
+        myT = e.clientY / H - 0.5;
+      });
+      const bars = qa("#wv i");
+      function fr(t) {
+        const dt = Math.min((t - t0) / 1000, 0.05);
+        t0 = t;
+        asm = Math.min(1, asm + dt / 2.4);
+        const e = 1 - (1 - asm) ** 3;
+        if (S === "listening")
+          tamp =
+            0.2 +
+            0.4 * Math.abs(Math.sin(t / 170)) * (0.5 + 0.5 * Math.random());
+        else if (S === "thinking") tamp = 0.14;
+        else if (S === "idle") tamp = 0.05 + 0.03 * Math.sin(t / 900);
+        else tamp *= 0.92;
+        amp += (tamp - amp) * 0.12;
+        for (let k = 0; k < 3; k++) col[k] += (TC[S][k] - col[k]) * 0.06;
+        mx += (mxT - mx) * 0.05;
+        my += (myT - my) * 0.05;
+        rot += dt * (S === "thinking" ? 1.6 : RM ? 0.03 : 0.25);
+        cx = W / 2;
+        cy = H * 0.5;
+        R = Math.min(W * (W > 1199 ? 0.19 : 0.3), H * 0.25);
+        const ry = rot + mx * 0.9,
+          rx = 0.3 + my * 0.5;
+        cr = Math.cos(ry);
+        sr = Math.sin(ry);
+        cxr = Math.cos(rx);
+        sxr = Math.sin(rx);
+        const c = col.map(Math.round).join(","),
+          sc = S === "thinking" ? 0.86 : 1,
+          scan = RM ? 9 : Math.sin(t / 2600) * 0.95;
+        g.clearRect(0, 0, W, H);
+        const gr = g.createRadialGradient(cx, cy, 0, cx, cy, R * 1.6);
+        gr.addColorStop(0, `rgba(${c},${0.13 + amp * 0.3})`);
+        gr.addColorStop(1, "rgba(0,0,0,0)");
+        g.fillStyle = gr;
+        g.fillRect(0, 0, W, H);
+        g.globalCompositeOperation = "lighter";
+        const k0 = W > 700 ? 1 : 0.7,
+          ex = amp * 0.4;
+        for (const p of PT) {
+          const d =
+            (1 +
+              ex *
+                Math.sin(p.x * 5 + p.y * 4 + t / 260) *
+                Math.cos(p.z * 5 - t / 330)) *
+            sc;
+          pj(
+            (p.sx + (p.x - p.sx) * e) * d,
+            (p.sy + (p.y - p.sy) * e) * d,
+            (p.sz + (p.z - p.sz) * e) * d,
+          );
+          const a =
+              Math.min(
+                1,
+                0.1 + 0.55 * o.d + 0.9 * Math.exp(-(((p.y - scan) * 8) ** 2)),
+              ) *
+              (0.3 + 0.7 * e),
+            s = (0.8 + 1.5 * o.d) * o.f * (1 + amp * 0.6) * k0;
+          g.fillStyle = `rgba(${c},${a.toFixed(2)})`;
+          g.fillRect(o.x - s / 2, o.y - s / 2, s, s);
+        }
+        for (const r of RG) {
+          const cc = r.g ? "255,179,71" : c,
+            ca = Math.cos(r.tx),
+            sa = Math.sin(r.tx),
+            cb = Math.cos(r.tz),
+            sb = Math.sin(r.tz),
+            rr = r.r * (1 + amp * 0.12) * e;
+          for (let i = 0; i < r.n; i++) {
+            const a = (i / r.n) * 6.2832 + (t * r.v) / 1000,
+              X = Math.cos(a) * rr,
+              Z0 = Math.sin(a) * rr,
+              Y1 = -Z0 * sa,
+              Z = Z0 * ca;
+            pj(X * cb - Y1 * sb, X * sb + Y1 * cb, Z);
+            const tail = i < 14 ? (14 - i) / 14 : 0,
+              al = 0.08 + 0.4 * o.d + tail * 0.7,
+              s = (0.8 + tail * 2.4) * o.f * k0;
+            g.fillStyle = `rgba(${cc},${(al * e).toFixed(2)})`;
+            g.fillRect(o.x - s / 2, o.y - s / 2, s, s);
+          }
+        }
+        g.globalCompositeOperation = "source-over";
+        const rt = document.documentElement.style;
+        rt.setProperty("--mx", mx.toFixed(3));
+        rt.setProperty("--s", c);
+        const lv = Math.min(1, amp * 2.2);
+        bars.forEach(
+          (b, i) =>
+            (b.style.transform = `scaleY(${(0.12 + lv * (0.4 + 0.6 * Math.abs(Math.sin(t / 120 + i * 1.3)))).toFixed(2)})`),
+        );
+        requestAnimationFrame(fr);
+      }
+      requestAnimationFrame(fr);
+
+      /* ---------- behaviour ---------- */
+      let tI,
+        mt,
+        rec,
+        turns = 0,
+        vec = 0;
+      const setS = (s) => {
+        S = s;
+        $("st").textContent = SL[s];
+      };
+      function say(t) {
+        clearInterval(tI);
+        setS("speaking");
+        const out = $("out");
+        out.textContent = "";
+        let i = 0;
+        tI = setInterval(
+          () => {
+            out.textContent += t[i++] || "";
+            tamp = 0.3 + 0.4 * Math.random();
+            if (i >= t.length) {
+              clearInterval(tI);
+              setTimeout(() => {
+                if (S === "speaking") setS("idle");
+              }, 700);
+            }
+          },
+          RM ? 4 : 24,
+        );
+      }
+      function flash() {
+        const n = $("cn");
+        n.classList.add("fl");
+        setTimeout(() => n.classList.remove("fl"), 500);
+      }
+      function feed(title, txt) {
+        const f = $("fd"),
+          d = document.createElement("div");
+        d.innerHTML = fi(
+          { t: title, tag: "LOG", b: txt, m: now12() + " · RAQIB core" },
+          1,
+        );
+        f.prepend(d.firstChild);
+        while (f.children.length > 8) f.lastChild.remove();
+      }
+      function go(t) {
+        t = (t || "").trim();
+        if (!t) return;
+        stopL();
+        $("echo").textContent = "› " + t;
+        $("out").textContent = "";
+        clearInterval(tI);
+        setS("thinking");
+        turns++;
+        $("tn").textContent = turns;
+        $("vc").textContent = turns;
+        $("sy").textContent = "—";
+        flash();
+        setTimeout(
+          () => {
+            const r = RS.find((r) => r[0].test(t)) || [
+              0,
+              `Demande reçue : « ${t.slice(0, 100)} ». Ceci est une prévisualisation frontend : la demande n’a pas été exécutée. Connecte un backend RAQIB pour activer l’analyse et les actions réelles.`,
+              "Demande reçue · non exécutée",
+            ];
+            feed(r[2], '"' + t.slice(0, 100) + '"');
+            say(r[1]);
+          },
+          RM ? 100 : 900 + Math.random() * 500,
+        );
+      }
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      function mic() {
+        if (S === "listening") return stopL();
+        clearInterval(tI);
+        setS("listening");
+        if (SR) {
+          try {
+            rec = new SR();
+            rec.lang = navigator.language || "en-US";
+            rec.onresult = (e) => go(e.results[0][0].transcript);
+            rec.onend = rec.onerror = () => {
+              if (S === "listening") setS("idle");
+            };
+            rec.start();
+            return;
+          } catch (_) {}
+        }
+        setS("idle");
+        say(
+          "La reconnaissance vocale n’est pas prise en charge par ce navigateur. Tu peux saisir ta demande au clavier.",
+        );
+      }
+      function stopL() {
+        clearTimeout(mt);
+        try {
+          rec && rec.stop();
+        } catch (_) {}
+        if (S === "listening") setS("idle");
+      }
+
+      $("f").onsubmit = (e) => {
+        e.preventDefault();
+        go($("q").value);
+        $("q").value = "";
+      };
+      $("mic").onclick = mic;
+      cv.onclick = mic;
+      $("bf").onclick = () =>
+        go("Prépare une synthèse du projet et des prochaines priorités");
+      $("bF").onclick = (e) => {
+        document.body.classList.toggle("fm");
+        e.currentTarget.classList.toggle("on");
+      };
+      $("bS").onclick = () =>
+        go("Affiche l’état du projet et les prochaines étapes");
+      $("bA").onclick = () =>
+        go("Identifie et priorise les tâches importantes");
+      document.addEventListener("click", (e) => {
+        const b = e.target.closest("[data-q]");
+        if (b) go(b.dataset.q);
+        const m = e.target.closest("[data-m]");
+        if (m) {
+          qa(".mods button").forEach((x) => x.classList.remove("on"));
+          m.classList.add("on");
+          $("echo").textContent = "› module: " + m.dataset.m;
+          say(
+            "Module sélectionné : " +
+              m.dataset.m +
+              ". Les données réelles nécessitent la connexion du backend RAQIB.",
+          );
+        }
+      });
+      addEventListener("keydown", (e) => {
+        const tg = document.activeElement.tagName;
+        if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+          e.preventDefault();
+          $("q").focus();
+        } else if (e.code === "Space" && tg !== "INPUT" && tg !== "BUTTON") {
+          e.preventDefault();
+          mic();
+        } else if (e.key === "Escape") {
+          stopL();
+          $("q").blur();
+        }
+      });
+
+      /* Project indicators are intentionally unavailable until real telemetry is connected. */
+      const gt = () =>
+        GA.forEach((_, i) => {
+          const circle = $("gc" + i);
+          const value = $("gv" + i);
+          if (circle) circle.style.strokeDasharray = "0 100";
+          if (value) value.textContent = "—";
+        });
+      gt();
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      $("tz").textContent = tz + " · local";
+      $("tz2").textContent = tz;
+      const tk = () => {
+        const d = new Date();
+        $("tm").textContent = d.toLocaleTimeString("en-US");
+        $("dt").textContent = d.toLocaleDateString("en-GB", {
+          weekday: "long",
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        });
+      };
+      tk();
+      setInterval(tk, 1000);
+
+      /* boot sequence */
+      const BL = [
+        "interface .............. chargée",
+        "projet ................. non connecté",
+        "backend ................ non connecté",
+        "RAQIB .................. mode prévisualisation",
+      ];
+      const done = () => {
+        document.body.classList.add("on");
+        const b = $("boot");
+        b && b.remove();
+        setS("idle");
+        say(
+          "RAQIB est prêt en mode prévisualisation. Connecte un projet et un backend pour activer les opérations réelles.",
+        );
+      };
+      if (RM) done();
+      else {
+        let i = 0;
+        (function n() {
+          if (i < BL.length) {
+            $("bt").textContent += BL[i++] + "\n";
+            setTimeout(n, 420);
+          } else
+            setTimeout(() => {
+              $("boot").style.transition = "opacity .6s";
+              $("boot").style.opacity = 0;
+              done();
+            }, 500);
+        })();
+      }
+    </script>
+  </body>
+</html>

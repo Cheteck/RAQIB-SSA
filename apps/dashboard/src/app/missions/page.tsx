@@ -4,38 +4,95 @@ import { useState, useEffect } from 'react';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
+const STATUS_COLORS: Record<string, string> = {
+  pending:    'rgb(var(--mu))',
+  running:    'rgb(var(--m))',
+  completed:  'rgb(var(--c))',
+  failed:     'rgb(var(--r))',
+  paused:     'rgb(var(--g))',
+};
+
 export default function MissionsPage() {
   const [missions, setMissions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     fetch(`${API_BASE}/api/missions`)
-      .then((res) => res.json())
-      .then((data) => setMissions(data.missions || []))
-      .catch(() => setMissions([]))
+      .then((r) => r.json())
+      .then((d) => setMissions(d.missions || []))
+      .catch(() => setError(true))
       .finally(() => setLoading(false));
   }, []);
 
   return (
-    <div style={{ padding: '80px 24px 100px 24px', maxWidth: '1200px', margin: '0 auto' }}>
-      <section className="p" style={{ opacity: 1 }}>
-        <h3>Suivi des Missions & Exécutions <em>{missions.length} Missions</em></h3>
-        {loading ? (
-          <p className="mono">Chargement des missions...</p>
-        ) : missions.length === 0 ? (
-          <p id="no-missions-msg" className="mono">Aucune mission enregistrée pour le moment.</p>
-        ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '12px' }}>
-            {missions.map((m) => (
-              <div key={m.id} className="fi" style={{ background: 'rgba(98, 230, 255, 0.08)' }}>
-                <header>
-                  <span>{m.id} — {m.name}</span>
-                  <em>{m.status}</em>
-                </header>
-                <p>{m.objective}</p>
-                <small>Budget: {m.budgetUsedEur.toFixed(2)} / {m.budgetLimitEur.toFixed(2)} € · Niveau: {m.autonomyLevel}</small>
-              </div>
-            ))}
+    <div className="workspace-content">
+      <section className="p" style={{ '--i': 0 } as any}>
+        <h3>
+          Suivi des Missions & Exécutions
+          <em>{loading ? '…' : error ? 'ERREUR' : `${missions.length} missions`}</em>
+        </h3>
+
+        {loading && (
+          <p className="mono" aria-live="polite">Chargement des missions…</p>
+        )}
+
+        {!loading && error && (
+          <div className="fi w">
+            <header><span>Erreur de connexion</span><em>ERR</em></header>
+            <p>Impossible de joindre le runtime sur port 4000.</p>
+            <small>Vérifiez que le serveur RAQIB est démarré.</small>
+          </div>
+        )}
+
+        {!loading && !error && missions.length === 0 && (
+          <p id="no-missions-msg" className="mono">
+            Aucune mission enregistrée pour le moment.
+          </p>
+        )}
+
+        {!loading && !error && missions.length > 0 && (
+          <div className="missions-grid">
+            {missions.map((m) => {
+              const budgetPct = m.budgetLimitEur > 0
+                ? Math.min(100, (m.budgetUsedEur / m.budgetLimitEur) * 100)
+                : 0;
+              const statusColor = STATUS_COLORS[m.status?.toLowerCase()] ?? 'var(--mu)';
+
+              return (
+                <div key={m.id} className="mission-card fi">
+                  <header>
+                    <span>{m.id} — {m.name}</span>
+                    <em style={{ color: statusColor }}>{m.status}</em>
+                  </header>
+                  <p>{m.objective}</p>
+
+                  {/* Budget bar */}
+                  <div className="mission-budget">
+                    <div
+                      className="mission-budget__bar"
+                      style={{
+                        width: `${budgetPct}%`,
+                        background: budgetPct > 80
+                          ? 'rgb(var(--r))'
+                          : budgetPct > 50
+                          ? 'rgb(var(--g))'
+                          : 'rgb(var(--m))',
+                      }}
+                      role="progressbar"
+                      aria-valuenow={Math.round(budgetPct)}
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                      aria-label={`Budget utilisé ${Math.round(budgetPct)}%`}
+                    />
+                  </div>
+                  <small>
+                    Budget: {m.budgetUsedEur.toFixed(2)} / {m.budgetLimitEur.toFixed(2)} €
+                    {' · '}Niveau: {m.autonomyLevel}
+                  </small>
+                </div>
+              );
+            })}
           </div>
         )}
       </section>
