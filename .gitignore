@@ -26,3 +26,10 @@ logs/
 # OS
 .DS_Store
 Thumbs.db
+
+# Tests / artefacts générés
+test-results/
+tests/integration/mvp-data-*/
+tests/runtime/data-*/
+*.tsbuildinfo
+screenshots/
