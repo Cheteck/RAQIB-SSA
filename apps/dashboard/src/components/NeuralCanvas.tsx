@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import type { ThemeName } from './HudContext';
 
 /**
  * RAQIB neural core — full-viewport 3D particle sphere + ring renderer.
@@ -16,6 +17,23 @@ const TC: Record<CoreMode, [number, number, number]> = {
   speaking: [215, 248, 255],
 };
 
+function paletteFor(theme: ThemeName): Record<CoreMode, [number, number, number]> {
+  if (theme === 'amber') {
+    return {
+      idle: [255, 179, 71],
+      listening: [255, 220, 140],
+      thinking: [98, 230, 255],
+      speaking: [255, 235, 200],
+    };
+  }
+  return {
+    idle: [98, 230, 255],
+    listening: [125, 255, 200],
+    thinking: [255, 179, 71],
+    speaking: [215, 248, 255],
+  };
+}
+
 const RG = [
   { n: 150, r: 1.38, v: 0.5, tx: 1.2, tz: 0.3, g: 0 },
   { n: 190, r: 1.62, v: -0.32, tx: 0.4, tz: -0.7, g: 1 },
@@ -24,16 +42,31 @@ const RG = [
 
 interface Props {
   mode?: CoreMode;
+  theme?: ThemeName;
   barsRef?: React.RefObject<HTMLDivElement | null>;
   onClick?: () => void;
 }
 
-export default function NeuralCanvas({ mode = 'idle', barsRef, onClick }: Props) {
+export default function NeuralCanvas({ mode = 'idle', theme = 'cyan', barsRef, onClick }: Props) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const apiRef = useRef<CoreMode>(mode);
   const clickRef = useRef(onClick);
+  const themeRef = useRef<ThemeName>(theme);
+  const modeRef = useRef<CoreMode>(mode);
+  const TCRef = useRef<Record<CoreMode, [number, number, number]>>(paletteFor(theme));
   clickRef.current = onClick;
   apiRef.current = mode;
+  themeRef.current = theme;
+  modeRef.current = mode;
+
+  useEffect(() => {
+    themeRef.current = theme;
+    TCRef.current = paletteFor(theme);
+  }, [theme]);
+
+  useEffect(() => {
+    modeRef.current = mode;
+  }, [mode]);
 
   useEffect(() => {
     const cv = canvasRef.current;
@@ -53,6 +86,7 @@ export default function NeuralCanvas({ mode = 'idle', barsRef, onClick }: Props)
     window.addEventListener('resize', rs);
     rs();
 
+    let col = [...TCRef.current.idle];
     const N = 1100;
     const PT: Array<{ x: number; y: number; z: number; sx: number; sy: number; sz: number }> = [];
     const GA = Math.PI * (3 - Math.sqrt(5));
@@ -69,9 +103,6 @@ export default function NeuralCanvas({ mode = 'idle', barsRef, onClick }: Props)
         sz: (Math.random() - 0.5) * 4,
       });
     }
-
-    let S: CoreMode = 'idle';
-    let col = [98, 230, 255];
     let asm = 0;
     let amp = 0;
     let tamp = 0;
@@ -115,20 +146,20 @@ export default function NeuralCanvas({ mode = 'idle', barsRef, onClick }: Props)
     const fr = (t: number) => {
       const dt = Math.min((t - t0) / 1000, 0.05);
       t0 = t;
-      S = apiRef.current;
+      const currentMode = modeRef.current;
       asm = Math.min(1, asm + dt / 2.4);
       const e = 1 - (1 - asm) ** 3;
 
-      if (S === 'listening')
+      if (currentMode === 'listening')
         tamp = 0.2 + 0.4 * Math.abs(Math.sin(t / 170)) * (0.5 + 0.5 * Math.random());
-      else if (S === 'thinking') tamp = 0.14;
-      else if (S === 'idle') tamp = 0.05 + 0.03 * Math.sin(t / 900);
+      else if (currentMode === 'thinking') tamp = 0.14;
+      else if (currentMode === 'idle') tamp = 0.05 + 0.03 * Math.sin(t / 900);
       else tamp *= 0.92;
       amp += (tamp - amp) * 0.12;
-      for (let k = 0; k < 3; k++) col[k] += (TC[S][k] - col[k]) * 0.06;
+      for (let k = 0; k < 3; k++) col[k] += (TCRef.current[currentMode][k] - col[k]) * 0.06;
       mx += (mxT - mx) * 0.05;
       my += (myT - my) * 0.05;
-      rot += dt * (S === 'thinking' ? 1.6 : 0.25);
+      rot += dt * (currentMode === 'thinking' ? 1.6 : 0.25);
 
       cx = W / 2;
       cy = H * 0.5;
@@ -141,7 +172,7 @@ export default function NeuralCanvas({ mode = 'idle', barsRef, onClick }: Props)
       sxr = Math.sin(rx);
 
       const c = col.map((v) => Math.round(v)).join(',');
-      const sc = S === 'thinking' ? 0.86 : 1;
+      const sc = currentMode === 'thinking' ? 0.86 : 1;
       const scan = Math.sin(t / 2600) * 0.95;
 
       g.clearRect(0, 0, W, H);

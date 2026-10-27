@@ -9,11 +9,12 @@ import NeuralCanvas from './NeuralCanvas';
  * Ce composant ne re-monte jamais — il vit dans le layout.
  */
 export default function NeuralCanvasConnected() {
-  const { mode, go } = useHud();
+  const { mode, theme, go } = useHud();
 
   return (
     <NeuralCanvas
       mode={mode}
+      theme={theme}
       onClick={() => go('État du système')}
     />
   );
