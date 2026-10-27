@@ -1,4 +1,4 @@
-pour cela il doit 'use client';
+'use client';
 
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import type { CoreMode } from './NeuralCanvas';

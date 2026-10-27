@@ -22,6 +22,7 @@ out/
 # Logs
 *.log
 logs/
+runtime.err
 
 # OS
 .DS_Store

@@ -139,6 +139,16 @@ export function createRuntimeServer(runtime: RaqibRuntime) {
       res.status(400).json({ error: err.message });
     }
   });
+  app.post('/api/missions/:id/run', async (req, res) => {
+    try {
+      const result = await runtime.missionEngine.runNextStep(req.params.id);
+      res.json({ result });
+    } catch (err: any) {
+      res.status(400).json({ error: err.message });
+    }
+  });
+
+
   app.get('/api/budget/:missionId', (req, res) => {
     const budget = runtime.policyEngine.getBudget(req.params.missionId);
     if (!budget) {
