@@ -806,7 +806,7 @@ npm install next react react-dom
 | **5** | Docker sandbox + Verification Engine | ✅ COMPLÈTE (Verification Engine & DockerSandbox) | 4–7j |
 | **6** | Dashboard Next.js | ✅ COMPLÈTE (Next.js App Router apps/dashboard) | 3–5j |
 | **7** | Service Runtime autonome | ✅ COMPLÈTE (RaqibRuntime + API Server Express) | 2–4j |
-| **8** | Validation MVP | 🔄 En cours de validation finale | 3–5j |
+| **8** | Validation MVP | ✅ COMPLÈTE (Dashboard E2E + Screenshots validés) | 3–5j |
 
 **Total restant estimé** : ~15–26 jours ouvrés (Phase 3 tests + Phases 5–8)
 
