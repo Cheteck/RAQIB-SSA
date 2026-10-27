@@ -1,54 +1,24 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+import { useState } from 'react';
+import { useEmergencyStop } from '../../hooks/useEmergencyStop';
 
 export default function SettingsPage() {
-  const [msg, setMsg] = useState('');
-  const [msgType, setMsgType] = useState<'ok' | 'err'>('ok');
-  const [active, setActive] = useState<boolean | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { active, loading, message, messageType, toggle } = useEmergencyStop();
   const [confirming, setConfirming] = useState(false);
 
-  useEffect(() => {
-    fetch(`${API_BASE}/api/status`)
-      .then((r) => r.json())
-      .then((d) => setActive(d.emergencyStop ?? false))
-      .catch(() => setActive(null))
-      .finally(() => setLoading(false));
-  }, []);
-
   const toggleEmergency = async (action: 'activate' | 'deactivate') => {
-    // Deactivation requires a confirm step
     if (action === 'deactivate' && !confirming) {
       setConfirming(true);
-      setMsg('Confirmez la désactivation en recliquant sur le bouton.');
-      setMsgType('ok');
       return;
     }
     setConfirming(false);
-    try {
-      const res = await fetch(`${API_BASE}/api/emergency-stop`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action,
-          reason: action === 'activate' ? 'Déclenché depuis le Dashboard' : undefined,
-          confirmedBy: action === 'deactivate' ? 'fondateur' : undefined,
-        }),
-      });
-      const data = await res.json();
-      setActive(data.active);
-      setMsg(`Emergency Stop: ${data.active ? '⚠ ACTIF — toutes les exécutions bloquées' : '✓ DÉSACTIVÉ — opérations autorisées'}`);
-      setMsgType(data.active ? 'err' : 'ok');
-    } catch {
-      setMsg('Erreur de communication avec le serveur Runtime.');
-      setMsgType('err');
-    }
+    await toggle(action, true);
   };
 
   const isArmed = active === true;
+  const msg = confirming ? 'Confirmez la désactivation en recliquant sur le bouton.' : message;
+  const msgType = messageType;
 
   return (
     <div className="workspace-content">

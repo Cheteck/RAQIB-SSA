@@ -35,6 +35,22 @@ export interface PolicyRequest {
   metadata?: Record<string, unknown>;
 }
 
+export interface ApprovalRecord {
+  id: string;
+  missionId: string;
+  actionType: string;
+  resource: string;
+  estimatedCostEur: number;
+  maxDurationMs: number;
+  justification: string;
+  expiresAt: string;
+  status: ApprovalStatus;
+  grantedBy: string | null;
+  consumedAt: string | null;
+  createdAt: number;
+}
+
+
 export class PolicyEngine {
   private db: Database.Database;
   private logger: AuditLogger | null = null;
@@ -235,6 +251,61 @@ export class PolicyEngine {
 
     return true;
   }
+
+  listApprovals(status?: string): ApprovalRecord[] {
+    const rows = status
+      ? this.db
+          .prepare(
+            `SELECT id, mission_id as missionId, action_type as actionType, resource,
+                    estimated_cost as estimatedCostEur, max_duration_ms as maxDurationMs,
+                    justification, expires_at as expiresAt, status, granted_by as grantedBy,
+                    consumed_at as consumedAt, created_at as createdAt
+             FROM approvals WHERE status = ? ORDER BY created_at DESC`,
+          )
+          .all(status)
+      : this.db
+          .prepare(
+            `SELECT id, mission_id as missionId, action_type as actionType, resource,
+                    estimated_cost as estimatedCostEur, max_duration_ms as maxDurationMs,
+                    justification, expires_at as expiresAt, status, granted_by as grantedBy,
+                    consumed_at as consumedAt, created_at as createdAt
+             FROM approvals ORDER BY created_at DESC`,
+          )
+          .all();
+    return rows as ApprovalRecord[];
+  }
+
+  getApproval(approvalId: string): ApprovalRecord | null {
+    const row = this.db
+      .prepare(
+        `SELECT id, mission_id as missionId, action_type as actionType, resource,
+                estimated_cost as estimatedCostEur, max_duration_ms as maxDurationMs,
+                justification, expires_at as expiresAt, status, granted_by as grantedBy,
+                consumed_at as consumedAt, created_at as createdAt
+         FROM approvals WHERE id = ?`,
+      )
+      .get(approvalId);
+    return (row as ApprovalRecord) ?? null;
+  }
+
+  async rejectApproval(approvalId: string, rejectedBy: string): Promise<boolean> {
+    const result = this.db
+      .prepare(`UPDATE approvals SET status = 'REJECTED', granted_by = ? WHERE id = ? AND status = 'PENDING'`)
+      .run(rejectedBy, approvalId);
+
+    if (result.changes === 0) return false;
+
+    await this.logger?.log({
+      id: `evt-approval-rejected-${approvalId}`,
+      timestamp: new Date().toISOString(),
+      type: 'APPROVAL_REJECTED',
+      actor: rejectedBy,
+      data: { approvalId, rejectedBy },
+    });
+
+    return true;
+  }
+
 
   isApprovalValid(approvalId: string, req: PolicyRequest): boolean {
     const row = this.db

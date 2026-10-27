@@ -283,27 +283,42 @@ export function HudProvider({ children }: { children: React.ReactNode }) {
 
       setTimeout(
         async () => {
-          const r = RS.find((x) => x[0].test(t)) || ([/./, defaultResp(t), 'Directive received'] as any);
-          let text = r[1];
-          if (typeof text === 'function') {
-            try {
-              text = await text(api.current);
-            } catch {
-              text = defaultResp(t);
+          let text = '';
+          let title = 'Directive received';
+          try {
+            const res = await fetch(`${API_BASE}/api/chat`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ prompt: t }),
+            });
+            if (res.ok) {
+              const data = await res.json();
+              text = data.text || defaultResp(t);
+              title = data.model ? `Réponse · ${data.model}` : 'Réponse RAQIB';
+            } else {
+              throw new Error('chat failed');
+            }
+          } catch {
+            const r = RS.find((x) => x[0].test(t)) || ([/./, defaultResp(t), 'Directive received'] as any);
+            let canned = r[1];
+            if (typeof canned === 'function') {
+              try { canned = await canned(api.current); } catch { canned = defaultResp(t); }
+            }
+            text = canned;
+            title = r[2];
+            if (r[3]) {
+              setDefenseEng(true);
+              setDefenseText(`Defense matrix ${r[3].toLowerCase()} · threat level 0 clear`);
             }
           }
           pushFeed({
             w: false,
-            title: r[2],
+            title,
             tag: 'LOG',
             body: `"${t.slice(0, 70)}"`,
             meta: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) + ' · RAQIB core',
           });
-          if (r[3]) {
-            setDefenseEng(true);
-            setDefenseText(`Defense matrix ${r[3].toLowerCase()} · threat level 0 clear`);
-          }
-          say(text);
+          say(text || defaultResp(t));
         },
         900 + Math.random() * 500
       );

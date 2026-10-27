@@ -85,6 +85,20 @@ export function createRuntimeServer(runtime: RaqibRuntime) {
   });
 
   // Approvals
+  app.get('/api/approvals', (req, res) => {
+    const status = req.query.status as string | undefined;
+    const approvals = runtime.policyEngine.listApprovals(status);
+    res.json({ approvals });
+  });
+
+  app.get('/api/approvals/:id', (req, res) => {
+    const approval = runtime.policyEngine.getApproval(req.params.id);
+    if (!approval) {
+      return res.status(404).json({ error: 'Approval not found' });
+    }
+    res.json({ approval });
+  });
+
   app.post('/api/approvals/request', async (req, res) => {
     try {
       const approvalId = await runtime.policyEngine.requestApproval(req.body);
@@ -97,6 +111,12 @@ export function createRuntimeServer(runtime: RaqibRuntime) {
   app.post('/api/approvals/:id/grant', async (req, res) => {
     const { grantedBy } = req.body;
     const success = await runtime.policyEngine.grantApproval(req.params.id, grantedBy || 'admin');
+    res.json({ success });
+  });
+
+  app.post('/api/approvals/:id/reject', async (req, res) => {
+    const { rejectedBy } = req.body;
+    const success = await runtime.policyEngine.rejectApproval(req.params.id, rejectedBy || 'admin');
     res.json({ success });
   });
 
@@ -120,6 +140,42 @@ export function createRuntimeServer(runtime: RaqibRuntime) {
     const { limitEur } = req.body;
     runtime.policyEngine.setBudget(req.params.missionId, Number(limitEur));
     res.json({ success: true });
+  });
+
+  // Model Gateway (chat)
+  app.post('/api/chat', async (req, res) => {
+    const { prompt, missionId } = req.body;
+    if (!prompt || typeof prompt !== 'string') {
+      return res.status(400).json({ error: 'prompt is required' });
+    }
+    const mid = missionId || 'raqib-chat';
+    try {
+      const result = await runtime.modelGateway.complete(
+        {
+          taskType: 'default',
+          messages: [{ role: 'user', content: prompt }],
+        } as any,
+        mid,
+      );
+      if (result.error) {
+        return res.status(502).json({ error: result.error, needsReview: result.needsReview });
+      }
+      res.json({
+        text: result.response?.content ?? '',
+        model: result.response?.model,
+        cost: result.response?.cost,
+        latencyMs: result.response?.latencyMs,
+      });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.get('/api/models/health', async (req, res) => {
+    const providers = runtime.modelGateway.listProviders();
+    const health = await Promise.all(providers.map((id) => runtime.modelGateway.checkProvider(id)));
+    res.json({ providers: health });
+
   });
 
   return app;

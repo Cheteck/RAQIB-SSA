@@ -1,38 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+import { useApprovals } from '../../hooks/useApprovals';
 
 export default function ApprovalsPage() {
-  const [approvals, setApprovals] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
+  const { approvals, loading, error, decide } = useApprovals();
 
-  useEffect(() => {
-    fetch(`${API_BASE}/api/approvals`)
-      .then((r) => r.json())
-      .then((d) => setApprovals(d.approvals || d.requests || []))
-      .catch(() => {
-        // Endpoint may not exist yet — degrade gracefully
-        setError(false);
-        setApprovals([]);
-      })
-      .finally(() => setLoading(false));
-  }, []);
-
-  const handleDecision = async (id: string, decision: 'approve' | 'reject') => {
-    try {
-      await fetch(`${API_BASE}/api/approvals/${id}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ decision, authorizedBy: 'commander' }),
-      });
-      // Remove from local list after decision
-      setApprovals((prev) => prev.filter((a) => a.id !== id));
-    } catch {
-      // Silently ignore — runtime may be offline
-    }
+  const handleDecision = (id: string, decision: 'approve' | 'reject') => {
+    decide(id, decision);
   };
 
   return (
@@ -66,12 +40,12 @@ export default function ApprovalsPage() {
             {approvals.map((a) => (
               <div key={a.id} className="fi">
                 <header>
-                  <span>{a.type ?? 'Autorisation requise'} — {a.id}</span>
+                  <span>{a.actionType ?? 'Autorisation requise'} — {a.id}</span>
                   <em>{a.status ?? 'PENDING'}</em>
                 </header>
-                <p>{a.description ?? a.reason ?? 'Aucune description disponible.'}</p>
+                <p>{a.justification ?? 'Aucune description disponible.'}</p>
                 <small style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-                  <span>{a.requestedAt ?? '—'} · {a.requestedBy ?? 'System'}</span>
+                  <span>{new Date(a.createdAt * 1000).toLocaleString()} · {a.grantedBy ?? 'system'}</span>
                   <button
                     onClick={() => handleDecision(a.id, 'approve')}
                     style={{

@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useAudit } from '../../hooks/useAudit';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+import { useState } from 'react';
 
 const EVENT_COLORS: Record<string, string> = {
   MISSION_CREATED:   'rgb(var(--m))',
@@ -15,18 +15,11 @@ const EVENT_COLORS: Record<string, string> = {
   SYSTEM_BOOT:       'rgb(var(--g))',
 };
 
-export default function AuditPage() {
-  const [events, setEvents] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<string>('ALL');
 
-  useEffect(() => {
-    fetch(`${API_BASE}/api/audit`)
-      .then((r) => r.json())
-      .then((d) => setEvents(d.events || []))
-      .catch(() => setEvents([]))
-      .finally(() => setLoading(false));
-  }, []);
+
+export default function AuditPage() {
+  const { events, loading } = useAudit();
+  const [filter, setFilter] = useState<string>('ALL');
 
   const types = ['ALL', ...Array.from(new Set(events.map((e) => e.type))).sort()];
   const visible = filter === 'ALL' ? events : events.filter((e) => e.type === filter);

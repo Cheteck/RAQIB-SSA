@@ -78,7 +78,8 @@ export interface AuditEvent {
     | 'BUDGET_CHECK'
     | 'ERROR'
     | 'APPROVAL_REQUEST'
-    | 'APPROVAL_GRANTED';
+    | 'APPROVAL_GRANTED'
+    | 'APPROVAL_REJECTED';
   missionId?: string;
   actor: string;
   data: Record<string, unknown>;

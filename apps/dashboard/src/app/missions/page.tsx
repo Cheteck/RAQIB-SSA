@@ -1,8 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+import { useMissions } from '../../hooks/useMissions';
 
 const STATUS_COLORS: Record<string, string> = {
   pending:    'rgb(var(--mu))',
@@ -13,17 +11,7 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export default function MissionsPage() {
-  const [missions, setMissions] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-
-  useEffect(() => {
-    fetch(`${API_BASE}/api/missions`)
-      .then((r) => r.json())
-      .then((d) => setMissions(d.missions || []))
-      .catch(() => setError(true))
-      .finally(() => setLoading(false));
-  }, []);
+  const { missions, loading, error } = useMissions();
 
   return (
     <div className="workspace-content">
