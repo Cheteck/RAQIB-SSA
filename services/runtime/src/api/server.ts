@@ -36,6 +36,55 @@ export function createRuntimeServer(runtime: RaqibRuntime) {
     });
   });
 
+  // LLM Harness Endpoints
+  app.get('/api/context', (req, res) => {
+    const messages = (req.query.messages ? JSON.parse(req.query.messages as string) : []) as any[];
+    const tools = (req.query.tools as string) || '';
+    const metrics = runtime.contextEngine.getMetrics(messages, tools);
+    res.json(metrics);
+  });
+
+  app.get('/api/memory', async (req, res) => {
+    const namespace = (req.query.namespace as string) || 'global';
+    const threadId = req.query.threadId as string | undefined;
+    const type = req.query.type as any;
+    const query = req.query.query as string | undefined;
+
+    const memories = await runtime.memoryEngine.search({ namespace, threadId, type, query });
+    res.json({ memories });
+  });
+
+  app.post('/api/memory', async (req, res) => {
+    const { namespace, key, value, threadId, type, sensitivity } = req.body;
+    if (!namespace || !key) {
+      return res.status(400).json({ error: 'namespace and key are required' });
+    }
+    await runtime.memoryEngine.put(namespace, key, value, { threadId, type, sensitivity });
+    res.json({ success: true });
+  });
+
+  app.get('/api/workflows/:id', async (req, res) => {
+    const saved = await runtime.workflowEngine.getSavedState(req.params.id);
+    if (!saved) {
+      return res.status(404).json({ error: 'Workflow state not found' });
+    }
+    res.json(saved);
+  });
+
+  app.get('/api/skills', (req, res) => {
+    const skills = runtime.skillsRegistry.list();
+    res.json({ skills });
+  });
+
+  app.post('/api/skills/:name/execute', async (req, res) => {
+    try {
+      const result = await runtime.skillsRegistry.execute(req.params.name, req.body);
+      res.json({ result });
+    } catch (err: any) {
+      res.status(400).json({ error: err.message });
+    }
+  });
+
   // Emergency Stop toggle
   app.post('/api/emergency-stop', async (req, res) => {
     const { action, reason, confirmedBy } = req.body;
@@ -139,6 +188,7 @@ export function createRuntimeServer(runtime: RaqibRuntime) {
       res.status(400).json({ error: err.message });
     }
   });
+
   app.post('/api/missions/:id/run', async (req, res) => {
     try {
       const result = await runtime.missionEngine.runNextStep(req.params.id);
@@ -147,7 +197,6 @@ export function createRuntimeServer(runtime: RaqibRuntime) {
       res.status(400).json({ error: err.message });
     }
   });
-
 
   app.get('/api/budget/:missionId', (req, res) => {
     const budget = runtime.policyEngine.getBudget(req.params.missionId);
@@ -196,7 +245,6 @@ export function createRuntimeServer(runtime: RaqibRuntime) {
     const providers = runtime.modelGateway.listProviders();
     const health = await Promise.all(providers.map((id) => runtime.modelGateway.checkProvider(id)));
     res.json({ providers: health });
-
   });
 
   return app;

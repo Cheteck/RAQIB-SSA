@@ -2,11 +2,13 @@ import path from 'path';
 import fs from 'fs';
 import { execSync } from 'child_process';
 import { PolicyEngine } from '@raqib/policy-engine';
-import { EmergencyStop } from '@raqib/policy-engine';
-import { MissionEngine } from '@raqib/mission-engine';
+import { EmergencyStop, MiddlewarePipeline } from '@raqib/policy-engine';
+import { MissionEngine, MemoryEngine, WorkflowEngine } from '@raqib/mission-engine';
 import { ModelGateway } from '@raqib/model-gateway';
 import { AuditLedger } from '@raqib/audit-ledger';
 import { VerificationEngine } from '@raqib/verification';
+import { ContextEngine } from '@raqib/core';
+import { SkillsRegistry } from '@raqib/tool-gateway';
 
 export class RaqibRuntime {
   public policyEngine: PolicyEngine;
@@ -15,6 +17,12 @@ export class RaqibRuntime {
   public modelGateway: ModelGateway;
   public auditLedger: AuditLedger;
   public verificationEngine: VerificationEngine;
+  public contextEngine: ContextEngine;
+  public memoryEngine: MemoryEngine;
+  public workflowEngine: WorkflowEngine;
+  public skillsRegistry: SkillsRegistry;
+  public middlewarePipeline: MiddlewarePipeline;
+
   private isRunning: boolean = false;
   private tickInterval?: NodeJS.Timeout;
 
@@ -40,12 +48,37 @@ export class RaqibRuntime {
     this.missionEngine = new MissionEngine({ dbPath, ledger: this.auditLedger, policy: this.policyEngine });
     this.modelGateway = new ModelGateway(providersConfig, { logger: this.auditLedger, budgetChecker: this.policyEngine });
     this.verificationEngine = new VerificationEngine();
+
+    this.contextEngine = new ContextEngine();
+    this.memoryEngine = new MemoryEngine(dbPath);
+    this.workflowEngine = new WorkflowEngine({ dbPath });
+    this.skillsRegistry = new SkillsRegistry();
+    this.middlewarePipeline = new MiddlewarePipeline();
   }
 
   async initialize(): Promise<void> {
     await this.auditLedger.init();
 
-    // Register step executor for autonomous missions (self-improvement, etc.)
+    this.middlewarePipeline.use({
+      name: 'AuditAndPolicyMiddleware',
+      beforeAgent: async (state, req) => {
+        const decision = this.policyEngine.authorize(req);
+        if (!decision.allowed) {
+          return decision;
+        }
+      },
+      afterAgent: async (state, decision) => {
+        await this.auditLedger.log({
+          id: `evt-agent-after-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          timestamp: new Date().toISOString(),
+          type: 'AGENT_AFTER_EXECUTION',
+          missionId: state.missionId,
+          actor: 'raqib-runtime',
+          data: { decision }
+        });
+      }
+    });
+
     this.missionEngine.setStepExecutor(async (mission, step) => {
       const name = step.name.toLowerCase();
       try {
@@ -69,17 +102,15 @@ export class RaqibRuntime {
         if (name.includes('report') || name.includes('rapport')) {
           const reportPath = path.join(process.cwd(), 'reports', 'raqib-self-improvement.md');
           fs.mkdirSync(path.dirname(reportPath), { recursive: true });
-          fs.writeFileSync(reportPath, `# RAQIB Self-Improvement Report\\n\\nGenerated: ${new Date().toISOString()}\\nMission: ${mission.id}\\nSteps completed: ${mission.steps.filter(s => s.status === 'DONE').length}/${mission.steps.length}\\n`, 'utf8');
+          fs.writeFileSync(reportPath, `# RAQIB Self-Improvement Report\n\nGenerated: ${new Date().toISOString()}\nMission: ${mission.id}\nSteps completed: ${mission.steps.filter(s => s.status === 'DONE').length}/${mission.steps.length}\n`, 'utf8');
           return { status: 'DONE', result: { reportPath }, proof: reportPath };
         }
-        // Default: mark as done (analysis/approval steps handled externally)
         return { status: 'DONE', result: { note: 'completed' }, proof: step.name };
       } catch (err: any) {
         return { status: 'FAILED', error: (err?.stdout || err?.message || String(err)).slice(0, 500) };
       }
     });
 
-    // Check emergency stop
     if (this.emergencyStop.isActive()) {
       await this.auditLedger.log({
         id: `evt-startup-emergency-${Date.now()}`,
@@ -90,7 +121,6 @@ export class RaqibRuntime {
       });
     }
 
-    // Recover interrupted missions
     const recovered = await this.missionEngine.recoverInterrupted();
     if (recovered.length > 0) {
       await this.auditLedger.log({
@@ -121,7 +151,6 @@ export class RaqibRuntime {
           }
         }
       } catch (err: any) {
-        // Runtime loop safety net
       }
     }, 5000);
   }
@@ -152,6 +181,7 @@ export class RaqibRuntime {
       maxAttempts: 2,
     });
   }
+
   async stop(): Promise<void> {
     this.isRunning = false;
     if (this.tickInterval) {

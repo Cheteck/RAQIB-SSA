@@ -79,7 +79,9 @@ export interface AuditEvent {
     | 'ERROR'
     | 'APPROVAL_REQUEST'
     | 'APPROVAL_GRANTED'
-    | 'APPROVAL_REJECTED';
+    | 'APPROVAL_REJECTED'
+    | 'AGENT_BEFORE_EXECUTION'
+    | 'AGENT_AFTER_EXECUTION';
   missionId?: string;
   actor: string;
   data: Record<string, unknown>;
