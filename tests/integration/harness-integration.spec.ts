@@ -10,7 +10,7 @@ describe('RaqibRuntime LLM Harness Integration Suite', () => {
 
   beforeEach(async () => {
     if (fs.existsSync(testDataDir)) {
-      fs.rmSync(testDataDir, { recursive: true, force: true });
+      try { fs.rmSync(testDataDir, { recursive: true, force: true }); } catch {}
     }
     fs.mkdirSync(testDataDir, { recursive: true });
 
@@ -19,9 +19,11 @@ describe('RaqibRuntime LLM Harness Integration Suite', () => {
   });
 
   afterEach(async () => {
-    await runtime.stop();
+    if (runtime) {
+      await runtime.stop();
+    }
     if (fs.existsSync(testDataDir)) {
-      fs.rmSync(testDataDir, { recursive: true, force: true });
+      try { fs.rmSync(testDataDir, { recursive: true, force: true }); } catch {}
     }
   });
 

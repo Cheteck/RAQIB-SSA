@@ -13,7 +13,7 @@ describe('Runtime API Harness Endpoints Suite', () => {
 
   beforeEach(async () => {
     if (fs.existsSync(testDataDir)) {
-      fs.rmSync(testDataDir, { recursive: true, force: true });
+      try { fs.rmSync(testDataDir, { recursive: true, force: true }); } catch {}
     }
     fs.mkdirSync(testDataDir, { recursive: true });
 
@@ -23,9 +23,11 @@ describe('Runtime API Harness Endpoints Suite', () => {
   });
 
   afterEach(async () => {
-    await runtime.stop();
+    if (runtime) {
+      await runtime.stop();
+    }
     if (fs.existsSync(testDataDir)) {
-      fs.rmSync(testDataDir, { recursive: true, force: true });
+      try { fs.rmSync(testDataDir, { recursive: true, force: true }); } catch {}
     }
   });
 

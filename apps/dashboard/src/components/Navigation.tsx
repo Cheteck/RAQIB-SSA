@@ -8,15 +8,16 @@ import { useHud } from './HudContext';
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
 const NAV = [
-  { href: '/',          icon: 'grid_view',  label: 'Workspace',  title: 'Vue d\'ensemble' },
-  { href: '/missions',  icon: 'shield',     label: 'Missions',   title: 'Gestion des missions' },
-  { href: '/approvals', icon: 'how_to_reg', label: 'Approvals',  title: 'Matrice d\'approbation' },
-  { href: '/audit',     icon: 'sensors',    label: 'Audit',      title: 'Registre d\'audit', badge: true },
-  { href: '/context',   icon: 'data_object',label: 'Contexte',   title: 'Budget de contexte & tokens' },
-  { href: '/memory',    icon: 'memory',     label: 'Mémoire',    title: 'Mémoire multi-tier' },
-  { href: '/workflows', icon: 'account_tree',label: 'Workflows', title: 'Graphes d\'exécution' },
-  { href: '/skills',    icon: 'extension',  label: 'Skills',     title: 'Catalogue de compétences' },
-  { href: '/settings',  icon: 'warning',    label: 'Urgence',    title: 'Arrêt d\'urgence', danger: true },
+  { href: '/',               icon: 'grid_view',  label: 'Workspace',      title: 'Vue d\'ensemble' },
+  { href: '/missions',       icon: 'shield',     label: 'Missions',       title: 'Gestion des missions' },
+  { href: '/approvals',      icon: 'how_to_reg', label: 'Approvals',      title: 'Matrice d\'approbation' },
+  { href: '/audit',          icon: 'sensors',    label: 'Audit',          title: 'Registre d\'audit', badge: true },
+  { href: '/coding-engine', icon: 'code',       label: 'Coding Engine',  title: 'Moteur de codage IA' },
+  { href: '/context',        icon: 'data_object',label: 'Contexte',       title: 'Budget de contexte & tokens' },
+  { href: '/memory',         icon: 'memory',     label: 'Mémoire',        title: 'Mémoire multi-tier' },
+  { href: '/workflows',      icon: 'account_tree',label: 'Workflows',     title: 'Graphes d\'exécution' },
+  { href: '/skills',         icon: 'extension',  label: 'Skills',         title: 'Catalogue de compétences' },
+  { href: '/settings',       icon: 'warning',    label: 'Urgence',        title: 'Arrêt d\'urgence', danger: true },
 ];
 
 export default function Navigation() {
@@ -68,7 +69,6 @@ export default function Navigation() {
 
   return (
     <header className="top" role="banner">
-      {/* ── Brand ───────────────────────────────── */}
       <div className="brand">
         <svg width="34" height="34" viewBox="0 0 34 34" fill="none" stroke="#62e6ff" aria-hidden>
           <circle cx="17" cy="17" r="15" strokeDasharray="4 3" opacity=".6">
@@ -89,16 +89,13 @@ export default function Navigation() {
         </div>
       </div>
 
-      {/* ── Clock ───────────────────────────────── */}
       <div className="clk" aria-live="off">
         <small>{date}</small>
         <b>{time}</b>
         <small>{tz}</small>
       </div>
 
-      {/* ── Right controls ──────────────────────── */}
       <div className="tr">
-        {/* Status pill */}
         <span
           className={`pill${isEmergencyArmed ? ' eng' : ''}`}
           role="status"
@@ -108,7 +105,6 @@ export default function Navigation() {
           <span>{statusText}</span>
         </span>
 
-        {/* Focus mode toggle */}
         <button
           className={`ib${focus ? ' on' : ''}`}
           title="Focus mode — masquer les panneaux"
@@ -118,7 +114,6 @@ export default function Navigation() {
           <span className="ms" aria-hidden>grid_view</span>
         </button>
 
-        {/* Palette toggle — cyan ↔ amber */}
         <button
           className={`ib theme-toggle${theme === 'amber' ? ' on' : ''}`}
           title={theme === 'cyan' ? 'Passer en palette ambre' : 'Passer en palette cyan'}
@@ -129,7 +124,6 @@ export default function Navigation() {
           <span className="ms" aria-hidden>palette</span>
         </button>
 
-        {/* Nav links — rendered as icon buttons */}
         {NAV.map((item) => (
           <Link
             key={item.href}
@@ -143,7 +137,6 @@ export default function Navigation() {
           </Link>
         ))}
 
-        {/* Identity */}
         <div className="who">
           <span className="ms" aria-hidden>shield_person</span>
           <div>
