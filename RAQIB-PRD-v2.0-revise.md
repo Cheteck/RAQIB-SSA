@@ -1237,3 +1237,36 @@ La décision de conserver OpenCode à long terme, de le forker ou de développer
 1. **Moteur de Codage Abstrait (`ICodingEngineAdapter`) :** OpenCode est encapsulé derrière un adaptateur abstrait dans `packages/tool-gateway`. L'orchestrateur de RAQIB interagit uniquement avec cette interface.
 2. **Souveraineté des Données Métier :** Le portefeuille de projets, les objectifs, le budget, la mémoire et l'état des missions appartiennent exclusivement à RAQIB. OpenCode agit en tant qu'exécuteur de tâches de codage éphémères sous la supervision de RAQIB.
 3. **Gouvernance et Sécurité Enforced :** Toutes les commandes et modifications de code générées via l'adaptateur OpenCode doivent passer par les garde-fous du `PolicyEngine` et l'isolation du `DockerSandbox`.
+
+
+---
+
+# 14. Stratégie de Coexistence des Moteurs de Codage : OpenCode vs Coding Engine RAQIB
+
+## 14.1 Positionnement Architectural et Dualité
+RAQIB adopte une stratégie à deux trajectoires parallèles et découplées :
+
+1. **OpenCode (Moteur Opérationnel du MVP) :**
+   - **Rôle :** Moteur de codage de production pour le MVP de RAQIB.
+   - **Responsabilités :** Exécution des tâches de développement logiciel, modification de fichiers et génération de diffs.
+   - **Gouvernance RAQIB :** RAQIB conserve la souveraineté totale du portefeuille de projets, des missions, des budgets, des politiques d'accès (`PolicyEngine`), du registre d'audit (`AuditLedger`) et de la vérification indépendante (`VerificationEngine`).
+
+2. **Coding Engine RAQIB (Moteur Autonome Expérimental R&D) :**
+   - **Rôle :** Projet autonome expérimental situé sous `coding-engine/`.
+   - **Responsabilités :** Recherche et développement d'un moteur de codage propriétaire, réutilisable sous forme de SDK ou service indépendant.
+   - **Découplage :** Ne dépend d'aucun module métier `@raqib/*` ni du Dashboard Next.js.
+
+
+---
+
+# 15. Intégration MCP & Stratégie d'Évaluation Comparative des Moteurs
+
+## 15.1 Intégration du Model Context Protocol (MCP)
+- **Positionnement :** MCP agit en tant que standard d'accès aux contextes et outils externes au niveau du `ToolGateway` et du `ModelGateway`.
+- **Gouvernance :** Les serveurs MCP externes connectés à RAQIB sont soumis aux vérifications de sécurité du `PolicyEngine` et à la journalisation du `AuditLedger`.
+
+## 15.2 Critères d'Évaluation Comparative (OpenCode vs Coding Engine RAQIB)
+1. **Taux de Succès des Tâches :** Pourcentage de missions complétées sans erreur de compilation.
+2. **Conformité aux Garde-Fous :** Interception stricte des commandes non autorisées et respect des budgets.
+3. **Consommation de Tokens et Latence :** Efficacité budgétaire et temps de réponse des boucles agentiques.
+4. **Facilité de Maintenance :** Découplage du code et portabilité du moteur.
