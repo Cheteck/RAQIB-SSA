@@ -8,13 +8,21 @@ export interface DirEntry {
   isFile: boolean;
 }
 
+/**
+ * FileTool — accès fichiers confiné au root du PathGuard.
+ *
+ * IMPORTANT : toutes les opérations fs utilisent le chemin RÉSOLU contre le
+ * root du guard (`guard.resolve`). Sans cela, un chemin relatif serait résolu
+ * contre `process.cwd()` et l'outil lirait le mauvais dépôt
+ * (régression MOSAIX-001 v2).
+ */
 export class FileTool {
   constructor(private guard: PathGuard) {}
 
   async readFile(filePath: string): Promise<string> {
     const check = this.guard.validate(filePath);
     if (!check.allowed) throw new Error(check.reason);
-    return await fs.readFile(filePath, 'utf8');
+    return await fs.readFile(this.guard.resolve(filePath), 'utf8');
   }
 
   async readManifest(filePath: string): Promise<unknown> {
@@ -29,7 +37,7 @@ export class FileTool {
     const check = this.guard.validate(dirPath);
     if (!check.allowed) throw new Error(check.reason);
 
-    const entries = await fs.readdir(dirPath, { withFileTypes: true });
+    const entries = await fs.readdir(this.guard.resolve(dirPath), { withFileTypes: true });
     return entries.map((e) => ({
       name: e.name,
       isDirectory: e.isDirectory(),
@@ -41,6 +49,7 @@ export class FileTool {
     const check = this.guard.validate(root);
     if (!check.allowed) throw new Error(check.reason);
 
+    const resolvedRoot = this.guard.resolve(root);
     const results: string[] = [];
     const walk = async (dir: string) => {
       const entries = await this.listDir(dir);
@@ -64,7 +73,7 @@ export class FileTool {
       }
     };
 
-    await walk(root);
+    await walk(resolvedRoot);
     return results;
   }
 }
