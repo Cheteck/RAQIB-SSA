@@ -1,5 +1,7 @@
 import { z } from 'zod';
 import { DockerSandbox, SandboxContext } from './DockerSandbox';
+import { ShellTool } from './ShellTool';
+import { ICodingEngineAdapter, CodingTaskRequest, CodingTaskResult } from './adapters/OpenCodeAdapter';
 
 export interface SkillDefinition {
   name: string;
@@ -11,9 +13,21 @@ export interface SkillDefinition {
 
 export class SkillsRegistry {
   private skills: Map<string, SkillDefinition> = new Map();
+  private codingEngineAdapter?: ICodingEngineAdapter;
+  private shellTool?: ShellTool;
 
   constructor() {
     this.registerBuiltinSkills();
+  }
+
+  setCodingEngineAdapter(adapter: ICodingEngineAdapter): void {
+    this.codingEngineAdapter = adapter;
+    this.registerOpenCodeSkill(adapter);
+  }
+
+  setShellTool(tool: ShellTool): void {
+    this.shellTool = tool;
+    this.registerShellSkill(tool);
   }
 
   register(skill: SkillDefinition): void {
@@ -66,6 +80,40 @@ export class SkillsRegistry {
       requiredPermission: 'READ',
       handler: async (args) => {
         return { status: 'clean', repo: args.repoPath };
+      },
+    });
+  }
+
+  private registerShellSkill(tool: ShellTool): void {
+    this.register({
+      name: 'shell_exec',
+      description: 'Execute an allowlisted shell command (no shell interpretation, governed by policy and audited)',
+      parameters: z.object({
+        command: z.union([z.string(), z.array(z.string()).min(1)]),
+        cwd: z.string().optional(),
+        timeoutMs: z.number().int().positive().optional(),
+      }),
+      requiredPermission: 'EXECUTE',
+      handler: async (args: { command: string | string[]; cwd?: string; timeoutMs?: number }) => {
+        return await tool.execute(args.command, { cwd: args.cwd, timeoutMs: args.timeoutMs });
+      },
+    });
+  }
+
+  private registerOpenCodeSkill(adapter: ICodingEngineAdapter): void {
+    this.register({
+      name: 'opencode_task',
+      description: 'Execute an agentic coding task via the OpenCode/Coding Engine adapter',
+      parameters: z.object({
+        taskId: z.string(),
+        projectPath: z.string().default('.'),
+        prompt: z.string(),
+        allowedCommands: z.array(z.string()).optional(),
+        maxDurationMs: z.number().optional(),
+      }),
+      requiredPermission: 'WRITE',
+      handler: async (args: CodingTaskRequest, context) => {
+        return await adapter.executeTask(args, context?.sandboxCtx);
       },
     });
   }

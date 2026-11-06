@@ -85,6 +85,21 @@ export function createRuntimeServer(runtime: RaqibRuntime) {
     }
   });
 
+  // Governed shell execution (allowlist + policy + audit)
+  app.post('/api/shell/execute', async (req, res) => {
+    try {
+      const { command, cwd, timeoutMs } = req.body ?? {};
+      if (!command) {
+        return res.status(400).json({ error: 'command is required' });
+      }
+      const result = await runtime.executeShell({ command, cwd, timeoutMs });
+      res.json({ result });
+    } catch (err: any) {
+      const status = err?.name === 'ShellPolicyError' ? 403 : 400;
+      res.status(status).json({ error: err.message });
+    }
+  });
+
   // Emergency Stop toggle
   app.post('/api/emergency-stop', async (req, res) => {
     const { action, reason, confirmedBy } = req.body;
@@ -177,13 +192,23 @@ export function createRuntimeServer(runtime: RaqibRuntime) {
   });
 
   // Self-improvement mission
+  // SECURITY (Constitution §2): the self-improvement mission REQUIRES human
+  // approval. With approvalRequired=true it is created in PLANNED state and
+  // MUST be approved by a human before it can run. Only auto-approved
+  // missions (status APPROVED at creation) are auto-started here.
   app.post('/api/missions/self-improve', async (req, res) => {
     try {
       const mission = await runtime.createSelfImprovementMission();
-      if (mission.status === 'APPROVED' || mission.status === 'PLANNED') {
+      if (mission.status === 'APPROVED') {
         await runtime.missionEngine.transitionStatus(mission.id, 'RUNNING', 'Self-improvement mission started');
       }
-      res.status(201).json({ mission });
+      res.status(201).json({
+        mission,
+        pendingApproval: mission.status === 'PLANNED',
+        approvalHint: mission.status === 'PLANNED'
+          ? 'Mission requires human approval. Approve via /api/missions/:id/transition (status=APPROVED) then start (status=RUNNING).'
+          : undefined,
+      });
     } catch (err: any) {
       res.status(400).json({ error: err.message });
     }
@@ -245,6 +270,28 @@ export function createRuntimeServer(runtime: RaqibRuntime) {
     const providers = runtime.modelGateway.listProviders();
     const health = await Promise.all(providers.map((id) => runtime.modelGateway.checkProvider(id)));
     res.json({ providers: health });
+  });
+
+  // Coding Engine - OpenCode Adapter Endpoint
+  app.post('/api/opencode/execute', async (req, res) => {
+    try {
+      const { taskId, projectPath, prompt, allowedCommands, maxDurationMs } = req.body;
+      if (!taskId || !prompt) {
+        return res.status(400).json({ error: 'taskId and prompt are required' });
+      }
+
+      const result = await runtime.skillsRegistry.execute('opencode_task', {
+        taskId,
+        projectPath: projectPath || process.cwd(),
+        prompt,
+        allowedCommands,
+        maxDurationMs,
+      });
+
+      res.json({ result });
+    } catch (err: any) {
+      res.status(400).json({ error: err.message });
+    }
   });
 
   return app;
