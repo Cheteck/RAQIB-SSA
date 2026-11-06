@@ -92,10 +92,26 @@ export class SkillsRegistry {
         command: z.union([z.string(), z.array(z.string()).min(1)]),
         cwd: z.string().optional(),
         timeoutMs: z.number().int().positive().optional(),
+        missionId: z.string().optional(),
+        stepId: z.string().optional(),
+        correlationId: z.string().optional(),
       }),
       requiredPermission: 'EXECUTE',
-      handler: async (args: { command: string | string[]; cwd?: string; timeoutMs?: number }) => {
-        return await tool.execute(args.command, { cwd: args.cwd, timeoutMs: args.timeoutMs });
+      handler: async (args: {
+        command: string | string[];
+        cwd?: string;
+        timeoutMs?: number;
+        missionId?: string;
+        stepId?: string;
+        correlationId?: string;
+      }) => {
+        return await tool.execute(args.command, {
+          cwd: args.cwd,
+          timeoutMs: args.timeoutMs,
+          missionId: args.missionId,
+          stepId: args.stepId,
+          correlationId: args.correlationId,
+        });
       },
     });
   }

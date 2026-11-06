@@ -88,11 +88,18 @@ export function createRuntimeServer(runtime: RaqibRuntime) {
   // Governed shell execution (allowlist + policy + audit)
   app.post('/api/shell/execute', async (req, res) => {
     try {
-      const { command, cwd, timeoutMs } = req.body ?? {};
+      const { command, cwd, timeoutMs, missionId, stepId, correlationId } = req.body ?? {};
       if (!command) {
         return res.status(400).json({ error: 'command is required' });
       }
-      const result = await runtime.executeShell({ command, cwd, timeoutMs });
+      const result = await runtime.executeShell({
+        command,
+        cwd,
+        timeoutMs,
+        missionId,
+        stepId,
+        correlationId,
+      });
       res.json({ result });
     } catch (err: any) {
       const status = err?.name === 'ShellPolicyError' ? 403 : 400;

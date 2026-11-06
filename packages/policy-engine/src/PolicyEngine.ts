@@ -348,6 +348,9 @@ export class PolicyEngine {
       timestamp: decision.timestamp,
       type: 'POLICY_DECISION',
       missionId: req.missionId,
+      stepId: typeof req.metadata?.stepId === 'string' ? req.metadata.stepId : undefined,
+      correlationId:
+        typeof req.metadata?.correlationId === 'string' ? req.metadata.correlationId : undefined,
       actor: req.actor,
       data: {
         verdict,

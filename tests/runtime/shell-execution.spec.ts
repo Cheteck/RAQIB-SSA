@@ -65,4 +65,69 @@ describe('RAQIB Runtime — shell gouverné (policy + audit)', () => {
     const result: any = await runtime.skillsRegistry.execute('shell_exec', { command: ['node', '--version'] });
     expect(result.exitCode).toBe(0);
   });
+
+  it('trace les refus et qualifie l’issue avec corrélation mission/étape', async () => {
+    // Refus hors allowlist : aucun processus lancé, mais un POLICY_DECISION DENY tracé.
+    await expect(
+      runtime.executeShell({
+        command: ['rm', '-rf', '.'],
+        missionId: 'mission-corr',
+        stepId: 'step-corr',
+        correlationId: 'corr-1',
+      }),
+    ).rejects.toThrow(/allowlist/);
+
+    await sleep(50);
+    const denials = await runtime.auditLedger.query({
+      missionId: 'mission-corr',
+      type: 'POLICY_DECISION',
+    });
+    expect(denials.length).toBeGreaterThan(0);
+    expect(denials[0].stepId).toBe('step-corr');
+    expect(denials[0].correlationId).toBe('corr-1');
+    expect(denials[0].data.verdict).toBe('DENY');
+    expect(denials[0].data.phase).toBe('SHELL_ALLOWLIST');
+
+    // Exécution en échec : l'issue est qualifiée `failure`, pas confondue avec un succès.
+    const res = await runtime.executeShell({
+      command: ['node', '-e', 'process.exit(4)'],
+      missionId: 'mission-corr',
+      stepId: 'step-corr',
+      correlationId: 'corr-2',
+    });
+    expect(res.exitCode).toBe(4);
+
+    await sleep(50);
+    const executed = await runtime.auditLedger.query({
+      missionId: 'mission-corr',
+      type: 'ACTION_EXECUTED',
+    });
+    expect(executed).toHaveLength(1);
+    expect(executed[0].stepId).toBe('step-corr');
+    expect(executed[0].correlationId).toBe('corr-2');
+    expect(executed[0].data.outcome).toBe('failure');
+    expect(executed[0].data.exitCode).toBe(4);
+  });
+
+  it('ne donne pas accès shell à un dépôt cible externe (targetRepoPath)', async () => {
+    const externalRepo = fs.mkdtempSync(path.join(os.tmpdir(), 'raqib-external-'));
+    const otherData = fs.mkdtempSync(path.join(os.tmpdir(), 'raqib-shell2-'));
+    const externalRuntime = new RaqibRuntime({ dataDir: otherData, targetRepoPath: externalRepo });
+    try {
+      await externalRuntime.initialize();
+      // cwd = dépôt externe : refusé, le shell reste confiné au workspace runtime.
+      await expect(
+        externalRuntime.executeShell({ command: ['node', '--version'], cwd: externalRepo }),
+      ).rejects.toThrow(/Working directory refused/);
+
+      // cwd relatif reste dans le workspace du runtime.
+      const ok = await externalRuntime.executeShell({ command: ['node', '--version'] });
+      expect(ok.exitCode).toBe(0);
+      expect(path.resolve(ok.cwd)).toBe(path.resolve(process.cwd()));
+    } finally {
+      await externalRuntime.stop();
+      try { fs.rmSync(externalRepo, { recursive: true, force: true }); } catch {}
+      try { fs.rmSync(otherData, { recursive: true, force: true }); } catch {}
+    }
+  });
 });

@@ -66,25 +66,58 @@ export class RaqibRuntime {
       ? allowlistEnv.split(',').map((s) => s.trim()).filter(Boolean)
       : undefined;
     this.shellTool = new ShellTool({
-      cwdRoot: this.targetRepoPath ?? process.cwd(),
+      // Shell n'est PAS rattaché au dépôt cible externe : jusqu'à validation
+      // de la résolution des symlinks, l'exécution reste confinée au workspace
+      // du runtime. Opt-in explicite via RAQIB_SHELL_CWD_ROOT.
+      cwdRoot: process.env.RAQIB_SHELL_CWD_ROOT || process.cwd(),
       allowedCommands,
-      authorize: (command, args) => {
+      authorize: (command, args, correlation) => {
         const decision = this.policyEngine.authorize({
-          missionId: 'shell',
+          missionId: correlation.missionId || 'shell',
           actor: 'raqib-core',
           actionType: 'EXECUTE',
           resource: `${command} ${args.join(' ')}`.trim(),
           autonomyLevel: 'A2',
+          metadata: {
+            stepId: correlation.stepId,
+            correlationId: correlation.correlationId,
+          },
         });
         return { allowed: decision.allowed, reason: decision.reason };
       },
       onEvent: async (event) => {
+        const correlation = event.correlation;
+        const missionId = correlation.missionId || 'shell';
+        if (event.type === 'shell.denied') {
+          // Refus d'exécution : tracé même quand la commande n'a jamais tourné.
+          await this.auditLedger.log({
+            id: `evt-shell-denied-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+            timestamp: new Date().toISOString(),
+            type: 'POLICY_DECISION',
+            missionId,
+            stepId: correlation.stepId,
+            correlationId: correlation.correlationId,
+            actor: 'raqib-runtime',
+            data: {
+              verdict: 'DENY',
+              actionType: 'EXECUTE',
+              phase: 'SHELL_ALLOWLIST',
+              command: event.command,
+              args: event.args,
+              reason: event.reason,
+              allowed: false,
+            },
+          });
+          return;
+        }
         if (event.type !== 'shell.completed') return;
         await this.auditLedger.log({
           id: `evt-shell-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
           timestamp: new Date().toISOString(),
           type: 'ACTION_EXECUTED',
-          missionId: 'shell',
+          missionId,
+          stepId: correlation.stepId,
+          correlationId: correlation.correlationId,
           actor: 'raqib-runtime',
           data: {
             command: event.command,
@@ -93,6 +126,7 @@ export class RaqibRuntime {
             exitCode: event.exitCode,
             durationMs: event.durationMs,
             timedOut: event.timedOut,
+            outcome: event.outcome,
           },
         });
       },
@@ -133,11 +167,17 @@ export class RaqibRuntime {
     command: string | string[];
     cwd?: string;
     timeoutMs?: number;
+    missionId?: string;
+    stepId?: string;
+    correlationId?: string;
   }): Promise<ShellExecutionResult> {
     if (!this.auditLedger) throw new Error('Runtime not constructed');
     return this.shellTool.execute(input.command, {
       cwd: input.cwd,
       timeoutMs: input.timeoutMs,
+      missionId: input.missionId,
+      stepId: input.stepId,
+      correlationId: input.correlationId,
     });
   }
 

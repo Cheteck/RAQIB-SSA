@@ -14,15 +14,42 @@ export interface ShellToolOptions {
   /** Taille maximale de sortie capturée (octets). */
   maxOutputBytes?: number;
   /** Hook de politique : refus explicite avant exécution. */
-  authorize?: (command: string, args: string[]) => { allowed: boolean; reason?: string };
+  authorize?: (
+    command: string,
+    args: string[],
+    context: ShellCorrelation,
+  ) => { allowed: boolean; reason?: string };
   /** Hook d'audit (started / completed / denied). */
   onEvent?: (event: ShellEvent) => void | Promise<void>;
 }
 
+/** Corrélation propagée de la mission/étape jusqu'à l'audit. */
+export interface ShellCorrelation {
+  missionId?: string;
+  stepId?: string;
+  correlationId?: string;
+}
+
+export interface ShellExecutionOptions extends ShellCorrelation {
+  cwd?: string;
+  timeoutMs?: number;
+}
+
 export type ShellEvent =
-  | { type: 'shell.started'; command: string; args: string[]; cwd: string }
-  | { type: 'shell.completed'; command: string; args: string[]; cwd: string; exitCode: number; durationMs: number; timedOut: boolean }
-  | { type: 'shell.denied'; command: string; args: string[]; reason: string };
+  | { type: 'shell.started'; command: string; args: string[]; cwd: string; correlation: ShellCorrelation }
+  | {
+      type: 'shell.completed';
+      command: string;
+      args: string[];
+      cwd: string;
+      exitCode: number;
+      durationMs: number;
+      timedOut: boolean;
+      /** `success` (exit 0), `failure` (exit != 0) ou `timeout`. */
+      outcome: 'success' | 'failure' | 'timeout';
+      correlation: ShellCorrelation;
+    }
+  | { type: 'shell.denied'; command: string; args: string[]; reason: string; correlation: ShellCorrelation };
 
 export interface ShellExecutionResult {
   command: string;
@@ -216,24 +243,29 @@ export class ShellTool {
 
   async execute(
     command: string | string[],
-    options: { cwd?: string; timeoutMs?: number } = {},
+    options: ShellExecutionOptions = {},
   ): Promise<ShellExecutionResult> {
+    const correlation: ShellCorrelation = {
+      missionId: options.missionId,
+      stepId: options.stepId,
+      correlationId: options.correlationId,
+    };
     const { cmd, args } = this.parseCommand(command);
     const base = this.normalize(path.basename(cmd));
 
     if (!this.allowed.has(base)) {
       const reason = `Command '${base}' is not in the shell allowlist`;
-      await this.onEvent?.({ type: 'shell.denied', command: base, args, reason });
+      await this.onEvent?.({ type: 'shell.denied', command: base, args, reason, correlation });
       throw new ShellPolicyError(reason);
     }
 
     const cwd = this.resolveCwd(options.cwd);
 
     if (this.authorize) {
-      const decision = this.authorize(base, args);
+      const decision = this.authorize(base, args, correlation);
       if (!decision.allowed) {
         const reason = decision.reason || 'Denied by policy';
-        await this.onEvent?.({ type: 'shell.denied', command: base, args, reason });
+        await this.onEvent?.({ type: 'shell.denied', command: base, args, reason, correlation });
         throw new ShellPolicyError(reason);
       }
     }
@@ -242,7 +274,7 @@ export class ShellTool {
     const timeout = Math.max(1, Math.min(requested, this.maxTimeoutMs));
     const { file, args: fileArgs, shell } = this.buildInvocation(cmd, args);
 
-    await this.onEvent?.({ type: 'shell.started', command: base, args, cwd });
+    await this.onEvent?.({ type: 'shell.started', command: base, args, cwd, correlation });
 
     const startTime = Date.now();
     let stdout = '';
@@ -285,6 +317,11 @@ export class ShellTool {
     }
 
     const durationMs = Date.now() - startTime;
+    const outcome: 'success' | 'failure' | 'timeout' = timedOut
+      ? 'timeout'
+      : exitCode === 0
+        ? 'success'
+        : 'failure';
     const result: ShellExecutionResult = {
       command: base,
       args,
@@ -304,6 +341,8 @@ export class ShellTool {
       exitCode,
       durationMs,
       timedOut,
+      outcome,
+      correlation,
     });
 
     return result;
