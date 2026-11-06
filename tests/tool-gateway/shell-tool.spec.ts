@@ -106,4 +106,52 @@ describe('ShellTool — exécution gouvernée (allowlist, cwd, timeout, env)', (
       else process.env.FREE_LLM_API_KEY = prev;
     }
   });
+
+  it('propage la corrélation et qualifie l’issue (success/failure/denied)', async () => {
+    const events: any[] = [];
+    const tool = new ShellTool({
+      cwdRoot: tmpDir,
+      onEvent: (e) => { events.push(e); },
+    });
+
+    await tool.execute(['node', '--version'], { missionId: 'm1', stepId: 's1', correlationId: 'c1' });
+    await tool.execute(['node', '-e', 'process.exit(2)'], { missionId: 'm1', stepId: 's2', correlationId: 'c2' });
+    await expect(
+      tool.execute(['rm', '-rf', '.'], { missionId: 'm1', stepId: 's3', correlationId: 'c3' }),
+    ).rejects.toThrow(/allowlist/);
+
+    const completed = events.filter((e) => e.type === 'shell.completed');
+    expect(completed).toHaveLength(2);
+    expect(completed[0].outcome).toBe('success');
+    expect(completed[1].outcome).toBe('failure');
+    expect(completed[0].correlation).toEqual({ missionId: 'm1', stepId: 's1', correlationId: 'c1' });
+
+    const denied = events.find((e) => e.type === 'shell.denied');
+    expect(denied).toBeDefined();
+    expect(denied.correlation).toEqual({ missionId: 'm1', stepId: 's3', correlationId: 'c3' });
+    expect(denied.reason).toMatch(/allowlist/);
+  });
+
+  it('refuse un cwd qui est un symlink sortant du root', async () => {
+    const escapeRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'shell-sym-root-'));
+    const escapeTarget = fs.mkdtempSync(path.join(os.tmpdir(), 'shell-sym-out-'));
+    let created = false;
+    try {
+      fs.symlinkSync(escapeTarget, path.join(escapeRoot, 'escape'), process.platform === 'win32' ? 'junction' : 'dir');
+      created = true;
+    } catch {
+      created = false;
+    }
+    try {
+      // Preuve non vacueuse : le lien doit exister pour que le refus soit testé.
+      expect(created).toBe(true);
+      const tool = new ShellTool({ cwdRoot: escapeRoot });
+      await expect(
+        tool.execute(['node', '--version'], { cwd: 'escape' }),
+      ).rejects.toThrow(/Working directory refused/);
+    } finally {
+      try { fs.rmSync(escapeRoot, { recursive: true, force: true }); } catch {}
+      try { fs.rmSync(escapeTarget, { recursive: true, force: true }); } catch {}
+    }
+  });
 });

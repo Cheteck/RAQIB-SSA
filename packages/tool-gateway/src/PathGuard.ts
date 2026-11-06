@@ -1,11 +1,14 @@
+import fs from 'fs';
 import path from 'path';
 
 export class PathGuard {
   private readonly normalizedRoot: string;
+  private readonly realRoot: string;
 
   constructor(private allowedRoot: string) {
     this.allowedRoot = path.resolve(allowedRoot);
-    this.normalizedRoot = this.normalize(this.allowedRoot);
+    this.realRoot = this.realpathDeep(this.allowedRoot);
+    this.normalizedRoot = this.normalize(this.realRoot);
   }
 
   /**
@@ -13,6 +16,36 @@ export class PathGuard {
    */
   private normalize(p: string): string {
     return process.platform === 'win32' ? p.toLowerCase() : p;
+  }
+
+  /**
+   * Résout les liens symboliques sur la plus longue portion existante du chemin.
+   * Permet de valider un chemin qui n'existe pas encore (fichier à créer) tout
+   * en refusant un chemin dont un ancêtre existant est un symlink sortant.
+   */
+  private realpathDeep(target: string): string {
+    let current = target;
+    const missing: string[] = [];
+
+    while (!fs.existsSync(current)) {
+      const parent = path.dirname(current);
+      if (parent === current) break;
+      missing.unshift(path.basename(current));
+      current = parent;
+    }
+
+    let real = current;
+    try {
+      real = fs.realpathSync.native(current);
+    } catch {
+      try {
+        real = fs.realpathSync(current);
+      } catch {
+        // Chemin inaccessible : on conserve la résolution logique.
+      }
+    }
+
+    return missing.length ? path.join(real, ...missing) : real;
   }
 
   /**
@@ -25,10 +58,11 @@ export class PathGuard {
 
   validate(targetPath: string): { allowed: boolean; reason: string } {
     const resolved = this.resolve(targetPath);
+    // Résolution des symlinks AVANT la comparaison de confinement.
+    const realResolved = this.realpathDeep(resolved);
 
     // 1. Vérifier le confinement réel (pas un simple préfixe de chaîne).
-    //    Ancêtre exact OU enfant du root séparé par un séparateur de chemin.
-    const normalizedResolved = this.normalize(resolved);
+    const normalizedResolved = this.normalize(realResolved);
     const rootWithSep = this.normalizedRoot.endsWith(path.sep)
       ? this.normalizedRoot
       : this.normalizedRoot + path.sep;
@@ -40,8 +74,8 @@ export class PathGuard {
       return { allowed: false, reason: 'Access denied: Path outside allowed root' };
     }
 
-    // 2. Vérifier les secrets
-    if (this.isSecretFile(resolved)) {
+    // 2. Vérifier les secrets (sur le chemin réel, pas seulement logique).
+    if (this.isSecretFile(realResolved)) {
       return { allowed: false, reason: 'Access denied: Sensitive file access' };
     }
 
