@@ -13,6 +13,13 @@ export interface ShellToolOptions {
   maxTimeoutMs?: number;
   /** Taille maximale de sortie capturée (octets). */
   maxOutputBytes?: number;
+  /**
+   * Profils d'arguments par commande. Une commande sans profil est refusée
+   * quand `enforceArgumentProfiles` est vrai (fail-closed).
+   */
+  argumentProfiles?: ArgumentProfiles;
+  /** Active l'application systématique des profils d'arguments. */
+  enforceArgumentProfiles?: boolean;
   /** Hook de politique : refus explicite avant exécution. */
   authorize?: (
     command: string,
@@ -22,6 +29,15 @@ export interface ShellToolOptions {
   /** Hook d'audit (started / completed / denied). */
   onEvent?: (event: ShellEvent) => void | Promise<void>;
 }
+
+/** Un profil d'arguments : liste de motifs `argv` autorisés. */
+export interface ArgumentProfile {
+  /** Motif de tokens. `*` = un token, `**` = zéro ou plusieurs tokens restants. */
+  args: string[];
+  description: string;
+}
+
+export type ArgumentProfiles = Record<string, ArgumentProfile[]>;
 
 /** Corrélation propagée de la mission/étape jusqu'à l'audit. */
 export interface ShellCorrelation {
@@ -33,6 +49,12 @@ export interface ShellCorrelation {
 export interface ShellExecutionOptions extends ShellCorrelation {
   cwd?: string;
   timeoutMs?: number;
+  /**
+   * Applique le profil d'inspection READ-ONLY (`READ_ONLY_ARGUMENT_PROFILES`) :
+   * seules les commandes d'observation sont autorisées, toute commande capable
+   * d'écrire (npm, tsc, vitest, docker, git commit/push/...) est refusée.
+   */
+  readOnly?: boolean;
 }
 
 export type ShellEvent =
@@ -93,6 +115,61 @@ const SAFE_ENV_KEYS = new Set([
 ]);
 
 /**
+ * Profils d'arguments READ-ONLY pour l'inspection d'un dépôt.
+ *
+ * Les commandes absentes de ce dictionnaire sont refusées lorsque le profil
+ * read-only est actif (fail-closed) : `npm`, `npx`, `tsc`, `vitest`, `docker`
+ * ne peuvent donc pas écrire dans le dépôt inspecté pendant une mission.
+ */
+export const READ_ONLY_ARGUMENT_PROFILES: ArgumentProfiles = {
+  git: [
+    { args: ['--version'], description: 'git --version' },
+    { args: ['status', '**'], description: 'git status' },
+    { args: ['rev-parse', '**'], description: 'git rev-parse' },
+    { args: ['log', '**'], description: 'git log' },
+    { args: ['show', '**'], description: 'git show' },
+    { args: ['diff', '**'], description: 'git diff' },
+    { args: ['branch', '--list', '**'], description: 'git branch --list' },
+    { args: ['branch', '-a'], description: 'git branch -a' },
+    { args: ['ls-tree', '**'], description: 'git ls-tree' },
+    { args: ['ls-files', '**'], description: 'git ls-files' },
+    { args: ['remote', '-v'], description: 'git remote -v' },
+    { args: ['describe', '**'], description: 'git describe' },
+    { args: ['cat-file', '**'], description: 'git cat-file' },
+    { args: ['grep', '**'], description: 'git grep' },
+  ],
+  node: [
+    { args: ['--version'], description: 'node --version' },
+    { args: ['-v'], description: 'node -v' },
+  ],
+  ls: [{ args: ['**'], description: 'ls (lecture seule)' }],
+  cat: [{ args: ['**'], description: 'cat (lecture seule)' }],
+  pwd: [{ args: [], description: 'pwd' }],
+  echo: [{ args: ['**'], description: 'echo' }],
+};
+
+/**
+ * Vérifie qu'un `argv` correspond à un motif de profil.
+ * `*` consomme exactement un token, `**` consomme le reste.
+ */
+export function matchesArgumentPattern(args: string[], pattern: string[]): boolean {
+  const match = (i: number, j: number): boolean => {
+    if (j === pattern.length) return i === args.length;
+    const token = pattern[j];
+    if (token === '**') {
+      for (let k = i; k <= args.length; k++) {
+        if (match(k, j + 1)) return true;
+      }
+      return false;
+    }
+    if (i >= args.length) return false;
+    if (token === '*' || token === args[i]) return match(i + 1, j + 1);
+    return false;
+  };
+  return match(0, 0);
+}
+
+/**
  * ShellTool — exécution de commandes shell gouvernée.
  *
  * Garanties :
@@ -110,6 +187,8 @@ export class ShellTool {
   private defaultTimeoutMs: number;
   private maxTimeoutMs: number;
   private maxOutputBytes: number;
+  private argumentProfiles: ArgumentProfiles;
+  private enforceArgumentProfiles: boolean;
   private authorize?: ShellToolOptions['authorize'];
   private onEvent?: ShellToolOptions['onEvent'];
 
@@ -121,12 +200,34 @@ export class ShellTool {
     this.defaultTimeoutMs = options.defaultTimeoutMs ?? 30_000;
     this.maxTimeoutMs = options.maxTimeoutMs ?? 300_000;
     this.maxOutputBytes = options.maxOutputBytes ?? 1_000_000;
+    this.argumentProfiles = options.argumentProfiles ?? {};
+    this.enforceArgumentProfiles = options.enforceArgumentProfiles ?? false;
     this.authorize = options.authorize;
     this.onEvent = options.onEvent;
   }
 
   private normalize(cmd: string): string {
     return process.platform === 'win32' ? cmd.toLowerCase() : cmd;
+  }
+
+  private assertArgumentsAllowed(
+    base: string,
+    args: string[],
+    profiles: ArgumentProfiles,
+  ): void {
+    const profile = profiles[base];
+    if (!profile || profile.length === 0) {
+      throw new ShellPolicyError(
+        `Command '${base}' has no allowed argument profile in this mode`,
+      );
+    }
+    const matched = profile.some((rule) => matchesArgumentPattern(args, rule.args));
+    if (!matched) {
+      const allowed = profile.map((r) => (r.args.length ? r.args.join(' ') : '(no args)')).join(' | ');
+      throw new ShellPolicyError(
+        `Arguments not allowed for '${base}': [${args.join(' ')}]. Allowed: ${allowed}`,
+      );
+    }
   }
 
   /** Tokenisation sûre de la forme chaîne (pas de shell, pas de métacaractères). */
@@ -257,6 +358,19 @@ export class ShellTool {
       const reason = `Command '${base}' is not in the shell allowlist`;
       await this.onEvent?.({ type: 'shell.denied', command: base, args, reason, correlation });
       throw new ShellPolicyError(reason);
+    }
+
+    // Profils d'arguments : mode read-only explicite, ou profils configurés.
+    try {
+      if (options.readOnly) {
+        this.assertArgumentsAllowed(base, args, READ_ONLY_ARGUMENT_PROFILES);
+      } else if (this.enforceArgumentProfiles) {
+        this.assertArgumentsAllowed(base, args, this.argumentProfiles);
+      }
+    } catch (err) {
+      const reason = err instanceof Error ? err.message : String(err);
+      await this.onEvent?.({ type: 'shell.denied', command: base, args, reason, correlation });
+      throw err;
     }
 
     const cwd = this.resolveCwd(options.cwd);

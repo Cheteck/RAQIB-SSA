@@ -170,6 +170,8 @@ export class RaqibRuntime {
     missionId?: string;
     stepId?: string;
     correlationId?: string;
+    /** Profil d'inspection : refuse toute commande capable d'écrire. */
+    readOnly?: boolean;
   }): Promise<ShellExecutionResult> {
     if (!this.auditLedger) throw new Error('Runtime not constructed');
     return this.shellTool.execute(input.command, {
@@ -178,6 +180,7 @@ export class RaqibRuntime {
       missionId: input.missionId,
       stepId: input.stepId,
       correlationId: input.correlationId,
+      readOnly: input.readOnly,
     });
   }
 

@@ -2,7 +2,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
-import { ShellTool, ShellPolicyError } from '../../packages/tool-gateway/src/ShellTool';
+import { ShellTool, ShellPolicyError, matchesArgumentPattern } from '../../packages/tool-gateway/src/ShellTool';
 
 describe('ShellTool — exécution gouvernée (allowlist, cwd, timeout, env)', () => {
   let tmpDir: string;
@@ -107,8 +107,7 @@ describe('ShellTool — exécution gouvernée (allowlist, cwd, timeout, env)', (
     }
   });
 
-  it('propage la corrélation et qualifie l’issue (success/failure/denied)', async () => {
-    const events: any[] = [];
+  it('propage la corrélation et qualifie l’issue (success/failure/denied)', async () => {    const events: any[] = [];
     const tool = new ShellTool({
       cwdRoot: tmpDir,
       onEvent: (e) => { events.push(e); },
@@ -130,6 +129,59 @@ describe('ShellTool — exécution gouvernée (allowlist, cwd, timeout, env)', (
     expect(denied).toBeDefined();
     expect(denied.correlation).toEqual({ missionId: 'm1', stepId: 's3', correlationId: 'c3' });
     expect(denied.reason).toMatch(/allowlist/);
+  });
+
+  it('mode read-only : autorise les commandes d’inspection', async () => {
+    const tool = new ShellTool({ cwdRoot: tmpDir });
+    const git = await tool.execute(['git', '--version'], { readOnly: true });
+    expect(git.exitCode).toBe(0);
+    const node = await tool.execute(['node', '--version'], { readOnly: true });
+    expect(node.exitCode).toBe(0);
+  });
+
+  it('mode read-only : refuse toute commande capable d’écrire', async () => {
+    const tool = new ShellTool({ cwdRoot: tmpDir });
+    const denied = [
+      ['git', 'commit', '-m', 'x'],
+      ['git', 'push'],
+      ['git', 'reset', '--hard'],
+      ['git', 'checkout', '--', '.'],
+      ['npm', 'install'],
+      ['npx', 'tsc'],
+      ['tsc'],
+      ['vitest', 'run'],
+      ['docker', 'run', 'alpine'],
+      ['node', '-e', 'require("fs").writeFileSync("pwn.txt","x")'],
+    ];
+    for (const argv of denied) {
+      await expect(tool.execute(argv, { readOnly: true })).rejects.toThrow(
+        /Arguments not allowed|no allowed argument profile/,
+      );
+    }
+    // Aucun fichier n'a été créé par ces tentative refusées.
+    expect(fs.existsSync(path.join(tmpDir, 'pwn.txt'))).toBe(false);
+  });
+
+  it('profils personnalisés : fail-closed si la commande n’a pas de profil', async () => {
+    const tool = new ShellTool({
+      cwdRoot: tmpDir,
+      enforceArgumentProfiles: true,
+      argumentProfiles: {
+        node: [{ args: ['--version'], description: 'version seule' }],
+      },
+    });
+    await expect(tool.execute(['node', '--version'])).resolves.toMatchObject({ exitCode: 0 });
+    await expect(tool.execute(['node', '-e', 'console.log(1)'])).rejects.toThrow(/Arguments not allowed/);
+    await expect(tool.execute(['git', 'status'])).rejects.toThrow(/no allowed argument profile/);
+  });
+
+  it('matchesArgumentPattern gère * et **', () => {
+    expect(matchesArgumentPattern(['status', '--porcelain'], ['status', '**'])).toBe(true);
+    expect(matchesArgumentPattern(['status'], ['status', '**'])).toBe(true);
+    expect(matchesArgumentPattern(['status', 'a', 'b'], ['status', '*'])).toBe(false);
+    expect(matchesArgumentPattern(['--version'], ['--version'])).toBe(true);
+    expect(matchesArgumentPattern([], [])).toBe(true);
+    expect(matchesArgumentPattern(['--version', '--extra'], ['--version'])).toBe(false);
   });
 
   it('refuse un cwd qui est un symlink sortant du root', async () => {

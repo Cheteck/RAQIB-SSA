@@ -95,6 +95,7 @@ export class SkillsRegistry {
         missionId: z.string().optional(),
         stepId: z.string().optional(),
         correlationId: z.string().optional(),
+        readOnly: z.boolean().optional(),
       }),
       requiredPermission: 'EXECUTE',
       handler: async (args: {
@@ -104,6 +105,7 @@ export class SkillsRegistry {
         missionId?: string;
         stepId?: string;
         correlationId?: string;
+        readOnly?: boolean;
       }) => {
         return await tool.execute(args.command, {
           cwd: args.cwd,
@@ -111,6 +113,7 @@ export class SkillsRegistry {
           missionId: args.missionId,
           stepId: args.stepId,
           correlationId: args.correlationId,
+          readOnly: args.readOnly,
         });
       },
     });

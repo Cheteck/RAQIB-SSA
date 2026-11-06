@@ -109,6 +109,34 @@ describe('RAQIB Runtime — shell gouverné (policy + audit)', () => {
     expect(executed[0].data.exitCode).toBe(4);
   });
 
+  it('mode read-only du runtime refuse une commande d’écriture', async () => {
+    await expect(
+      runtime.executeShell({
+        command: ['git', 'commit', '-m', 'should-not-run'],
+        readOnly: true,
+        missionId: 'mission-readonly',
+        stepId: 'step-ro',
+        correlationId: 'corr-ro',
+      }),
+    ).rejects.toThrow(/Arguments not allowed/);
+
+    await sleep(50);
+    const denials = await runtime.auditLedger.query({
+      missionId: 'mission-readonly',
+      type: 'POLICY_DECISION',
+    });
+    expect(denials[0].data.verdict).toBe('DENY');
+    expect(denials[0].data.reason).toMatch(/Arguments not allowed/);
+
+    // Une commande d'inspection passe dans le même mode.
+    const ok = await runtime.executeShell({
+      command: ['git', 'status', '--porcelain'],
+      readOnly: true,
+      missionId: 'mission-readonly',
+    });
+    expect(ok.exitCode).toBe(0);
+  });
+
   it('ne donne pas accès shell à un dépôt cible externe (targetRepoPath)', async () => {
     const externalRepo = fs.mkdtempSync(path.join(os.tmpdir(), 'raqib-external-'));
     const otherData = fs.mkdtempSync(path.join(os.tmpdir(), 'raqib-shell2-'));

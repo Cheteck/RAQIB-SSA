@@ -18,6 +18,7 @@ Donner à RAQIB la capacité d'exécuter des commandes shell **sans ouvrir une p
 |---|---|
 | Pas de shell implicite | `execFile` + tableau d'arguments (`shell: false`) |
 | Allowlist de commandes | basename validé contre `allowedCommands` (défaut : `git`, `node`, `npm`, `npx`, `tsc`, `vitest`, `docker`, `ls`, `cat`, `pwd`, `echo`) |
+| Profils d'arguments | en mode `readOnly`, seules les formes d'arguments déclarées sont autorisées (`READ_ONLY_ARGUMENT_PROFILES`) ; une commande sans profil est refusée (fail-closed) |
 | Métacaractères refusés | forme chaîne : `; & \| > < \` $ ( ) { } [ ] \` et retours ligne rejetés |
 | Confinement cwd | `PathGuard` sur `cwdRoot` ; `..` et chemins hors racine refusés |
 | Symlinks résolus | `PathGuard.realpathDeep` résout les liens sur la plus longue portion existante ; un lien (ou un ancêtre) pointant hors du root est refusé (CWE-59) |
@@ -92,14 +93,50 @@ await runtime.skillsRegistry.execute('shell_exec', { command: ['git', 'status', 
 const result = await runtime.executeShell({ command: ['node', '--version'] });
 ```
 
+### 4.4 Profil d'inspection READ-ONLY (profils d'arguments)
+
+`readOnly: true` applique `READ_ONLY_ARGUMENT_PROFILES` : la commande **et** la forme de ses arguments doivent correspondre à un motif déclaré. Toute commande absente du profil est refusée (fail-closed) — donc `npm`, `npx`, `tsc`, `vitest`, `docker` et les sous-commandes Git d'écriture (`commit`, `push`, `reset`, `checkout`, `clean`, `stash`…) sont inutilisables pendant une mission d'inspection.
+
+```ts
+const head = await runtime.executeShell({
+  command: ['git', 'rev-parse', 'HEAD'],
+  cwd: '.',
+  readOnly: true,
+  missionId: 'MOSAIX-001-V3',
+  stepId: 'step-inventory',
+  correlationId: 'corr-sha',
+});
+```
+
+Motifs supportés : `*` = un token, `**` = zéro ou plusieurs tokens restants.
+
+Profils personnalisés :
+
+```ts
+const tool = new ShellTool({
+  cwdRoot: repo,
+  enforceArgumentProfiles: true,
+  argumentProfiles: {
+    node: [{ args: ['--version'], description: 'version seule' }],
+  },
+});
+```
+
+**Garantie de non-modification** : `FileTool`/`GitTool` ne font que lire ; en mode `readOnly`, le shell ne peut exécuter aucun binaire ni aucune sous-commande capable d'écrire. La vérification `GIT_STATUS_UNCHANGED` contrôle ensuite que `git status --porcelain` est identique au baseline.
+
+```ts
+// Refusé : Arguments not allowed for 'git': [commit -m x]
+await runtime.executeShell({ command: ['git', 'commit', '-m', 'x'], readOnly: true });
+```
+
 ---
 
 ## 5. Preuves
 
-- `tests/tool-gateway/shell-tool.spec.ts` — 13 tests : allow, deny, métacaractères, confinement cwd, exit code non nul, timeout, hook authorize, événements, filtrage d'environnement, **corrélation + issue**, **cwd = junction sortante refusée**.
+- `tests/tool-gateway/shell-tool.spec.ts` — 16 tests : allow, deny, métacaractères, confinement cwd, exit code non nul, timeout, hook authorize, événements, filtrage d'environnement, **corrélation + issue**, **profils read-only (écritures refusées)**, **profils personnalisés fail-closed**, **matcher `*`/`**`**, **cwd = junction sortante refusée**.
 - `tests/tool-gateway/path-guard-symlinks.spec.ts` — 6 tests CWE-59 : refus d'un lien sortant (fichier, lien lui-même, chemin inexistant sous un ancêtre lien), autorisation d'un lien interne, autorisation d'un chemin futur sous le root.
-- `tests/runtime/shell-execution.spec.ts` — 6 tests : exécution + `ACTION_EXECUTED`, refus hors allowlist, refus read-only + `POLICY_DECISION` DENY, présence du skill `shell_exec`, **corrélation des refus et issue `failure`**, **`targetRepoPath` externe inaccessible au shell**.
-- Suite complète : **150 tests verts sur 30 fichiers**, `tsc -p tsconfig.build.json --noEmit` sans erreur.
+- `tests/runtime/shell-execution.spec.ts` — 7 tests : exécution + `ACTION_EXECUTED`, refus hors allowlist, refus read-only + `POLICY_DECISION` DENY, présence du skill `shell_exec`, **corrélation des refus et issue `failure`**, **readOnly runtime (écriture refusée, inspection autorisée)**, **`targetRepoPath` externe inaccessible au shell**.
+- Suite complète : **155 tests verts sur 30 fichiers**, `tsc -p tsconfig.build.json --noEmit` sans erreur.
 - Vérification manuelle des symlinks sur cette machine (junction Windows créable sans admin) :
   - `junction created: true`
   - `validate escape/secret.txt` → `{"allowed":false,"reason":"Access denied: Path outside allowed root"}`
