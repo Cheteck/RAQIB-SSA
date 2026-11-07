@@ -128,7 +128,14 @@ function MissionCard({ mission, agents, isSelected, onSelect, onSelectAgent, onA
       tabIndex={0}
       role="article"
       aria-labelledby={`mission-${mission.id}`}
+      aria-selected={isSelected}
       onClick={() => onSelect(mission.id)}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          onSelect(mission.id);
+        }
+      }}
       style={{
         borderColor: isSelected ? 'rgba(var(--c), 0.6)' : 'rgba(var(--c), 0.15)',
         background: isSelected ? 'rgba(var(--c), 0.08)' : undefined,
@@ -827,14 +834,18 @@ function MissionControlPageInner() {
   const [selectedMissionId, setSelectedMissionId] = useState<string | null>(searchParams.get('missionId'));
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(searchParams.get('agentId'));
 
-  // Recherche instantanée + filtre de statut (chantier ergonomie Mission Control).
+  // Recherche instantanée + filtres combinables (chantier ergonomie Mission Control).
   const [query, setQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'ACTIVE' | 'ALERT' | 'DONE'>('ALL');
+  const [roleFilter, setRoleFilter] = useState<'ALL' | 'executor' | 'researcher' | 'verifier'>('ALL');
+  const [unassignedOnly, setUnassignedOnly] = useState(false);
   const searchRef = useRef<HTMLInputElement | null>(null);
 
   const resetFilters = useCallback(() => {
     setQuery('');
     setStatusFilter('ALL');
+    setRoleFilter('ALL');
+    setUnassignedOnly(false);
   }, []);
 
   useEffect(() => {
@@ -852,7 +863,8 @@ function MissionControlPageInner() {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
-  // Raccourcis : « / » focus la recherche (hors champ de saisie), Échap efface.
+  // Raccourcis clavier : « / » recherche, ↑/↓ (ou j/k) naviguent entre les
+  // cartes, Échap efface/replie. Les champs de saisie sont toujours préservés.
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement | null;
@@ -872,6 +884,30 @@ function MissionControlPageInner() {
       if (event.key === 'Escape' && target === searchRef.current) {
         setQuery('');
         searchRef.current?.blur();
+        return;
+      }
+      if (event.key === 'Escape' && !typing) {
+        setSelectedMissionId(null);
+        setSelectedAgentId(null);
+        window.history.pushState(null, '', window.location.pathname);
+        return;
+      }
+
+      // Navigation séquentielle dans la grille de missions.
+      const isNext = event.key === 'ArrowDown' || event.key === 'j';
+      const isPrev = event.key === 'ArrowUp' || event.key === 'k';
+      if ((isNext || isPrev) && !typing) {
+        const cards = Array.from(
+          document.querySelectorAll<HTMLElement>('.mission-card'),
+        );
+        if (cards.length === 0) return;
+        event.preventDefault();
+        const currentIndex = cards.findIndex((card) => card === document.activeElement);
+        const nextIndex =
+          currentIndex === -1
+            ? 0
+            : Math.min(cards.length - 1, Math.max(0, currentIndex + (isNext ? 1 : -1)));
+        cards[nextIndex]?.focus();
       }
     };
     window.addEventListener('keydown', onKeyDown);
@@ -948,7 +984,7 @@ function MissionControlPageInner() {
   // Agents par mission
   const getAgentsForMission = (missionId: string) => agents.filter((a) => a.missionId === missionId);
 
-  // ── Recherche instantanée + filtre de statut ────────────────────────
+  // ── Recherche instantanée + filtres combinables ─────────────────────
   const normalizedQuery = query.trim().toLowerCase();
   const matchesQuery = (values: Array<string | undefined>): boolean =>
     normalizedQuery.length === 0 ||
@@ -962,11 +998,16 @@ function MissionControlPageInner() {
     return rank === 3;
   };
 
+  const matchesRoleFilter = (missionAgents: Subagent[]): boolean =>
+    roleFilter === 'ALL' || missionAgents.some((agent) => agent.role === roleFilter);
+
   // Une mission correspond aussi si l'un de ses agents correspond (recherche
   // transversale : « quel agent travaille sur quoi ? »).
   const filteredMissions = sortedMissions.filter((mission) => {
     if (!matchesStatusFilter(mission.status)) return false;
     const missionAgents = getAgentsForMission(mission.id);
+    if (unassignedOnly && missionAgents.length > 0) return false;
+    if (!matchesRoleFilter(missionAgents)) return false;
     return matchesQuery([
       mission.id,
       mission.name,
@@ -976,11 +1017,17 @@ function MissionControlPageInner() {
     ]);
   });
 
-  const filteredAvailableAgents = availableAgentList.filter((agent) =>
-    matchesQuery([agent.id, agent.name, agent.role, agent.specialty]),
+  const filteredAvailableAgents = availableAgentList.filter(
+    (agent) =>
+      (roleFilter === 'ALL' || agent.role === roleFilter) &&
+      matchesQuery([agent.id, agent.name, agent.role, agent.specialty]),
   );
 
-  const hasActiveFilters = normalizedQuery.length > 0 || statusFilter !== 'ALL';
+  const hasActiveFilters =
+    normalizedQuery.length > 0 ||
+    statusFilter !== 'ALL' ||
+    roleFilter !== 'ALL' ||
+    unassignedOnly;
 
   // Sélection URL + État Synchrone
   const selectMission = (id: string) => {
@@ -1153,6 +1200,49 @@ function MissionControlPageInner() {
                 );
               })}
 
+              {/* Filtre de rôle : les missions sont filtrées via leurs agents. */}
+              <select
+                value={roleFilter}
+                onChange={(event) => setRoleFilter(event.target.value as typeof roleFilter)}
+                aria-label="Filtrer par rôle d’agent"
+                title="Filtrer les missions et les agents par rôle"
+                style={{
+                  padding: '5px 7px',
+                  background: 'rgba(5, 10, 18, 0.6)',
+                  border: roleFilter === 'ALL' ? '1px solid rgba(var(--c), 0.2)' : '1px solid rgb(var(--c))',
+                  borderRadius: '4px',
+                  color: roleFilter === 'ALL' ? 'var(--mu)' : 'var(--tx)',
+                  font: '600 9px Oxanium',
+                  letterSpacing: '0.06em',
+                  cursor: 'pointer',
+                }}
+              >
+                <option value="ALL">Tous rôles</option>
+                <option value="executor">Exécuteur</option>
+                <option value="researcher">Chercheur</option>
+                <option value="verifier">Vérificateur</option>
+              </select>
+
+              {/* Missions sans agent : file d’attente d’affectation. */}
+              <button
+                type="button"
+                onClick={() => setUnassignedOnly((value) => !value)}
+                aria-pressed={unassignedOnly}
+                title="Afficher uniquement les missions sans agent affecté"
+                style={{
+                  font: '600 9px Oxanium',
+                  letterSpacing: '0.06em',
+                  padding: '5px 9px',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  color: unassignedOnly ? '#04101a' : 'var(--mu)',
+                  background: unassignedOnly ? 'rgb(var(--m))' : 'rgba(5, 10, 18, 0.6)',
+                  border: unassignedOnly ? '1px solid rgb(var(--m))' : '1px solid rgba(var(--c), 0.2)',
+                }}
+              >
+                Sans agent
+              </button>
+
               {hasActiveFilters && (
                 <button
                   type="button"
@@ -1193,7 +1283,11 @@ function MissionControlPageInner() {
               >
                 <span className="ms" style={{ fontSize: '16px' }}>search_off</span>
                 <span style={{ font: '400 11px Geist' }}>
-                  Aucun résultat pour « {query || (statusFilter === 'ALL' ? '' : statusFilter.toLowerCase())} ».
+                  Aucun résultat pour les filtres actifs
+                  {query ? ` · recherche « ${query} »` : ''}
+                  {statusFilter !== 'ALL' ? ` · statut ${statusFilter.toLowerCase()}` : ''}
+                  {roleFilter !== 'ALL' ? ` · rôle ${ROLE_LABELS[roleFilter] || roleFilter}` : ''}
+                  {unassignedOnly ? ' · sans agent' : ''}.
                 </span>
                 <button
                   type="button"
@@ -1206,7 +1300,7 @@ function MissionControlPageInner() {
             )}
 
             {!loading && !error && filteredMissions.length > 0 && (
-              <div className="missions-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: '14px' }}>
+              <div className="missions-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 360px), 1fr))', gap: '14px' }}>
                 {filteredMissions.map((mission) => (
                   <MissionCard
                     key={mission.id}
