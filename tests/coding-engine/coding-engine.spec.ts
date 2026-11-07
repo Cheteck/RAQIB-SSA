@@ -24,7 +24,7 @@ describe('Coding Engine SDK Architecture Suite', () => {
     }
   });
 
-  it('runs Embedded SDK with LocalWorkspace and FreeLLMAPIProvider', async () => {
+  it('refuse (fail-closed) une exécution sans boucle réelle', async () => {
     const workspace = new LocalWorkspace({ id: 'ws-1', root: testDir });
     const provider = new FreeLLMAPIProvider({
       baseURL: 'https://freellmapi.com/api/v1',
@@ -40,14 +40,17 @@ describe('Coding Engine SDK Architecture Suite', () => {
       mode: 'propose',
     });
 
-    expect(result.status).toBe('needs_approval');
-    expect(result.pendingApproval).toBeDefined();
+    // F-01 : aucun patch n'est produit → aucun statut de succès n'est déclarable.
+    expect(result.status).toBe('blocked');
+    expect(result.changes).toEqual([]);
+    expect(result.validations).toEqual([]);
+    expect(result.pendingApproval).toBeUndefined();
 
     const files = await workspace.listFiles();
     expect(files.some((f) => f.path === 'sample.ts')).toBe(true);
   });
 
-  it('exposes HTTP REST API Server (/v1/tasks and /v1/tasks/:id/approve)', async () => {
+  it('exposes HTTP REST API Server (/v1/tasks and refusals)', async () => {
     const engine = new SDKCodingEngine();
     const server = createCodingEngineServer(engine);
 
@@ -61,7 +64,7 @@ describe('Coding Engine SDK Architecture Suite', () => {
       });
 
     expect(postRes.status).toBe(201);
-    expect(postRes.body.result.status).toBe('needs_approval');
+    expect(postRes.body.result.status).toBe('blocked');
 
     const taskId = postRes.body.result.taskId;
     const approveRes = await request(server)
@@ -69,6 +72,10 @@ describe('Coding Engine SDK Architecture Suite', () => {
       .send({ approvalId: 'appr-01' });
 
     expect(approveRes.status).toBe(200);
-    expect(approveRes.body.result.status).toBe('completed');
+    expect(approveRes.body.result.status).toBe('blocked');
+
+    const cancelRes = await request(server).post(`/v1/tasks/${taskId}/cancel`);
+    expect(cancelRes.status).toBe(501);
+    expect(cancelRes.body.cancelled).toBe(false);
   });
 });
