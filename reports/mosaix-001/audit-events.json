@@ -1,0 +1,352 @@
+[
+  {
+    "id": "evt-mission-created-MOSAIX-001-1793931655408",
+    "timestamp": "2026-11-06T02:20:55.400Z",
+    "type": "MISSION_CREATED",
+    "mission_id": "MOSAIX-001",
+    "step_id": null,
+    "actor": "raqib-core",
+    "data": "{\"status\":\"PLANNED\",\"steps\":7,\"planGenerated\":true}",
+    "created_at": 1793931655
+  },
+  {
+    "id": "evt-plan-generated-MOSAIX-001-1793931655408",
+    "timestamp": "2026-11-06T02:20:55.400Z",
+    "type": "PLAN_GENERATED",
+    "mission_id": "MOSAIX-001",
+    "step_id": null,
+    "actor": "raqib-core",
+    "data": "{\"planId\":\"plan-MOSAIX-001-v1\",\"contentHash\":\"6fb65024610f6d9e4755536b447a4f001b96a601161069e280d3cc4dce1d90bc\"}",
+    "created_at": 1793931655
+  },
+  {
+    "id": "evt-transition-MOSAIX-001-1793931655412",
+    "timestamp": "2026-11-06T02:20:55.409Z",
+    "type": "PLAN_APPROVED",
+    "mission_id": "MOSAIX-001",
+    "step_id": null,
+    "actor": "raqib-core",
+    "data": "{\"from\":\"PLANNED\",\"to\":\"APPROVED\",\"reason\":\"Plan approuvé après revue (READ-ONLY).\"}",
+    "created_at": 1793931655
+  },
+  {
+    "id": "evt-transition-MOSAIX-001-1793931655415",
+    "timestamp": "2026-11-06T02:20:55.413Z",
+    "type": "MISSION_STARTED",
+    "mission_id": "MOSAIX-001",
+    "step_id": null,
+    "actor": "raqib-core",
+    "data": "{\"from\":\"APPROVED\",\"to\":\"RUNNING\",\"reason\":\"Mission démarrée via le runtime RAQIB.\"}",
+    "created_at": 1793931655
+  },
+  {
+    "id": "evt-policy-ALLOW-1793931660406-yung",
+    "timestamp": "2026-11-06T02:21:00.404Z",
+    "type": "POLICY_DECISION",
+    "mission_id": "MOSAIX-001",
+    "step_id": null,
+    "actor": "raqib-core",
+    "data": "{\"verdict\":\"ALLOW\",\"actionType\":\"EXECUTE\",\"resource\":\"Inventory codebase\",\"reason\":\"Authorized\",\"allowed\":true}",
+    "created_at": 1793931660
+  },
+  {
+    "id": "evt-step-policy-MOSAIX-001-MOSAIX-001-step-0-1793931660407",
+    "timestamp": "2026-11-06T02:21:00.407Z",
+    "type": "POLICY_DECISION",
+    "mission_id": "MOSAIX-001",
+    "step_id": null,
+    "actor": "raqib-core",
+    "data": "{\"step\":\"MOSAIX-001-step-0\",\"decision\":{\"allowed\":true,\"reason\":\"Authorized\"}}",
+    "created_at": 1793931660
+  },
+  {
+    "id": "evt-step-started-MOSAIX-001-MOSAIX-001-step-0-1793931660413",
+    "timestamp": "2026-11-06T02:21:00.413Z",
+    "type": "STEP_STARTED",
+    "mission_id": "MOSAIX-001",
+    "step_id": "MOSAIX-001-step-0",
+    "actor": "raqib-core",
+    "data": "{\"step\":\"MOSAIX-001-step-0\",\"attempt\":1}",
+    "created_at": 1793931660
+  },
+  {
+    "id": "evt-step-done-MOSAIX-001-MOSAIX-001-step-0-1793931660418",
+    "timestamp": "2026-11-06T02:21:00.418Z",
+    "type": "STEP_COMPLETED",
+    "mission_id": "MOSAIX-001",
+    "step_id": "MOSAIX-001-step-0",
+    "actor": "raqib-core",
+    "data": "{\"step\":\"MOSAIX-001-step-0\",\"status\":\"DONE\",\"proof\":\"Inventory: 42 top-level entries\"}",
+    "created_at": 1793931660
+  },
+  {
+    "id": "evt-policy-ALLOW-1793931665413-grrh",
+    "timestamp": "2026-11-06T02:21:05.413Z",
+    "type": "POLICY_DECISION",
+    "mission_id": "MOSAIX-001",
+    "step_id": null,
+    "actor": "raqib-core",
+    "data": "{\"verdict\":\"ALLOW\",\"actionType\":\"EXECUTE\",\"resource\":\"Analyse gaps and opportunities\",\"reason\":\"Authorized\",\"allowed\":true}",
+    "created_at": 1793931665
+  },
+  {
+    "id": "evt-step-policy-MOSAIX-001-MOSAIX-001-step-1-1793931665413",
+    "timestamp": "2026-11-06T02:21:05.413Z",
+    "type": "POLICY_DECISION",
+    "mission_id": "MOSAIX-001",
+    "step_id": null,
+    "actor": "raqib-core",
+    "data": "{\"step\":\"MOSAIX-001-step-1\",\"decision\":{\"allowed\":true,\"reason\":\"Authorized\"}}",
+    "created_at": 1793931665
+  },
+  {
+    "id": "evt-step-started-MOSAIX-001-MOSAIX-001-step-1-1793931665417",
+    "timestamp": "2026-11-06T02:21:05.417Z",
+    "type": "STEP_STARTED",
+    "mission_id": "MOSAIX-001",
+    "step_id": "MOSAIX-001-step-1",
+    "actor": "raqib-core",
+    "data": "{\"step\":\"MOSAIX-001-step-1\",\"attempt\":1}",
+    "created_at": 1793931665
+  },
+  {
+    "id": "evt-step-done-MOSAIX-001-MOSAIX-001-step-1-1793931665420",
+    "timestamp": "2026-11-06T02:21:05.420Z",
+    "type": "STEP_COMPLETED",
+    "mission_id": "MOSAIX-001",
+    "step_id": "MOSAIX-001-step-1",
+    "actor": "raqib-core",
+    "data": "{\"step\":\"MOSAIX-001-step-1\",\"status\":\"DONE\",\"proof\":\"analysis step\"}",
+    "created_at": 1793931665
+  },
+  {
+    "id": "evt-policy-ALLOW-1793931670415-6ys0",
+    "timestamp": "2026-11-06T02:21:10.414Z",
+    "type": "POLICY_DECISION",
+    "mission_id": "MOSAIX-001",
+    "step_id": null,
+    "actor": "raqib-core",
+    "data": "{\"verdict\":\"ALLOW\",\"actionType\":\"EXECUTE\",\"resource\":\"Propose improvements\",\"reason\":\"Authorized\",\"allowed\":true}",
+    "created_at": 1793931670
+  },
+  {
+    "id": "evt-step-policy-MOSAIX-001-MOSAIX-001-step-2-1793931670415",
+    "timestamp": "2026-11-06T02:21:10.415Z",
+    "type": "POLICY_DECISION",
+    "mission_id": "MOSAIX-001",
+    "step_id": null,
+    "actor": "raqib-core",
+    "data": "{\"step\":\"MOSAIX-001-step-2\",\"decision\":{\"allowed\":true,\"reason\":\"Authorized\"}}",
+    "created_at": 1793931670
+  },
+  {
+    "id": "evt-step-started-MOSAIX-001-MOSAIX-001-step-2-1793931670419",
+    "timestamp": "2026-11-06T02:21:10.419Z",
+    "type": "STEP_STARTED",
+    "mission_id": "MOSAIX-001",
+    "step_id": "MOSAIX-001-step-2",
+    "actor": "raqib-core",
+    "data": "{\"step\":\"MOSAIX-001-step-2\",\"attempt\":1}",
+    "created_at": 1793931670
+  },
+  {
+    "id": "evt-step-done-MOSAIX-001-MOSAIX-001-step-2-1793931670422",
+    "timestamp": "2026-11-06T02:21:10.422Z",
+    "type": "STEP_COMPLETED",
+    "mission_id": "MOSAIX-001",
+    "step_id": "MOSAIX-001-step-2",
+    "actor": "raqib-core",
+    "data": "{\"step\":\"MOSAIX-001-step-2\",\"status\":\"DONE\",\"proof\":\"proposal step\"}",
+    "created_at": 1793931670
+  },
+  {
+    "id": "evt-policy-ALLOW-1793931675415-g0tn",
+    "timestamp": "2026-11-06T02:21:15.414Z",
+    "type": "POLICY_DECISION",
+    "mission_id": "MOSAIX-001",
+    "step_id": null,
+    "actor": "raqib-core",
+    "data": "{\"verdict\":\"ALLOW\",\"actionType\":\"EXECUTE\",\"resource\":\"Typecheck codebase\",\"reason\":\"Authorized\",\"allowed\":true}",
+    "created_at": 1793931675
+  },
+  {
+    "id": "evt-step-policy-MOSAIX-001-MOSAIX-001-step-3-1793931675415",
+    "timestamp": "2026-11-06T02:21:15.415Z",
+    "type": "POLICY_DECISION",
+    "mission_id": "MOSAIX-001",
+    "step_id": null,
+    "actor": "raqib-core",
+    "data": "{\"step\":\"MOSAIX-001-step-3\",\"decision\":{\"allowed\":true,\"reason\":\"Authorized\"}}",
+    "created_at": 1793931675
+  },
+  {
+    "id": "evt-step-started-MOSAIX-001-MOSAIX-001-step-3-1793931675420",
+    "timestamp": "2026-11-06T02:21:15.420Z",
+    "type": "STEP_STARTED",
+    "mission_id": "MOSAIX-001",
+    "step_id": "MOSAIX-001-step-3",
+    "actor": "raqib-core",
+    "data": "{\"step\":\"MOSAIX-001-step-3\",\"attempt\":1}",
+    "created_at": 1793931675
+  },
+  {
+    "id": "evt-step-done-MOSAIX-001-MOSAIX-001-step-3-1793931678705",
+    "timestamp": "2026-11-06T02:21:18.705Z",
+    "type": "STEP_COMPLETED",
+    "mission_id": "MOSAIX-001",
+    "step_id": "MOSAIX-001-step-3",
+    "actor": "raqib-core",
+    "data": "{\"step\":\"MOSAIX-001-step-3\",\"status\":\"DONE\",\"proof\":\"tsc --noEmit OK\"}",
+    "created_at": 1793931678
+  },
+  {
+    "id": "evt-policy-ALLOW-1793931680416-mqs6",
+    "timestamp": "2026-11-06T02:21:20.416Z",
+    "type": "POLICY_DECISION",
+    "mission_id": "MOSAIX-001",
+    "step_id": null,
+    "actor": "raqib-core",
+    "data": "{\"verdict\":\"ALLOW\",\"actionType\":\"EXECUTE\",\"resource\":\"Build dashboard\",\"reason\":\"Authorized\",\"allowed\":true}",
+    "created_at": 1793931680
+  },
+  {
+    "id": "evt-step-policy-MOSAIX-001-MOSAIX-001-step-4-1793931680417",
+    "timestamp": "2026-11-06T02:21:20.417Z",
+    "type": "POLICY_DECISION",
+    "mission_id": "MOSAIX-001",
+    "step_id": null,
+    "actor": "raqib-core",
+    "data": "{\"step\":\"MOSAIX-001-step-4\",\"decision\":{\"allowed\":true,\"reason\":\"Authorized\"}}",
+    "created_at": 1793931680
+  },
+  {
+    "id": "evt-step-started-MOSAIX-001-MOSAIX-001-step-4-1793931680420",
+    "timestamp": "2026-11-06T02:21:20.420Z",
+    "type": "STEP_STARTED",
+    "mission_id": "MOSAIX-001",
+    "step_id": "MOSAIX-001-step-4",
+    "actor": "raqib-core",
+    "data": "{\"step\":\"MOSAIX-001-step-4\",\"attempt\":1}",
+    "created_at": 1793931680
+  },
+  {
+    "id": "evt-step-done-MOSAIX-001-MOSAIX-001-step-4-1793931705642",
+    "timestamp": "2026-11-06T02:21:45.642Z",
+    "type": "STEP_COMPLETED",
+    "mission_id": "MOSAIX-001",
+    "step_id": "MOSAIX-001-step-4",
+    "actor": "raqib-core",
+    "data": "{\"step\":\"MOSAIX-001-step-4\",\"status\":\"DONE\",\"proof\":\"dashboard build OK\"}",
+    "created_at": 1793931705
+  },
+  {
+    "id": "evt-policy-ALLOW-1793931705644-m28m",
+    "timestamp": "2026-11-06T02:21:45.644Z",
+    "type": "POLICY_DECISION",
+    "mission_id": "MOSAIX-001",
+    "step_id": null,
+    "actor": "raqib-core",
+    "data": "{\"verdict\":\"ALLOW\",\"actionType\":\"EXECUTE\",\"resource\":\"Run unit tests\",\"reason\":\"Authorized\",\"allowed\":true}",
+    "created_at": 1793931705
+  },
+  {
+    "id": "evt-step-policy-MOSAIX-001-MOSAIX-001-step-5-1793931705644",
+    "timestamp": "2026-11-06T02:21:45.644Z",
+    "type": "POLICY_DECISION",
+    "mission_id": "MOSAIX-001",
+    "step_id": null,
+    "actor": "raqib-core",
+    "data": "{\"step\":\"MOSAIX-001-step-5\",\"decision\":{\"allowed\":true,\"reason\":\"Authorized\"}}",
+    "created_at": 1793931705
+  },
+  {
+    "id": "evt-step-started-MOSAIX-001-MOSAIX-001-step-5-1793931705647",
+    "timestamp": "2026-11-06T02:21:45.647Z",
+    "type": "STEP_STARTED",
+    "mission_id": "MOSAIX-001",
+    "step_id": "MOSAIX-001-step-5",
+    "actor": "raqib-core",
+    "data": "{\"step\":\"MOSAIX-001-step-5\",\"attempt\":1}",
+    "created_at": 1793931705
+  },
+  {
+    "id": "evt-step-done-MOSAIX-001-MOSAIX-001-step-5-1793931720754",
+    "timestamp": "2026-11-06T02:22:00.754Z",
+    "type": "STEP_COMPLETED",
+    "mission_id": "MOSAIX-001",
+    "step_id": "MOSAIX-001-step-5",
+    "actor": "raqib-core",
+    "data": "{\"step\":\"MOSAIX-001-step-5\",\"status\":\"DONE\",\"proof\":\"vitest OK\"}",
+    "created_at": 1793931720
+  },
+  {
+    "id": "evt-policy-ALLOW-1793931720760-xu8b",
+    "timestamp": "2026-11-06T02:22:00.760Z",
+    "type": "POLICY_DECISION",
+    "mission_id": "MOSAIX-001",
+    "step_id": null,
+    "actor": "raqib-core",
+    "data": "{\"verdict\":\"ALLOW\",\"actionType\":\"EXECUTE\",\"resource\":\"Generate improvement report\",\"reason\":\"Authorized\",\"allowed\":true}",
+    "created_at": 1793931720
+  },
+  {
+    "id": "evt-step-policy-MOSAIX-001-MOSAIX-001-step-6-1793931720761",
+    "timestamp": "2026-11-06T02:22:00.761Z",
+    "type": "POLICY_DECISION",
+    "mission_id": "MOSAIX-001",
+    "step_id": null,
+    "actor": "raqib-core",
+    "data": "{\"step\":\"MOSAIX-001-step-6\",\"decision\":{\"allowed\":true,\"reason\":\"Authorized\"}}",
+    "created_at": 1793931720
+  },
+  {
+    "id": "evt-step-started-MOSAIX-001-MOSAIX-001-step-6-1793931720765",
+    "timestamp": "2026-11-06T02:22:00.765Z",
+    "type": "STEP_STARTED",
+    "mission_id": "MOSAIX-001",
+    "step_id": "MOSAIX-001-step-6",
+    "actor": "raqib-core",
+    "data": "{\"step\":\"MOSAIX-001-step-6\",\"attempt\":1}",
+    "created_at": 1793931720
+  },
+  {
+    "id": "evt-step-done-MOSAIX-001-MOSAIX-001-step-6-1793931720772",
+    "timestamp": "2026-11-06T02:22:00.772Z",
+    "type": "STEP_COMPLETED",
+    "mission_id": "MOSAIX-001",
+    "step_id": "MOSAIX-001-step-6",
+    "actor": "raqib-core",
+    "data": "{\"step\":\"MOSAIX-001-step-6\",\"status\":\"DONE\",\"proof\":\"D:\\\\Projets\\\\RAQIB-SSA\\\\reports\\\\raqib-self-improvement.md\"}",
+    "created_at": 1793931720
+  },
+  {
+    "id": "evt-transition-MOSAIX-001-1793931720778",
+    "timestamp": "2026-11-06T02:22:00.774Z",
+    "type": "ACTION_EXECUTED",
+    "mission_id": "MOSAIX-001",
+    "step_id": null,
+    "actor": "raqib-core",
+    "data": "{\"from\":\"RUNNING\",\"to\":\"VERIFYING\",\"reason\":\"All steps completed\"}",
+    "created_at": 1793931720
+  },
+  {
+    "id": "evt-verification-result-MOSAIX-001-1793931723780",
+    "timestamp": "2026-11-06T02:22:03.776Z",
+    "type": "VERIFICATION_RESULT",
+    "mission_id": "MOSAIX-001",
+    "step_id": null,
+    "actor": "raqib-verification-engine",
+    "data": "{\"verdict\":\"PASS\",\"summary\":\"All 1 verification checks passed successfully.\",\"results\":[{\"checkId\":\"COMMAND_EXIT_CODE\",\"passed\":true,\"evidence\":\"Exit code: 0, Expected: 0\",\"method\":\"exitCode assertion\",\"timestamp\":\"2026-11-06T02:22:03.775Z\"}]}",
+    "created_at": 1793931723
+  },
+  {
+    "id": "evt-transition-MOSAIX-001-1793931723780",
+    "timestamp": "2026-11-06T02:22:03.776Z",
+    "type": "MISSION_SUCCEEDED",
+    "mission_id": "MOSAIX-001",
+    "step_id": null,
+    "actor": "raqib-core",
+    "data": "{\"from\":\"VERIFYING\",\"to\":\"SUCCEEDED\",\"reason\":\"Verification passed (PASS verdict)\"}",
+    "created_at": 1793931723
+  }
+]

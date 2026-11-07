@@ -1,0 +1,323 @@
+{
+  "id": "MOSAIX-001-V2",
+  "name": "MosaiX Architecture Diagnostic v2 (READ-ONLY)",
+  "status": "SUCCEEDED",
+  "autonomyLevel": "A2",
+  "objective": "Diagnostic read-only de D:\\Projets\\atelierpro : inventaire, dépendances, rapport de preuves.",
+  "constraints": [
+    "No code modification",
+    "Read-only operations only",
+    "target:D:\\Projets\\atelierpro"
+  ],
+  "successCriteria": [
+    "Inventory of packages documented",
+    "Git HEAD and working tree baseline identified",
+    "Dependency analysis produced",
+    "Report contains verifiable evidence",
+    "Target working tree unchanged"
+  ],
+  "steps": [
+    {
+      "id": "MOSAIX-001-V2-step-0",
+      "name": "Inventory target repository",
+      "type": "INVENTORY",
+      "status": "DONE",
+      "startedAt": "2026-11-06T02:31:44.009Z",
+      "completedAt": "2026-11-06T02:31:44.722Z",
+      "result": {
+        "targetRoot": "D:\\Projets\\atelierpro",
+        "headSha": "c31221d27360e3162c0bc4f4b53e531abcf256e2",
+        "branch": "plan-execution",
+        "trackedFiles": 149,
+        "topLevel": [
+          ".env.local",
+          ".git",
+          ".github",
+          ".gitignore",
+          "Coding engin.md",
+          "PRD.md",
+          "RAQIB-Interface.html",
+          "RAQIB-PRD-v2.0-revise.md",
+          "RAQIB_PLAN_IMPLEMENTATION.md",
+          "README.md",
+          "agents.md",
+          "apps",
+          "code.html",
+          "coding-engine",
+          "config",
+          "data",
+          "dist",
+          "docs",
+          "eslint.config.mjs",
+          "node_modules",
+          "opencode.json",
+          "package-lock.json",
+          "package.json",
+          "packages",
+          "playwright.config.ts",
+          "prompt.md",
+          "proposition.txt",
+          "reports",
+          "runtime-smoke.err",
+          "runtime-smoke.log",
+          "runtime.err",
+          "runtime.log",
+          "screenshots",
+          "scripts",
+          "services",
+          "test-results",
+          "tests",
+          "tsconfig.build.json",
+          "tsconfig.json",
+          "tsconfig.test.json",
+          "vitest.config.mts",
+          "vitest.config.ts"
+        ],
+        "workspaces": [
+          "@raqib/audit-ledger",
+          "@raqib/core",
+          "@raqib/mission-engine",
+          "@raqib/policy-engine",
+          "@raqib/tool-gateway",
+          "@raqib/verification",
+          "@raqib/dashboard"
+        ]
+      },
+      "proof": "D:\\Projets\\atelierpro @ c31221d27360e3162c0bc4f4b53e531abcf256e2 (plan-execution) — 149 tracked files, 7 workspaces",
+      "error": "Policy denied: Read-only mode active: write actions denied",
+      "attempts": 1,
+      "maxAttempts": 1,
+      "idempotencyKey": "MOSAIX-001-V2:MOSAIX-001-V2-step-0",
+      "executionRecorded": true
+    },
+    {
+      "id": "MOSAIX-001-V2-step-1",
+      "name": "Analyse architecture and dependencies",
+      "type": "ANALYZE",
+      "status": "DONE",
+      "startedAt": "2026-11-06T02:31:49.015Z",
+      "completedAt": "2026-11-06T02:31:49.019Z",
+      "result": {
+        "internalEdges": [
+          {
+            "from": "@raqib/mission-engine",
+            "to": "@raqib/core"
+          },
+          {
+            "from": "@raqib/mission-engine",
+            "to": "@raqib/policy-engine"
+          },
+          {
+            "from": "@raqib/mission-engine",
+            "to": "@raqib/audit-ledger"
+          }
+        ],
+        "externalDeps": [
+          "@raqib/shared",
+          "@tailwindcss/postcss",
+          "@types/better-sqlite3",
+          "@types/node",
+          "@types/react",
+          "@types/react-dom",
+          "autoprefixer",
+          "better-sqlite3",
+          "next",
+          "postcss",
+          "react",
+          "react-dom",
+          "tailwindcss",
+          "typescript",
+          "zod"
+        ],
+        "packagesWithoutTests": [
+          "@raqib/audit-ledger",
+          "@raqib/core",
+          "@raqib/mission-engine",
+          "@raqib/policy-engine",
+          "@raqib/verification",
+          "@raqib/dashboard"
+        ],
+        "packagesWithoutTsconfig": [
+          "@raqib/audit-ledger",
+          "@raqib/core",
+          "@raqib/mission-engine",
+          "@raqib/policy-engine",
+          "@raqib/tool-gateway",
+          "@raqib/verification"
+        ]
+      },
+      "proof": "3 internal edges, 15 external deps, 6 workspaces without test script",
+      "error": "Policy denied: Read-only mode active: write actions denied",
+      "attempts": 1,
+      "maxAttempts": 1,
+      "idempotencyKey": "MOSAIX-001-V2:MOSAIX-001-V2-step-1",
+      "executionRecorded": true
+    },
+    {
+      "id": "MOSAIX-001-V2-step-2",
+      "name": "Propose stabilisation actions",
+      "type": "PROPOSE",
+      "status": "DONE",
+      "startedAt": "2026-11-06T02:31:54.017Z",
+      "completedAt": "2026-11-06T02:31:54.021Z",
+      "result": {
+        "proposals": [
+          "Add a test script to: @raqib/audit-ledger, @raqib/core, @raqib/mission-engine, @raqib/policy-engine, @raqib/verification, @raqib/dashboard",
+          "Add a tsconfig to: @raqib/audit-ledger, @raqib/core, @raqib/mission-engine, @raqib/policy-engine, @raqib/tool-gateway, @raqib/verification"
+        ]
+      },
+      "proof": "2 evidence-based proposal(s)",
+      "error": "Policy denied: Read-only mode active: write actions denied",
+      "attempts": 1,
+      "maxAttempts": 1,
+      "idempotencyKey": "MOSAIX-001-V2:MOSAIX-001-V2-step-2",
+      "executionRecorded": true
+    },
+    {
+      "id": "MOSAIX-001-V2-step-3",
+      "name": "Generate diagnostic report",
+      "type": "REPORT",
+      "status": "DONE",
+      "startedAt": "2026-11-06T02:31:59.026Z",
+      "completedAt": "2026-11-06T02:31:59.032Z",
+      "result": {
+        "reportPath": "D:\\Projets\\RAQIB-SSA\\reports\\MOSAIX-001-V2\\MOSAIX_001_DIAGNOSTIC_REPORT.md"
+      },
+      "proof": "D:\\Projets\\RAQIB-SSA\\reports\\MOSAIX-001-V2\\MOSAIX_001_DIAGNOSTIC_REPORT.md",
+      "error": "Policy denied: Read-only mode active: write actions denied",
+      "attempts": 1,
+      "maxAttempts": 1,
+      "idempotencyKey": "MOSAIX-001-V2:MOSAIX-001-V2-step-3",
+      "executionRecorded": true
+    }
+  ],
+  "currentStepIndex": 4,
+  "approvalRequired": true,
+  "approvedPlanHash": "bf1419705411c60beefcc311a9a48092ffd54f4840bcc4280323c24093a6d977",
+  "budgetLimitEur": 0,
+  "budgetUsedEur": 0,
+  "maxDurationMs": 600000,
+  "maxAttempts": 1,
+  "timeoutAt": "2026-11-06T02:41:38.996Z",
+  "createdAt": "2026-11-06T02:31:38.993Z",
+  "startedAt": "2026-11-06T02:31:39.020Z",
+  "evidences": [
+    {
+      "type": "COMMAND_OUTPUT",
+      "description": "Proof for step Inventory target repository",
+      "value": "D:\\Projets\\atelierpro @ c31221d27360e3162c0bc4f4b53e531abcf256e2 (plan-execution) — 149 tracked files, 7 workspaces",
+      "timestamp": "2026-11-06T02:31:44.722Z",
+      "verified": true
+    },
+    {
+      "type": "COMMAND_OUTPUT",
+      "description": "Proof for step Analyse architecture and dependencies",
+      "value": "3 internal edges, 15 external deps, 6 workspaces without test script",
+      "timestamp": "2026-11-06T02:31:49.019Z",
+      "verified": true
+    },
+    {
+      "type": "COMMAND_OUTPUT",
+      "description": "Proof for step Propose stabilisation actions",
+      "value": "2 evidence-based proposal(s)",
+      "timestamp": "2026-11-06T02:31:54.021Z",
+      "verified": true
+    },
+    {
+      "type": "COMMAND_OUTPUT",
+      "description": "Proof for step Generate diagnostic report",
+      "value": "D:\\Projets\\RAQIB-SSA\\reports\\MOSAIX-001-V2\\MOSAIX_001_DIAGNOSTIC_REPORT.md",
+      "timestamp": "2026-11-06T02:31:59.032Z",
+      "verified": true
+    }
+  ],
+  "planArtifact": {
+    "missionId": "MOSAIX-001-V2",
+    "planId": "plan-MOSAIX-001-V2-v1",
+    "version": 1,
+    "createdAt": "2026-11-06T02:31:38.993Z",
+    "summary": "Diagnostic read-only de D:\\Projets\\atelierpro : inventaire, dépendances, rapport de preuves.",
+    "scope": {
+      "targetFiles": [],
+      "allowedActions": [
+        "TYPECHECK",
+        "BUILD",
+        "TEST"
+      ]
+    },
+    "stepPlan": [
+      {
+        "stepIndex": 0,
+        "name": "Inventory target repository",
+        "type": "INVENTORY",
+        "riskLevel": "MEDIUM",
+        "expectedOutput": "Completion of Inventory target repository"
+      },
+      {
+        "stepIndex": 1,
+        "name": "Analyse architecture and dependencies",
+        "type": "ANALYZE",
+        "riskLevel": "MEDIUM",
+        "expectedOutput": "Completion of Analyse architecture and dependencies"
+      },
+      {
+        "stepIndex": 2,
+        "name": "Propose stabilisation actions",
+        "type": "PROPOSE",
+        "riskLevel": "MEDIUM",
+        "expectedOutput": "Completion of Propose stabilisation actions"
+      },
+      {
+        "stepIndex": 3,
+        "name": "Generate diagnostic report",
+        "type": "REPORT",
+        "riskLevel": "MEDIUM",
+        "expectedOutput": "Completion of Generate diagnostic report"
+      }
+    ],
+    "riskAnalysis": [
+      "Dependency resolution may fail",
+      "Docker sandbox may be unavailable"
+    ],
+    "successCriteria": [
+      "Inventory of packages documented",
+      "Git HEAD and working tree baseline identified",
+      "Dependency analysis produced",
+      "Report contains verifiable evidence",
+      "Target working tree unchanged"
+    ],
+    "estimatedBudgetCents": 0,
+    "contentHash": "bf1419705411c60beefcc311a9a48092ffd54f4840bcc4280323c24093a6d977"
+  },
+  "verificationReport": {
+    "missionId": "MOSAIX-001-V2",
+    "verdict": "PASS",
+    "passed": true,
+    "timestamp": "2026-11-06T02:32:00.219Z",
+    "results": [
+      {
+        "checkId": "FILE_EXISTS_MOSAIX_001_DIAGNOSTIC_REPORT.md",
+        "passed": true,
+        "evidence": "File exists, size: 1356 bytes",
+        "method": "fs.statSync",
+        "timestamp": "2026-11-06T02:32:00.068Z"
+      },
+      {
+        "checkId": "FILE_EXISTS_package.json",
+        "passed": true,
+        "evidence": "File exists, size: 351 bytes",
+        "method": "fs.statSync",
+        "timestamp": "2026-11-06T02:32:00.068Z"
+      },
+      {
+        "checkId": "GIT_STATUS_UNCHANGED",
+        "passed": true,
+        "evidence": "git status --porcelain identical to baseline (no modification by mission)",
+        "method": "git status --porcelain (baseline diff)",
+        "timestamp": "2026-11-06T02:32:00.069Z"
+      }
+    ],
+    "summary": "All 3 verification checks passed successfully."
+  },
+  "completedAt": "2026-11-06T02:32:00.220Z"
+}

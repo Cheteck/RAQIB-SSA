@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MISSIONS — Agent Command HUD</title>
+<style>
+:root{
+  --ink:#04060b;--tx:#d9e6ef;--mu:#7f95a6;
+  --c:#62e6ff;--m:#7dffc8;--g:#ffb347;--r:#ff6b5e;
+  --line:rgba(98,230,255,.2);
+  --panel:rgba(10,19,29,.94);
+  --mono:"JetBrains Mono",monospace;
+  --head:"Oxanium",system-ui,sans-serif;
+  --body:system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html{background:var(--ink);color:var(--tx);font-family:var(--body)}
+body{margin:0;min-width:320px;background:
+radial-gradient(ellipse at 50% 0%,rgba(25,75,99,.2),transparent 60%),
+linear-gradient(rgba(98,230,255,.025) 1px,transparent 1px),
+linear-gradient(90deg,rgba(98,230,255,.025) 1px,transparent 1px),var(--ink);
+background-size:auto,24px 24px,24px 24px,auto;font-size:12px}
+button,input{font:inherit}
+button{cursor:pointer;color:inherit}
+.topbar{height:58px;border-bottom:1px solid var(--line);background:#070d15;display:flex;align-items:center;justify-content:space-between;padding:0 18px;gap:12px}
+.brand{font:700 19px var(--head);letter-spacing:2px;color:var(--c);white-space:nowrap}
+.runtime{font:10px var(--mono);color:var(--m);margin-left:12px}
+.header-right{display:flex;align-items:center;gap:10px}
+.readonly{font:9px var(--mono);color:var(--mu);border:1px solid var(--line);padding:5px 8px}
+.clock{font:11px var(--mono);color:var(--c)}
+.header-btn{background:transparent;border:1px solid var(--line);padding:7px 10px;font:10px var(--mono);color:var(--tx)}
+.header-btn:hover{border-color:var(--c);color:var(--c)}
+.demo-banner{margin:10px 14px;padding:8px 12px;border:1px solid rgba(255,179,71,.35);background:rgba(255,179,71,.06);color:var(--g);font:10px var(--mono);display:flex;justify-content:space-between;gap:8px}
+.section-heading{display:flex;justify-content:space-between;align-items:center;padding:10px 14px 12px;gap:10px}
+h1{font:700 24px var(--head);letter-spacing:2px;margin:0;color:var(--tx)}
+.layout{display:grid;grid-template-columns:205px minmax(0,1fr) 340px;gap:10px;padding:0 14px 14px;align-items:start}
+@media(max-width:1279px){
+.layout{grid-template-columns:190px minmax(0,1fr)}
+.inspector{grid-column:1/-1}
+}
+@media(max-width:760px){
+.topbar{height:auto;min-height:58px;flex-wrap:wrap;padding:10px}
+.header-right{flex-wrap:wrap}
+.layout{grid-template-columns:minmax(0,1fr);padding:0 8px 12px}
+.inspector{grid-column:auto}
+.section-heading{padding:10px 8px}
+.demo-banner{margin:8px}
+}
+.panel{background:var(--panel);border:1px solid var(--line);clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px));min-width:0}
+.panel-head{padding:10px 12px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:8px;font:600 12px var(--head);letter-spacing:1px;color:var(--c)}
+.panel-body{padding:11px}
+.filters{display:flex;flex-direction:column;gap:13px}
+.label{display:block;color:var(--mu);font:9px var(--mono);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+.search-wrap{display:flex;align-items:center;border:1px solid var(--line);background:#050a11;padding:8px;gap:7px}
+.search-wrap input{background:transparent;border:0;outline:0;color:var(--tx);width:100%;min-width:0;font:11px var(--mono)}
+.check{accent-color:var(--c)}
+.check-row{display:flex;align-items:center;gap:7px;color:var(--tx);font-size:11px;margin:7px 0}
+.mission-table{width:100%;border-collapse:collapse;font:10px var(--mono);text-align:left}
+.mission-table th{color:var(--mu);font-size:9px;font-weight:400;padding:9px 7px;border-bottom:1px solid var(--line);white-space:nowrap}
+.mission-table td{padding:11px 7px;border-bottom:1px solid rgba(98,230,255,.09);white-space:nowrap}
+.mission-table tbody tr{cursor:pointer;transition:background .15s}
+.mission-table tbody tr:hover{background:rgba(98,230,255,.06)}
+.mission-table tr.selected{background:rgba(98,230,255,.1);box-shadow:inset 2px 0 var(--c)}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:4px 6px;border:1px solid var(--line);font:9px var(--mono);letter-spacing:.3px;white-space:nowrap}
+.badge.run{color:var(--m);border-color:rgba(125,255,200,.3);background:rgba(125,255,200,.07)}
+.badge.pause{color:var(--g);border-color:rgba(255,179,71,.3)}
+.badge.wait{color:var(--c);border-color:rgba(98,230,255,.3)}
+.badge.err{color:var(--r);border-color:rgba(255,107,94,.3)}
+.prio{font:9px var(--mono);padding:3px 5px}
+.prio.high{color:var(--r)}
+.prio.mid{color:var(--g)}
+.prio.low{color:var(--m)}
+.progress{height:4px;background:#172330;min-width:55px;overflow:hidden}
+.progress>i{display:block;height:100%;background:var(--c);box-shadow:0 0 8px var(--c)}
+.inspector{display:flex;flex-direction:column;gap:10px}
+.insp-id{font:10px var(--mono);color:var(--c);letter-spacing:1px}
+.insp-title{font:700 19px var(--head);margin:7px 0;color:var(--tx)}
+.kv{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px 0;border-bottom:1px solid rgba(98,230,255,.1)}
+.kv dt{font:9px var(--mono);color:var(--mu);margin-bottom:4px}
+.kv dd{font:11px var(--mono);margin:0;color:var(--tx);overflow-wrap:anywhere}
+.steps{display:flex;flex-direction:column;gap:0;padding:4px 0}
+.step{position:relative;padding:8px 10px 8px 23px;border-left:1px solid #263c4b;font:10px var(--mono);color:var(--mu)}
+.step:before{content:"";position:absolute;left:-4px;top:12px;width:7px;height:7px;border-radius:50%;background:#304352}
+.step.done{color:var(--m)}
+.step.done:before{background:var(--m);box-shadow:0 0 7px var(--m)}
+.step.now{color:var(--c);background:rgba(98,230,255,.06)}
+.step.now:before{background:var(--c);box-shadow:0 0 8px var(--c)}
+.step.todo{opacity:.65}
+.actions{display:flex;flex-direction:column;gap:8px}
+.action-title{font:10px var(--mono);color:var(--mu);letter-spacing:1px;margin-bottom:3px}
+.btn{border:1px solid var(--line);background:rgba(98,230,255,.04);padding:9px 11px;text-align:left;font:10px var(--mono);color:var(--tx);transition:.15s}
+.btn:hover{border-color:var(--c);color:var(--c)}
+.btn.primary{background:rgba(98,230,255,.12);border-color:var(--c);color:var(--c)}
+.btn.warn{border-color:rgba(255,179,71,.4);color:var(--g)}
+.btn.danger{border-color:rgba(255,107,94,.4);color:var(--r)}
+.btn[disabled]{opacity:.35;cursor:not-allowed;pointer-events:none}
+.voice-strip{border:1px solid var(--line);background:#07111b;padding:11px;margin-top:10px}
+.voice-main{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.voice-state{font:10px var(--mono);color:var(--m)}
+.voice-line{font:12px var(--mono);color:var(--tx);padding:12px 0;min-height:38px}
+.voice-candidates{display:flex;flex-wrap:wrap;gap:6px}
+.voice-pointer{color:var(--c);font:10px var(--mono)}
+.state-switch{display:flex;gap:4px;flex-wrap:wrap}
+.state-switch button{border:1px solid var(--line);background:transparent;color:var(--mu);padding:5px 7px;font:9px var(--mono)}
+.state-switch button.active{color:var(--c);border-color:var(--c);background:rgba(98,230,255,.1)}
+.strip[data-state="repos"] .voice-listening,
+.strip[data-state="repos"] .voice-ambiguity,
+.strip[data-state="repos"] .voice-confirm{display:none}
+.strip[data-state="ecoute"] .voice-idle,
+.strip[data-state="ecoute"] .voice-ambiguity,
+.strip[data-state="ecoute"] .voice-confirm{display:none}
+.strip[data-state="ambigu"] .voice-idle,
+.strip[data-state="ambigu"] .voice-listening,
+.strip[data-state="ambigu"] .voice-confirm{display:none}
+.strip[data-state="confirm"] .voice-idle,
+.strip[data-state="confirm"] .voice-listening,
+.strip[data-state="confirm"] .voice-ambiguity{display:none}
+.strip-wrap{position:sticky;bottom:59px;z-index:6;background:linear-gradient(180deg,rgba(4,6,11,0),rgba(4,6,11,.96) 18%)}
+.feed{border:1px solid var(--line);border-top:0;background:#060d15}
+.feed-row{display:grid;grid-template-columns:58px 92px minmax(0,1fr);gap:8px;padding:6px 10px;border-bottom:1px solid rgba(98,230,255,.08);font:9px var(--mono);color:var(--mu)}
+.feed-row:last-child{border-bottom:0}
+.feed-row b{color:var(--tx);font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.feed-row .t{color:var(--c)}
+.feed-row .ok{color:var(--m)}
+.feed-row .warn{color:var(--g)}
+.feed-row .err{color:var(--r)}
+.dock{position:sticky;bottom:0;z-index:5;display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(4,9,15,.97);border-top:1px solid var(--line);backdrop-filter:blur(12px)}
+.mic{width:38px;height:38px;flex-shrink:0;border:1px solid var(--c);background:rgba(98,230,255,.1);color:var(--c);clip-path:polygon(15% 0,100% 0,100% 85%,85% 100%,0 100%,0 15%);display:grid;place-items:center;font-size:17px}
+.mic.listening{color:var(--r);border-color:var(--r);background:rgba(255,107,94,.13);box-shadow:0 0 14px rgba(255,107,94,.2)}
+.command-input{flex:1;min-width:0;background:#080f18;border:1px solid var(--line);padding:11px;color:var(--tx);outline:0;font:11px var(--mono)}
+.command-input:focus{border-color:var(--c)}
+.dock-btn{background:rgba(98,230,255,.1);border:1px solid var(--c);padding:10px 14px;color:var(--c);font:10px var(--mono);white-space:nowrap}
+.dock-state{font:9px var(--mono);color:var(--mu);white-space:nowrap}
+.badge-urg{background:rgba(255,107,94,.12);border:1px solid rgba(255,107,94,.4);color:var(--r);padding:4px 6px;font:9px var(--mono)}
+@media(max-width:480px){
+.dock{padding:8px;gap:6px}
+.dock-state{display:none}
+.dock-btn{padding:9px}
+.mission-table{font-size:9px}
+.mission-table th,.mission-table td{padding:8px 4px}
+}
+html,body{height:100%}
+body{display:flex;flex-direction:column;overflow:hidden}
+.demo-banner,.section-heading{flex:0 0 auto}
+.layout{flex:1 1 auto;min-height:0;overflow-y:auto;align-content:start}
+.strip-wrap{position:static;flex:0 0 auto}
+.dock{position:static;flex:0 0 auto}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div><span class="brand">RAQIB // MISSIONS</span><span class="runtime">● RUNTIME DEMO</span></div>
+  <div class="header-right">
+    <span class="readonly">READ-ONLY : OFF</span>
+    <span class="clock" id="clock">--:--:--</span>
+    <button class="header-btn">CHAT</button>
+    <button class="header-btn">DOCK</button>
+  </div>
+</header>
+<div class="demo-banner">
+  <span>⚠ DONNÉES DE DÉMONSTRATION — AUCUNE CONNEXION RUNTIME — AUCUNE MUTATION API</span>
+  <span>SIMULATION</span>
+</div>
+<div class="section-heading">
+  <h1>MISSIONS</h1>
+  <span class="badge run">03 MISSIONS RECENSÉES</span>
+</div>
+<section class="layout">
+  <aside class="panel">
+    <div class="panel-head">FILTRES <span>⌕</span></div>
+    <div class="panel-body filters">
+      <div>
+        <span class="label">RECHERCHE</span>
+        <div class="search-wrap">⌕ <input type="search" placeholder="ID, mission, agent..."></div>
+      </div>
+      <div>
+        <span class="label">STATUT</span>
+        <label class="check-row"><input class="check" type="checkbox" checked> Actives</label>
+        <label class="check-row"><input class="check" type="checkbox" checked> En pause</label>
+        <label class="check-row"><input class="check" type="checkbox" checked> En attente</label>
+        <label class="check-row"><input class="check" type="checkbox" checked> Erreur</label>
+      </div>
+      <div>
+        <span class="label">PRIORITÉ</span>
+        <label class="check-row"><input class="check" type="checkbox" checked> Haute</label>
+        <label class="check-row"><input class="check" type="checkbox" checked> Moyenne</label>
+        <label class="check-row"><input class="check" type="checkbox" checked> Basse</label>
+      </div>
+      <div>
+        <span class="label">AGENTS</span>
+        <label class="check-row"><input class="check" type="checkbox" checked> Alpha</label>
+        <label class="check-row"><input class="check" type="checkbox" checked> Beta</label>
+        <label class="check-row"><input class="check" type="checkbox" checked> Gamma</label>
+      </div>
+      <button class="btn">↺ RÉINITIALISER</button>
+    </div>
+  </aside>
+  <main class="panel">
+    <div class="panel-head">REGISTRE DES MISSIONS <span class="badge wait">3 ENREGISTREMENTS</span></div>
+    <div class="panel-body" style="overflow-x:auto">
+      <table class="mission-table">
+        <thead><tr><th>ID</th><th>MISSION / AGENT</th><th>STATUT</th><th>PRIO</th><th>PROGRESSION</th><th>ALERTE</th></tr></thead>
+        <tbody>
+          <tr class="selected" data-id="M-12" data-nom="Alpha" data-statut="ACTIVE" data-agent="Alpha" data-objectif="Exécution planifiée" data-budget="12 000 tokens">
+            <td>M-12</td><td>Alpha</td><td><span class="badge run">● ACTIVE</span></td>
+            <td><span class="prio high">HAUTE</span></td>
+            <td><div class="progress"><i style="width:68%"></i></div>68%</td><td>—</td>
+          </tr>
+          <tr data-id="M-13" data-nom="Beta" data-statut="EN PAUSE" data-agent="Beta" data-objectif="Attente de validation" data-budget="8 500 tokens">
+            <td>M-13</td><td>Beta</td><td><span class="badge pause">Ⅱ PAUSE</span></td>
+            <td><span class="prio mid">MOY.</span></td>
+            <td><div class="progress"><i style="width:42%"></i></div>42%</td><td>ATTENTE</td>
+          </tr>
+          <tr data-id="M-14" data-nom="Gamma" data-statut="ERREUR" data-agent="Gamma" data-objectif="Reprise après incident" data-budget="3 200 tokens">
+            <td>M-14</td><td>Gamma</td><td><span class="badge err">! ERREUR</span></td>
+            <td><span class="prio low">BASSE</span></td>
+            <td><div class="progress"><i style="width:15%"></i></div>15%</td><td>À VÉRIFIER</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="panel-body">
+      <div class="action-title">ACTIONS GLOBALES</div>
+      <div class="actions">
+        <button class="btn primary" disabled>▶ DÉMARRER</button>
+        <button class="btn warn">Ⅱ PAUSE</button>
+        <button class="btn danger">✕ ANNULER</button>
+        <button class="btn">⇄ AFFECTER</button>
+      </div>
+    </div>
+    <div class="feed" aria-label="Journal d'exécution de démonstration">
+      <div class="feed-row"><span class="t">18:02:11</span><span class="ok">MISSION_START</span><b>M-12 · Alpha · initialisation</b></div>
+      <div class="feed-row"><span class="t">18:02:14</span><span>CONTEXT_APPEND</span><b>M-12 · 3 fichiers ajoutés au contexte</b></div>
+      <div class="feed-row"><span class="t">18:04:02</span><span class="ok">STEP_DONE</span><b>M-12 · validation des paramètres</b></div>
+      <div class="feed-row"><span class="t">18:05:47</span><span class="warn">APPROVAL_WAIT</span><b>M-13 · attente autorisation A-12</b></div>
+      <div class="feed-row"><span class="t">18:07:33</span><span class="err">STEP_ERROR</span><b>M-14 · reprise requise · code 2</b></div>
+      <div class="feed-row"><span class="t">18:09:05</span><span>VOICE_COMMAND</span><b>« inspecter mission M-12 » · non exécuté (démo)</b></div>
+    </div>
+  </main>
+  <aside class="inspector">
+    <div class="panel">
+      <div class="panel-head">INSPECTEUR <span class="badge run">SÉLECTION</span></div>
+      <div class="panel-body">
+        <div class="insp-id">MISSION / M-12</div>
+        <div class="insp-title">Mission Alpha</div>
+        <dl class="kv">
+          <div><dt>OBJECTIF</dt><dd>Exécution planifiée</dd></div>
+          <div><dt>STATUT</dt><dd>ACTIVE</dd></div>
+          <div><dt>AGENT</dt><dd>Alpha</dd></div>
+          <div><dt>BUDGET</dt><dd>Non renseigné</dd></div>
+          <div><dt>PERMISSIONS</dt><dd>Non vérifiées</dd></div>
+          <div><dt>DERNIÈRE ACTIVITÉ</dt><dd>Non horodatée</dd></div>
+        </dl>
+        <div class="action-title">DÉROULEMENT</div>
+        <div class="steps">
+          <div class="step done">✓ Initialisation</div>
+          <div class="step done">✓ Validation des paramètres</div>
+          <div class="step done">✓ Affectation agent</div>
+          <div class="step now">● Exécution principale</div>
+          <div class="step todo">○ Contrôle des résultats</div>
+          <div class="step todo">○ Clôture mission</div>
+        </div>
+        <div class="action-title">HISTORIQUE RÉCENT</div>
+        <div class="step done">Mission initialisée — DEMO</div>
+        <div class="step now">Exécution en cours — DEMO</div>
+        <div class="action-title">ACTIONS CONTEXTUELLES</div>
+        <div class="actions">
+          <button class="btn warn">Ⅱ Mettre en pause</button>
+          <button class="btn">⇄ Réaffecter l'agent</button>
+          <button class="btn danger">✕ Annuler la mission</button>
+        </div>
+      </div>
+    </div>
+  </aside>
+</section>
+<div class="strip-wrap" style="padding:0 14px"><section class="voice-strip strip" data-state="repos">
+      <div class="voice-main">
+        <span class="action-title">VOICE STRIP — LECTURE SEULE</span>
+        <span class="voice-state" id="voiceState">● REPOS</span>
+      </div>
+      <div class="voice-line voice-idle">
+        SUGGESTIONS · « Afficher les missions » · « Filtrer les missions en cours » · « Inspecter la mission M-12 »
+        <span class="voice-pointer">READ-ONLY : OFF · URGENCE : INACTIVE · ? AIDE VOCALE</span>
+      </div>
+      <div class="voice-line voice-listening">🔴 ÉCOUTE — transcription en cours… « inspecter mission M douze »</div>
+      <div class="voice-line voice-ambiguity">CIBLES POSSIBLES : M-12 (Alpha) / M-13 (Beta) — sélection requise, aucune action exécutée.</div>
+      <div class="voice-candidates voice-ambiguity">
+        <span class="voice-pointer">M-12 · Alpha · ACTIVE</span>
+        <span class="voice-pointer">M-13 · Beta · EN PAUSE</span>
+      </div>
+      <div class="voice-line voice-confirm">DÉMARRER · M-12 · RISQUE : EXÉCUTION — CIBLE RÉSOLUE : M-12</div>
+      <div class="voice-candidates voice-confirm">
+        <span class="voice-pointer">→ CONTRÔLE RÉEL : INSPECTEUR M-12 · bouton « DÉMARRER » (aucune action depuis ce bandeau)</span>
+      </div>
+      <div class="state-switch">
+        <button class="active">REPOS</button>
+        <button>ÉCOUTE</button>
+        <button>AMBIGUÏTÉ</button>
+        <button>CONFIRMATION REQUISE</button>
+      </div>
+    </section></div>
+<footer class="dock">
+  <button class="mic" aria-label="Microphone">🎙</button>
+  <input class="command-input" type="text" placeholder="/commande — saisir une instruction...">
+  <button class="dock-btn">HISTORIQUE</button>
+  <button class="dock-btn">SYNTHÈSE</button>
+  <span class="dock-state">READ-ONLY</span>
+  <span class="badge-urg">URGENCE</span>
+</footer>
+</body>
+<script>
+(() => {
+  const $ = (s, root = document) => root.querySelector(s);
+  const $$ = (s, root = document) => [...root.querySelectorAll(s)];
+
+  const clock = $('#clock') || $('.clock');
+  const updateClock = () => {
+    if (clock) clock.textContent = new Date().toLocaleTimeString('fr-FR', {hour12:false});
+  };
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  const rows = $$('.mission-table tbody tr');
+  const inspector = $('.inspector');
+  const fields = $$('.kv dd', inspector || document);
+
+  rows.forEach(row => {
+    row.addEventListener('click', () => {
+      rows.forEach(r => r.classList.remove('selected'));
+      row.classList.add('selected');
+      const d = row.dataset;
+      const id = d.id || row.cells[0]?.textContent.trim() || '—';
+      const name = d.nom || row.cells[1]?.textContent.trim() || '—';
+      const agent = d.agent || name;
+      const status = d.statut || row.cells[2]?.textContent.trim() || '—';
+      const idEl = $('.insp-id', inspector || document);
+      const title = $('.insp-title', inspector || document);
+      if (idEl) idEl.textContent = 'MISSION / ' + id;
+      if (title) title.textContent = 'Mission ' + name;
+      const values = [
+        d.objectif || 'Non renseigné',
+        status,
+        agent,
+        d.budget || 'Non renseigné',
+        'Non vérifiées',
+        'Non horodatée'
+      ];
+      fields.forEach((el, i) => {
+        if (values[i] !== undefined) el.textContent = values[i];
+      });
+    });
+  });
+
+  const filterRows = () => {
+    const search = ($('.search-wrap input')?.value || '').toLowerCase().trim();
+    const checks = $$('.check');
+    const checked = (label) => {
+      const c = checks.find(x => x.parentElement.textContent.trim().toLowerCase() === label);
+      return c ? c.checked : true;
+    };
+    let visible = 0;
+    rows.forEach(row => {
+      const text = row.textContent.toLowerCase();
+      const status = (row.dataset.statut || '').toLowerCase();
+      const label =
+        status.includes('active') ? 'actives'
+        : status.includes('pause') ? 'en pause'
+        : status.includes('erreur') ? 'erreur'
+        : 'en attente';
+      const prioCell = row.cells[3]?.textContent.toLowerCase() || '';
+      const prioLabel = prioCell.includes('haut') ? 'haute' : prioCell.includes('moy') ? 'moyenne' : 'basse';
+      const agent = (row.dataset.agent || '').toLowerCase();
+      const ok = text.includes(search) && checked(label) && checked(prioLabel) && checked(agent);
+      row.hidden = !ok;
+      if (ok) visible += 1;
+    });
+    const counter = $('main .panel-head .badge');
+    if (counter) counter.textContent = String(visible).padStart(2, '0') + ' ENREGISTREMENTS';
+  };
+
+  $$('.check').forEach(c => c.addEventListener('change', filterRows));
+  $('.search-wrap input')?.addEventListener('input', filterRows);
+
+  const strip = $('.voice-strip');
+  const switches = $$('.state-switch button');
+  const states = ['repos', 'ecoute', 'ambigu', 'confirm'];
+
+  const stateLabels = { repos: '● REPOS', ecoute: '🔴 ÉCOUTE', ambigu: '◆ AMBIGUÏTÉ', confirm: '▲ CONFIRMATION REQUISE' };
+
+  const setVoiceState = state => {
+    if (!strip) return;
+    strip.dataset.state = state;
+    switches.forEach((b, i) => b.classList.toggle('active', states[i] === state));
+    const mic = $('.mic');
+    if (mic) mic.classList.toggle('listening', state === 'ecoute');
+    const label = $('#voiceState');
+    if (label) label.textContent = stateLabels[state] || '';
+  };
+
+  switches.forEach((button, i) => {
+    button.addEventListener('click', () => setVoiceState(states[i]));
+  });
+
+  $('.mic')?.addEventListener('click', () => {
+    setVoiceState(strip?.dataset.state === 'ecoute' ? 'repos' : 'ecoute');
+  });
+
+  $$('.btn, .header-btn, .dock-btn, .voice-candidates button').forEach(button => {
+    button.addEventListener('click', () => {
+      if (button.disabled) return;
+      const state = $('.dock-state');
+      if (state) state.textContent = 'DÉMO — aucune mutation API';
+    });
+  });
+
+  filterRows();
+})();
+</script></body></html>

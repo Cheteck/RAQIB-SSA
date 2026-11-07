@@ -1,0 +1,483 @@
+[
+  {
+    "id": "evt-transition-MOSAIX-001-V2-1793932320222",
+    "timestamp": "2026-11-06T02:32:00.220Z",
+    "type": "MISSION_SUCCEEDED",
+    "missionId": "MOSAIX-001-V2",
+    "actor": "raqib-core",
+    "data": {
+      "from": "VERIFYING",
+      "to": "SUCCEEDED",
+      "reason": "Verification passed (PASS verdict)"
+    }
+  },
+  {
+    "id": "evt-verification-result-MOSAIX-001-V2-1793932320222",
+    "timestamp": "2026-11-06T02:32:00.220Z",
+    "type": "VERIFICATION_RESULT",
+    "missionId": "MOSAIX-001-V2",
+    "actor": "raqib-verification-engine",
+    "data": {
+      "verdict": "PASS",
+      "summary": "All 3 verification checks passed successfully.",
+      "results": [
+        {
+          "checkId": "FILE_EXISTS_MOSAIX_001_DIAGNOSTIC_REPORT.md",
+          "passed": true,
+          "evidence": "File exists, size: 1356 bytes",
+          "method": "fs.statSync",
+          "timestamp": "2026-11-06T02:32:00.068Z"
+        },
+        {
+          "checkId": "FILE_EXISTS_package.json",
+          "passed": true,
+          "evidence": "File exists, size: 351 bytes",
+          "method": "fs.statSync",
+          "timestamp": "2026-11-06T02:32:00.068Z"
+        },
+        {
+          "checkId": "GIT_STATUS_UNCHANGED",
+          "passed": true,
+          "evidence": "git status --porcelain identical to baseline (no modification by mission)",
+          "method": "git status --porcelain (baseline diff)",
+          "timestamp": "2026-11-06T02:32:00.069Z"
+        }
+      ]
+    }
+  },
+  {
+    "id": "evt-transition-MOSAIX-001-V2-1793932319040",
+    "timestamp": "2026-11-06T02:31:59.036Z",
+    "type": "ACTION_EXECUTED",
+    "missionId": "MOSAIX-001-V2",
+    "actor": "raqib-core",
+    "data": {
+      "from": "RUNNING",
+      "to": "VERIFYING",
+      "reason": "All steps completed"
+    }
+  },
+  {
+    "id": "evt-step-done-MOSAIX-001-V2-MOSAIX-001-V2-step-3-1793932319035",
+    "timestamp": "2026-11-06T02:31:59.035Z",
+    "type": "STEP_COMPLETED",
+    "missionId": "MOSAIX-001-V2",
+    "stepId": "MOSAIX-001-V2-step-3",
+    "actor": "raqib-core",
+    "data": {
+      "step": "MOSAIX-001-V2-step-3",
+      "status": "DONE",
+      "proof": "D:\\Projets\\RAQIB-SSA\\reports\\MOSAIX-001-V2\\MOSAIX_001_DIAGNOSTIC_REPORT.md"
+    }
+  },
+  {
+    "id": "evt-step-started-MOSAIX-001-V2-MOSAIX-001-V2-step-3-1793932319029",
+    "timestamp": "2026-11-06T02:31:59.029Z",
+    "type": "STEP_STARTED",
+    "missionId": "MOSAIX-001-V2",
+    "stepId": "MOSAIX-001-V2-step-3",
+    "actor": "raqib-core",
+    "data": {
+      "step": "MOSAIX-001-V2-step-3",
+      "attempt": 1
+    }
+  },
+  {
+    "id": "evt-step-policy-MOSAIX-001-V2-MOSAIX-001-V2-step-3-1793932319025",
+    "timestamp": "2026-11-06T02:31:59.025Z",
+    "type": "POLICY_DECISION",
+    "missionId": "MOSAIX-001-V2",
+    "actor": "raqib-core",
+    "data": {
+      "step": "MOSAIX-001-V2-step-3",
+      "decision": {
+        "allowed": true,
+        "reason": "Authorized"
+      }
+    }
+  },
+  {
+    "id": "evt-policy-ALLOW-1793932319025-h6dm",
+    "timestamp": "2026-11-06T02:31:59.025Z",
+    "type": "POLICY_DECISION",
+    "missionId": "MOSAIX-001-V2",
+    "actor": "raqib-core",
+    "data": {
+      "verdict": "ALLOW",
+      "actionType": "EXECUTE",
+      "resource": "Generate diagnostic report",
+      "reason": "Authorized",
+      "allowed": true
+    }
+  },
+  {
+    "id": "evt-transition-MOSAIX-001-V2-1793932318230",
+    "timestamp": "2026-11-06T02:31:58.227Z",
+    "type": "MISSION_BLOCKED",
+    "missionId": "MOSAIX-001-V2",
+    "actor": "raqib-core",
+    "data": {
+      "from": "RUNNING",
+      "to": "BLOCKED",
+      "reason": "Policy denied step MOSAIX-001-V2-step-3: Read-only mode active: write actions denied"
+    }
+  },
+  {
+    "id": "evt-step-policy-MOSAIX-001-V2-MOSAIX-001-V2-step-3-1793932318226",
+    "timestamp": "2026-11-06T02:31:58.226Z",
+    "type": "POLICY_DECISION",
+    "missionId": "MOSAIX-001-V2",
+    "actor": "raqib-core",
+    "data": {
+      "step": "MOSAIX-001-V2-step-3",
+      "decision": {
+        "allowed": false,
+        "reason": "Read-only mode active: write actions denied"
+      }
+    }
+  },
+  {
+    "id": "evt-policy-DENY-1793932318226-za6v",
+    "timestamp": "2026-11-06T02:31:58.226Z",
+    "type": "POLICY_DECISION",
+    "missionId": "MOSAIX-001-V2",
+    "actor": "raqib-core",
+    "data": {
+      "verdict": "DENY",
+      "actionType": "EXECUTE",
+      "resource": "Generate diagnostic report",
+      "reason": "Read-only mode active: write actions denied",
+      "ruleId": "RULE-002",
+      "allowed": false
+    }
+  },
+  {
+    "id": "evt-step-done-MOSAIX-001-V2-MOSAIX-001-V2-step-2-1793932314024",
+    "timestamp": "2026-11-06T02:31:54.024Z",
+    "type": "STEP_COMPLETED",
+    "missionId": "MOSAIX-001-V2",
+    "stepId": "MOSAIX-001-V2-step-2",
+    "actor": "raqib-core",
+    "data": {
+      "step": "MOSAIX-001-V2-step-2",
+      "status": "DONE",
+      "proof": "2 evidence-based proposal(s)"
+    }
+  },
+  {
+    "id": "evt-step-started-MOSAIX-001-V2-MOSAIX-001-V2-step-2-1793932314021",
+    "timestamp": "2026-11-06T02:31:54.021Z",
+    "type": "STEP_STARTED",
+    "missionId": "MOSAIX-001-V2",
+    "stepId": "MOSAIX-001-V2-step-2",
+    "actor": "raqib-core",
+    "data": {
+      "step": "MOSAIX-001-V2-step-2",
+      "attempt": 1
+    }
+  },
+  {
+    "id": "evt-step-policy-MOSAIX-001-V2-MOSAIX-001-V2-step-2-1793932314017",
+    "timestamp": "2026-11-06T02:31:54.017Z",
+    "type": "POLICY_DECISION",
+    "missionId": "MOSAIX-001-V2",
+    "actor": "raqib-core",
+    "data": {
+      "step": "MOSAIX-001-V2-step-2",
+      "decision": {
+        "allowed": true,
+        "reason": "Authorized"
+      }
+    }
+  },
+  {
+    "id": "evt-policy-ALLOW-1793932314017-usff",
+    "timestamp": "2026-11-06T02:31:54.017Z",
+    "type": "POLICY_DECISION",
+    "missionId": "MOSAIX-001-V2",
+    "actor": "raqib-core",
+    "data": {
+      "verdict": "ALLOW",
+      "actionType": "EXECUTE",
+      "resource": "Propose stabilisation actions",
+      "reason": "Authorized",
+      "allowed": true
+    }
+  },
+  {
+    "id": "evt-transition-MOSAIX-001-V2-1793932313225",
+    "timestamp": "2026-11-06T02:31:53.220Z",
+    "type": "MISSION_BLOCKED",
+    "missionId": "MOSAIX-001-V2",
+    "actor": "raqib-core",
+    "data": {
+      "from": "RUNNING",
+      "to": "BLOCKED",
+      "reason": "Policy denied step MOSAIX-001-V2-step-2: Read-only mode active: write actions denied"
+    }
+  },
+  {
+    "id": "evt-step-policy-MOSAIX-001-V2-MOSAIX-001-V2-step-2-1793932313219",
+    "timestamp": "2026-11-06T02:31:53.219Z",
+    "type": "POLICY_DECISION",
+    "missionId": "MOSAIX-001-V2",
+    "actor": "raqib-core",
+    "data": {
+      "step": "MOSAIX-001-V2-step-2",
+      "decision": {
+        "allowed": false,
+        "reason": "Read-only mode active: write actions denied"
+      }
+    }
+  },
+  {
+    "id": "evt-policy-DENY-1793932313218-y5fq",
+    "timestamp": "2026-11-06T02:31:53.218Z",
+    "type": "POLICY_DECISION",
+    "missionId": "MOSAIX-001-V2",
+    "actor": "raqib-core",
+    "data": {
+      "verdict": "DENY",
+      "actionType": "EXECUTE",
+      "resource": "Propose stabilisation actions",
+      "reason": "Read-only mode active: write actions denied",
+      "ruleId": "RULE-002",
+      "allowed": false
+    }
+  },
+  {
+    "id": "evt-step-done-MOSAIX-001-V2-MOSAIX-001-V2-step-1-1793932309022",
+    "timestamp": "2026-11-06T02:31:49.022Z",
+    "type": "STEP_COMPLETED",
+    "missionId": "MOSAIX-001-V2",
+    "stepId": "MOSAIX-001-V2-step-1",
+    "actor": "raqib-core",
+    "data": {
+      "step": "MOSAIX-001-V2-step-1",
+      "status": "DONE",
+      "proof": "3 internal edges, 15 external deps, 6 workspaces without test script"
+    }
+  },
+  {
+    "id": "evt-step-started-MOSAIX-001-V2-MOSAIX-001-V2-step-1-1793932309018",
+    "timestamp": "2026-11-06T02:31:49.018Z",
+    "type": "STEP_STARTED",
+    "missionId": "MOSAIX-001-V2",
+    "stepId": "MOSAIX-001-V2-step-1",
+    "actor": "raqib-core",
+    "data": {
+      "step": "MOSAIX-001-V2-step-1",
+      "attempt": 1
+    }
+  },
+  {
+    "id": "evt-step-policy-MOSAIX-001-V2-MOSAIX-001-V2-step-1-1793932309015",
+    "timestamp": "2026-11-06T02:31:49.015Z",
+    "type": "POLICY_DECISION",
+    "missionId": "MOSAIX-001-V2",
+    "actor": "raqib-core",
+    "data": {
+      "step": "MOSAIX-001-V2-step-1",
+      "decision": {
+        "allowed": true,
+        "reason": "Authorized"
+      }
+    }
+  },
+  {
+    "id": "evt-policy-ALLOW-1793932309015-whqe",
+    "timestamp": "2026-11-06T02:31:49.015Z",
+    "type": "POLICY_DECISION",
+    "missionId": "MOSAIX-001-V2",
+    "actor": "raqib-core",
+    "data": {
+      "verdict": "ALLOW",
+      "actionType": "EXECUTE",
+      "resource": "Analyse architecture and dependencies",
+      "reason": "Authorized",
+      "allowed": true
+    }
+  },
+  {
+    "id": "evt-transition-MOSAIX-001-V2-1793932308216",
+    "timestamp": "2026-11-06T02:31:48.213Z",
+    "type": "MISSION_BLOCKED",
+    "missionId": "MOSAIX-001-V2",
+    "actor": "raqib-core",
+    "data": {
+      "from": "RUNNING",
+      "to": "BLOCKED",
+      "reason": "Policy denied step MOSAIX-001-V2-step-1: Read-only mode active: write actions denied"
+    }
+  },
+  {
+    "id": "evt-step-policy-MOSAIX-001-V2-MOSAIX-001-V2-step-1-1793932308213",
+    "timestamp": "2026-11-06T02:31:48.213Z",
+    "type": "POLICY_DECISION",
+    "missionId": "MOSAIX-001-V2",
+    "actor": "raqib-core",
+    "data": {
+      "step": "MOSAIX-001-V2-step-1",
+      "decision": {
+        "allowed": false,
+        "reason": "Read-only mode active: write actions denied"
+      }
+    }
+  },
+  {
+    "id": "evt-policy-DENY-1793932308212-96wg",
+    "timestamp": "2026-11-06T02:31:48.212Z",
+    "type": "POLICY_DECISION",
+    "missionId": "MOSAIX-001-V2",
+    "actor": "raqib-core",
+    "data": {
+      "verdict": "DENY",
+      "actionType": "EXECUTE",
+      "resource": "Analyse architecture and dependencies",
+      "reason": "Read-only mode active: write actions denied",
+      "ruleId": "RULE-002",
+      "allowed": false
+    }
+  },
+  {
+    "id": "evt-step-done-MOSAIX-001-V2-MOSAIX-001-V2-step-0-1793932304725",
+    "timestamp": "2026-11-06T02:31:44.725Z",
+    "type": "STEP_COMPLETED",
+    "missionId": "MOSAIX-001-V2",
+    "stepId": "MOSAIX-001-V2-step-0",
+    "actor": "raqib-core",
+    "data": {
+      "step": "MOSAIX-001-V2-step-0",
+      "status": "DONE",
+      "proof": "D:\\Projets\\atelierpro @ c31221d27360e3162c0bc4f4b53e531abcf256e2 (plan-execution) — 149 tracked files, 7 workspaces"
+    }
+  },
+  {
+    "id": "evt-step-started-MOSAIX-001-V2-MOSAIX-001-V2-step-0-1793932304012",
+    "timestamp": "2026-11-06T02:31:44.012Z",
+    "type": "STEP_STARTED",
+    "missionId": "MOSAIX-001-V2",
+    "stepId": "MOSAIX-001-V2-step-0",
+    "actor": "raqib-core",
+    "data": {
+      "step": "MOSAIX-001-V2-step-0",
+      "attempt": 1
+    }
+  },
+  {
+    "id": "evt-step-policy-MOSAIX-001-V2-MOSAIX-001-V2-step-0-1793932304008",
+    "timestamp": "2026-11-06T02:31:44.008Z",
+    "type": "POLICY_DECISION",
+    "missionId": "MOSAIX-001-V2",
+    "actor": "raqib-core",
+    "data": {
+      "step": "MOSAIX-001-V2-step-0",
+      "decision": {
+        "allowed": true,
+        "reason": "Authorized"
+      }
+    }
+  },
+  {
+    "id": "evt-policy-ALLOW-1793932304008-jp38",
+    "timestamp": "2026-11-06T02:31:44.008Z",
+    "type": "POLICY_DECISION",
+    "missionId": "MOSAIX-001-V2",
+    "actor": "raqib-core",
+    "data": {
+      "verdict": "ALLOW",
+      "actionType": "EXECUTE",
+      "resource": "Inventory target repository",
+      "reason": "Authorized",
+      "allowed": true
+    }
+  },
+  {
+    "id": "evt-transition-MOSAIX-001-V2-1793932303203",
+    "timestamp": "2026-11-06T02:31:43.200Z",
+    "type": "MISSION_BLOCKED",
+    "missionId": "MOSAIX-001-V2",
+    "actor": "raqib-core",
+    "data": {
+      "from": "RUNNING",
+      "to": "BLOCKED",
+      "reason": "Policy denied step MOSAIX-001-V2-step-0: Read-only mode active: write actions denied"
+    }
+  },
+  {
+    "id": "evt-step-policy-MOSAIX-001-V2-MOSAIX-001-V2-step-0-1793932303199",
+    "timestamp": "2026-11-06T02:31:43.199Z",
+    "type": "POLICY_DECISION",
+    "missionId": "MOSAIX-001-V2",
+    "actor": "raqib-core",
+    "data": {
+      "step": "MOSAIX-001-V2-step-0",
+      "decision": {
+        "allowed": false,
+        "reason": "Read-only mode active: write actions denied"
+      }
+    }
+  },
+  {
+    "id": "evt-policy-DENY-1793932303199-xr1y",
+    "timestamp": "2026-11-06T02:31:43.199Z",
+    "type": "POLICY_DECISION",
+    "missionId": "MOSAIX-001-V2",
+    "actor": "raqib-core",
+    "data": {
+      "verdict": "DENY",
+      "actionType": "EXECUTE",
+      "resource": "Inventory target repository",
+      "reason": "Read-only mode active: write actions denied",
+      "ruleId": "RULE-002",
+      "allowed": false
+    }
+  },
+  {
+    "id": "evt-transition-MOSAIX-001-V2-1793932299022",
+    "timestamp": "2026-11-06T02:31:39.020Z",
+    "type": "MISSION_STARTED",
+    "missionId": "MOSAIX-001-V2",
+    "actor": "raqib-core",
+    "data": {
+      "from": "APPROVED",
+      "to": "RUNNING",
+      "reason": "Mission démarrée via le runtime RAQIB."
+    }
+  },
+  {
+    "id": "evt-transition-MOSAIX-001-V2-1793932299017",
+    "timestamp": "2026-11-06T02:31:39.014Z",
+    "type": "PLAN_APPROVED",
+    "missionId": "MOSAIX-001-V2",
+    "actor": "raqib-core",
+    "data": {
+      "from": "PLANNED",
+      "to": "APPROVED",
+      "reason": "Plan approuvé après revue (READ-ONLY, cible explicite)."
+    }
+  },
+  {
+    "id": "evt-plan-generated-MOSAIX-001-V2-1793932299009",
+    "timestamp": "2026-11-06T02:31:38.993Z",
+    "type": "PLAN_GENERATED",
+    "missionId": "MOSAIX-001-V2",
+    "actor": "raqib-core",
+    "data": {
+      "planId": "plan-MOSAIX-001-V2-v1",
+      "contentHash": "bf1419705411c60beefcc311a9a48092ffd54f4840bcc4280323c24093a6d977"
+    }
+  },
+  {
+    "id": "evt-mission-created-MOSAIX-001-V2-1793932299008",
+    "timestamp": "2026-11-06T02:31:38.993Z",
+    "type": "MISSION_CREATED",
+    "missionId": "MOSAIX-001-V2",
+    "actor": "raqib-core",
+    "data": {
+      "status": "PLANNED",
+      "steps": 4,
+      "planGenerated": true
+    }
+  }
+]

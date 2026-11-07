@@ -1,0 +1,318 @@
+{
+  "id": "MOSAIX-001",
+  "name": "MosaiX Architecture Diagnostic",
+  "status": "SUCCEEDED",
+  "autonomyLevel": "A2",
+  "objective": "Documenter sans toucher au code.",
+  "constraints": [
+    "No code modification",
+    "Read-only operations only"
+  ],
+  "successCriteria": [
+    "Report generated in docs/"
+  ],
+  "steps": [
+    {
+      "id": "MOSAIX-001-step-0",
+      "name": "Inventory codebase",
+      "type": "INVENTORY",
+      "status": "DONE",
+      "startedAt": "2026-11-06T02:21:00.408Z",
+      "completedAt": "2026-11-06T02:21:00.414Z",
+      "result": {
+        "files": [
+          ".env.local",
+          ".git",
+          ".github",
+          ".gitignore",
+          "agents.md",
+          "apps",
+          "code.html",
+          "Coding engin.md",
+          "coding-engine",
+          "config",
+          "data",
+          "dist",
+          "docs",
+          "eslint.config.mjs",
+          "node_modules",
+          "opencode.json",
+          "package-lock.json",
+          "package.json",
+          "packages",
+          "playwright.config.ts",
+          "PRD.md",
+          "prompt.md",
+          "proposition.txt",
+          "RAQIB-Interface.html",
+          "RAQIB-PRD-v2.0-revise.md",
+          "RAQIB_PLAN_IMPLEMENTATION.md",
+          "README.md",
+          "reports",
+          "runtime-smoke.err",
+          "runtime-smoke.log",
+          "runtime.err",
+          "runtime.log",
+          "screenshots",
+          "scripts",
+          "services",
+          "test-results",
+          "tests",
+          "tsconfig.build.json",
+          "tsconfig.json",
+          "tsconfig.test.json",
+          "vitest.config.mts",
+          "vitest.config.ts"
+        ]
+      },
+      "proof": "Inventory: 42 top-level entries",
+      "attempts": 1,
+      "maxAttempts": 1,
+      "idempotencyKey": "MOSAIX-001:MOSAIX-001-step-0",
+      "executionRecorded": true
+    },
+    {
+      "id": "MOSAIX-001-step-1",
+      "name": "Analyse gaps and opportunities",
+      "type": "ANALYZE",
+      "status": "DONE",
+      "startedAt": "2026-11-06T02:21:05.414Z",
+      "completedAt": "2026-11-06T02:21:05.417Z",
+      "result": {
+        "note": "analysis deferred to LLM"
+      },
+      "proof": "analysis step",
+      "attempts": 1,
+      "maxAttempts": 1,
+      "idempotencyKey": "MOSAIX-001:MOSAIX-001-step-1",
+      "executionRecorded": true
+    },
+    {
+      "id": "MOSAIX-001-step-2",
+      "name": "Propose improvements",
+      "type": "PROPOSE",
+      "status": "DONE",
+      "startedAt": "2026-11-06T02:21:10.415Z",
+      "completedAt": "2026-11-06T02:21:10.420Z",
+      "result": {
+        "note": "proposal deferred to LLM"
+      },
+      "proof": "proposal step",
+      "attempts": 1,
+      "maxAttempts": 1,
+      "idempotencyKey": "MOSAIX-001:MOSAIX-001-step-2",
+      "executionRecorded": true
+    },
+    {
+      "id": "MOSAIX-001-step-3",
+      "name": "Typecheck codebase",
+      "type": "TYPECHECK",
+      "status": "DONE",
+      "startedAt": "2026-11-06T02:21:15.415Z",
+      "completedAt": "2026-11-06T02:21:18.702Z",
+      "result": "",
+      "proof": "tsc --noEmit OK",
+      "attempts": 1,
+      "maxAttempts": 1,
+      "idempotencyKey": "MOSAIX-001:MOSAIX-001-step-3",
+      "executionRecorded": true
+    },
+    {
+      "id": "MOSAIX-001-step-4",
+      "name": "Build dashboard",
+      "type": "BUILD",
+      "status": "DONE",
+      "startedAt": "2026-11-06T02:21:20.417Z",
+      "completedAt": "2026-11-06T02:21:45.634Z",
+      "result": "nths old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`\n   Generating static pages (3/12) \r\n   Generating static pages (6/12) \r\n   Generating static pages (9/12) \r\n ✓ Generating static pages (12/12) in 1492.9ms\n   Finalizing page optimization ...\n\nRoute (app)\n┌ ○ /\n├ ○ /_not-found\n├ ○ /approvals\n├ ○ /audit\n├ ○ /coding-engine\n├ ○ /context\n├ ○ /memory\n├ ○ /missions\n├ ○ /settings\n├ ○ /skills\n└ ○ /workflows\n\n\n○  (Static)  prerendered as static content\n\n",
+      "proof": "dashboard build OK",
+      "attempts": 1,
+      "maxAttempts": 1,
+      "idempotencyKey": "MOSAIX-001:MOSAIX-001-step-4",
+      "executionRecorded": true
+    },
+    {
+      "id": "MOSAIX-001-step-5",
+      "name": "Run unit tests",
+      "type": "TEST",
+      "status": "DONE",
+      "startedAt": "2026-11-06T02:21:45.644Z",
+      "completedAt": "2026-11-06T02:22:00.749Z",
+      "result": "\u001b[33m(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:\n  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest package.json\nSet `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.\u001b[39m\n\n RUN  v5.0.5 D:/Projets/RAQIB-SSA\n\n\n Test Files  24 passed (24)\n      Tests  108 passed (108)\n   Start at  03:21:48\n   Duration  12.08s (tests 67%, import 30%, transform 1%, worker 1%)\n\n    Isolate  24 workers spawned · ~1.17s startup each (spawn + environment, per file)\n             at least ~2.84s faster with isolate: false — reuses workers across files instead of one per file\n\n",
+      "proof": "vitest OK",
+      "attempts": 1,
+      "maxAttempts": 1,
+      "idempotencyKey": "MOSAIX-001:MOSAIX-001-step-5",
+      "executionRecorded": true
+    },
+    {
+      "id": "MOSAIX-001-step-6",
+      "name": "Generate improvement report",
+      "type": "REPORT",
+      "status": "DONE",
+      "startedAt": "2026-11-06T02:22:00.761Z",
+      "completedAt": "2026-11-06T02:22:00.767Z",
+      "result": {
+        "reportPath": "D:\\Projets\\RAQIB-SSA\\reports\\raqib-self-improvement.md"
+      },
+      "proof": "D:\\Projets\\RAQIB-SSA\\reports\\raqib-self-improvement.md",
+      "attempts": 1,
+      "maxAttempts": 1,
+      "idempotencyKey": "MOSAIX-001:MOSAIX-001-step-6",
+      "executionRecorded": true
+    }
+  ],
+  "currentStepIndex": 7,
+  "approvalRequired": true,
+  "approvedPlanHash": "6fb65024610f6d9e4755536b447a4f001b96a601161069e280d3cc4dce1d90bc",
+  "budgetLimitEur": 0,
+  "budgetUsedEur": 0,
+  "maxDurationMs": 1800000,
+  "maxAttempts": 1,
+  "timeoutAt": "2026-11-06T02:50:55.401Z",
+  "createdAt": "2026-11-06T02:20:55.400Z",
+  "startedAt": "2026-11-06T02:20:55.413Z",
+  "completedAt": "2026-11-06T02:22:03.776Z",
+  "evidences": [
+    {
+      "type": "COMMAND_OUTPUT",
+      "description": "Proof for step Inventory codebase",
+      "value": "Inventory: 42 top-level entries",
+      "timestamp": "2026-11-06T02:21:00.414Z",
+      "verified": true
+    },
+    {
+      "type": "COMMAND_OUTPUT",
+      "description": "Proof for step Analyse gaps and opportunities",
+      "value": "analysis step",
+      "timestamp": "2026-11-06T02:21:05.417Z",
+      "verified": true
+    },
+    {
+      "type": "COMMAND_OUTPUT",
+      "description": "Proof for step Propose improvements",
+      "value": "proposal step",
+      "timestamp": "2026-11-06T02:21:10.420Z",
+      "verified": true
+    },
+    {
+      "type": "COMMAND_OUTPUT",
+      "description": "Proof for step Typecheck codebase",
+      "value": "tsc --noEmit OK",
+      "timestamp": "2026-11-06T02:21:18.702Z",
+      "verified": true
+    },
+    {
+      "type": "COMMAND_OUTPUT",
+      "description": "Proof for step Build dashboard",
+      "value": "dashboard build OK",
+      "timestamp": "2026-11-06T02:21:45.634Z",
+      "verified": true
+    },
+    {
+      "type": "COMMAND_OUTPUT",
+      "description": "Proof for step Run unit tests",
+      "value": "vitest OK",
+      "timestamp": "2026-11-06T02:22:00.749Z",
+      "verified": true
+    },
+    {
+      "type": "COMMAND_OUTPUT",
+      "description": "Proof for step Generate improvement report",
+      "value": "D:\\Projets\\RAQIB-SSA\\reports\\raqib-self-improvement.md",
+      "timestamp": "2026-11-06T02:22:00.767Z",
+      "verified": true
+    }
+  ],
+  "planArtifact": {
+    "missionId": "MOSAIX-001",
+    "planId": "plan-MOSAIX-001-v1",
+    "version": 1,
+    "createdAt": "2026-11-06T02:20:55.400Z",
+    "summary": "Documenter sans toucher au code.",
+    "scope": {
+      "targetFiles": [],
+      "allowedActions": [
+        "TYPECHECK",
+        "BUILD",
+        "TEST"
+      ]
+    },
+    "stepPlan": [
+      {
+        "stepIndex": 0,
+        "name": "Inventory codebase",
+        "type": "INVENTORY",
+        "riskLevel": "MEDIUM",
+        "expectedOutput": "Completion of Inventory codebase"
+      },
+      {
+        "stepIndex": 1,
+        "name": "Analyse gaps and opportunities",
+        "type": "ANALYZE",
+        "riskLevel": "MEDIUM",
+        "expectedOutput": "Completion of Analyse gaps and opportunities"
+      },
+      {
+        "stepIndex": 2,
+        "name": "Propose improvements",
+        "type": "PROPOSE",
+        "riskLevel": "MEDIUM",
+        "expectedOutput": "Completion of Propose improvements"
+      },
+      {
+        "stepIndex": 3,
+        "name": "Typecheck codebase",
+        "type": "TYPECHECK",
+        "riskLevel": "MEDIUM",
+        "expectedOutput": "Completion of Typecheck codebase"
+      },
+      {
+        "stepIndex": 4,
+        "name": "Build dashboard",
+        "type": "BUILD",
+        "riskLevel": "MEDIUM",
+        "expectedOutput": "Completion of Build dashboard"
+      },
+      {
+        "stepIndex": 5,
+        "name": "Run unit tests",
+        "type": "TEST",
+        "riskLevel": "MEDIUM",
+        "expectedOutput": "Completion of Run unit tests"
+      },
+      {
+        "stepIndex": 6,
+        "name": "Generate improvement report",
+        "type": "REPORT",
+        "riskLevel": "MEDIUM",
+        "expectedOutput": "Completion of Generate improvement report"
+      }
+    ],
+    "riskAnalysis": [
+      "Dependency resolution may fail",
+      "Docker sandbox may be unavailable"
+    ],
+    "successCriteria": [
+      "Report generated in docs/"
+    ],
+    "estimatedBudgetCents": 0,
+    "contentHash": "6fb65024610f6d9e4755536b447a4f001b96a601161069e280d3cc4dce1d90bc"
+  },
+  "verificationReport": {
+    "missionId": "MOSAIX-001",
+    "verdict": "PASS",
+    "passed": true,
+    "timestamp": "2026-11-06T02:22:03.775Z",
+    "results": [
+      {
+        "checkId": "COMMAND_EXIT_CODE",
+        "passed": true,
+        "evidence": "Exit code: 0, Expected: 0",
+        "method": "exitCode assertion",
+        "timestamp": "2026-11-06T02:22:03.775Z"
+      }
+    ],
+    "summary": "All 1 verification checks passed successfully."
+  }
+}
