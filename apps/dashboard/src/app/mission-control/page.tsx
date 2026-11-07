@@ -827,6 +827,16 @@ function MissionControlPageInner() {
   const [selectedMissionId, setSelectedMissionId] = useState<string | null>(searchParams.get('missionId'));
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(searchParams.get('agentId'));
 
+  // Recherche instantanée + filtre de statut (chantier ergonomie Mission Control).
+  const [query, setQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'ALL' | 'ACTIVE' | 'ALERT' | 'DONE'>('ALL');
+  const searchRef = useRef<HTMLInputElement | null>(null);
+
+  const resetFilters = useCallback(() => {
+    setQuery('');
+    setStatusFilter('ALL');
+  }, []);
+
   useEffect(() => {
     setSelectedMissionId(searchParams.get('missionId'));
     setSelectedAgentId(searchParams.get('agentId'));
@@ -840,6 +850,32 @@ function MissionControlPageInner() {
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  // Raccourcis : « / » focus la recherche (hors champ de saisie), Échap efface.
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      const typing =
+        !!target &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.tagName === 'SELECT' ||
+          target.isContentEditable);
+
+      if (event.key === '/' && !typing) {
+        event.preventDefault();
+        searchRef.current?.focus();
+        searchRef.current?.select();
+        return;
+      }
+      if (event.key === 'Escape' && target === searchRef.current) {
+        setQuery('');
+        searchRef.current?.blur();
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
   }, []);
 
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -911,6 +947,40 @@ function MissionControlPageInner() {
 
   // Agents par mission
   const getAgentsForMission = (missionId: string) => agents.filter((a) => a.missionId === missionId);
+
+  // ── Recherche instantanée + filtre de statut ────────────────────────
+  const normalizedQuery = query.trim().toLowerCase();
+  const matchesQuery = (values: Array<string | undefined>): boolean =>
+    normalizedQuery.length === 0 ||
+    values.some((value) => (value ?? '').toLowerCase().includes(normalizedQuery));
+
+  const matchesStatusFilter = (status: string): boolean => {
+    const rank = missionRank(status);
+    if (statusFilter === 'ALL') return true;
+    if (statusFilter === 'ACTIVE') return rank === 0;
+    if (statusFilter === 'ALERT') return rank === 1;
+    return rank === 3;
+  };
+
+  // Une mission correspond aussi si l'un de ses agents correspond (recherche
+  // transversale : « quel agent travaille sur quoi ? »).
+  const filteredMissions = sortedMissions.filter((mission) => {
+    if (!matchesStatusFilter(mission.status)) return false;
+    const missionAgents = getAgentsForMission(mission.id);
+    return matchesQuery([
+      mission.id,
+      mission.name,
+      mission.objective,
+      mission.status,
+      ...missionAgents.flatMap((agent) => [agent.name, agent.role, agent.specialty]),
+    ]);
+  });
+
+  const filteredAvailableAgents = availableAgentList.filter((agent) =>
+    matchesQuery([agent.id, agent.name, agent.role, agent.specialty]),
+  );
+
+  const hasActiveFilters = normalizedQuery.length > 0 || statusFilter !== 'ALL';
 
   // Sélection URL + État Synchrone
   const selectMission = (id: string) => {
@@ -1002,8 +1072,102 @@ function MissionControlPageInner() {
           <div className="p" style={{ marginBottom: '12px' }}>
             <h3>
               MISSION FIELD
-              <em>{loading ? 'Chargement…' : error ? 'ERREUR' : `${sortedMissions.length} missions`}</em>
+              <em>
+                {loading
+                  ? 'Chargement…'
+                  : error
+                    ? 'ERREUR'
+                    : hasActiveFilters
+                      ? `${filteredMissions.length}/${sortedMissions.length} missions`
+                      : `${sortedMissions.length} missions`}
+              </em>
             </h3>
+
+            {/* Barre de recherche + filtres (recherche instantanée côté client) */}
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center', marginBottom: '12px' }}>
+              <div style={{ position: 'relative', flex: '1 1 240px', minWidth: '220px' }}>
+                <span
+                  className="ms"
+                  aria-hidden="true"
+                  style={{ position: 'absolute', left: '8px', top: '50%', transform: 'translateY(-50%)', fontSize: '14px', color: 'var(--mu)' }}
+                >
+                  search
+                </span>
+                <input
+                  ref={searchRef}
+                  type="search"
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                  placeholder="Rechercher une mission, un agent…  ( / )"
+                  aria-label="Rechercher des missions et des agents"
+                  style={{
+                    width: '100%',
+                    padding: '7px 30px 7px 30px',
+                    background: 'rgba(5, 10, 18, 0.8)',
+                    border: '1px solid rgba(var(--c), 0.2)',
+                    borderRadius: '5px',
+                    color: 'var(--tx)',
+                    font: '400 11px Geist',
+                    outline: 'none',
+                  }}
+                />
+                {query && (
+                  <button
+                    type="button"
+                    onClick={() => setQuery('')}
+                    title="Effacer la recherche"
+                    aria-label="Effacer la recherche"
+                    style={{ position: 'absolute', right: '6px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--mu)', cursor: 'pointer', display: 'flex' }}
+                  >
+                    <span className="ms" style={{ fontSize: '13px' }}>close</span>
+                  </button>
+                )}
+              </div>
+
+              {([
+                ['ALL', 'Toutes'],
+                ['ACTIVE', 'Actives'],
+                ['ALERT', 'Alertes'],
+                ['DONE', 'Terminées'],
+              ] as const).map(([value, label]) => {
+                const active = statusFilter === value;
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => setStatusFilter(value)}
+                    aria-pressed={active}
+                    style={{
+                      font: '600 9px Oxanium',
+                      letterSpacing: '0.06em',
+                      padding: '5px 9px',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      color: active ? '#04101a' : 'var(--mu)',
+                      background: active ? 'rgb(var(--c))' : 'rgba(5, 10, 18, 0.6)',
+                      border: active ? '1px solid rgb(var(--c))' : '1px solid rgba(var(--c), 0.2)',
+                    }}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+
+              {hasActiveFilters && (
+                <button
+                  type="button"
+                  onClick={resetFilters}
+                  title="Réinitialiser la recherche et les filtres"
+                  style={{ font: '600 9px Oxanium', color: 'var(--mu)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+                >
+                  Réinitialiser
+                </button>
+              )}
+
+              <span style={{ marginLeft: 'auto', font: '400 9px "JetBrains Mono"', color: 'var(--mu)' }}>
+                {filteredMissions.length} résultat{filteredMissions.length > 1 ? 's' : ''}
+              </span>
+            </div>
 
             {loading && <p className="mono" style={{ color: 'var(--mu)' }}>Chargement des données Runtime…</p>}
 
@@ -1022,9 +1186,28 @@ function MissionControlPageInner() {
               <p className="mono" style={{ color: 'var(--mu)' }}>Aucune mission enregistrée.</p>
             )}
 
-            {!loading && !error && sortedMissions.length > 0 && (
+            {!loading && !error && sortedMissions.length > 0 && filteredMissions.length === 0 && (
+              <div
+                className="fi"
+                style={{ padding: '16px', border: '1px dashed rgba(var(--c), 0.25)', borderRadius: '6px', color: 'var(--mu)', display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}
+              >
+                <span className="ms" style={{ fontSize: '16px' }}>search_off</span>
+                <span style={{ font: '400 11px Geist' }}>
+                  Aucun résultat pour « {query || (statusFilter === 'ALL' ? '' : statusFilter.toLowerCase())} ».
+                </span>
+                <button
+                  type="button"
+                  onClick={resetFilters}
+                  style={{ font: '600 9px Oxanium', color: 'rgb(var(--c))', background: 'rgba(var(--c), 0.1)', border: '1px solid rgba(var(--c), 0.3)', borderRadius: '4px', padding: '4px 8px', cursor: 'pointer' }}
+                >
+                  RÉINITIALISER
+                </button>
+              </div>
+            )}
+
+            {!loading && !error && filteredMissions.length > 0 && (
               <div className="missions-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: '14px' }}>
-                {sortedMissions.map((mission) => (
+                {filteredMissions.map((mission) => (
                   <MissionCard
                     key={mission.id}
                     mission={mission}
@@ -1042,14 +1225,19 @@ function MissionControlPageInner() {
           </div>
 
           {/* Available Agents Zone */}
-          {availableAgents > 0 && (
+          {availableAgentList.length > 0 && (
             <div className="p" style={{ marginTop: '12px' }}>
               <h3>
                 AVAILABLE AGENTS
                 <em>{availableAgents} disponible{availableAgents > 1 ? 's' : ''}</em>
               </h3>
+              {filteredAvailableAgents.length === 0 ? (
+                <p style={{ font: '400 11px Geist', color: 'var(--mu)', margin: 0 }}>
+                  Aucun agent disponible ne correspond à la recherche.
+                </p>
+              ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                {availableAgentList.map((agent) => (
+                {filteredAvailableAgents.map((agent) => (
                   <div
                     key={agent.id}
                     onClick={() => selectAgent(agent.id)}
@@ -1076,6 +1264,7 @@ function MissionControlPageInner() {
                   </div>
                 ))}
               </div>
+              )}
             </div>
           )}
         </div>
