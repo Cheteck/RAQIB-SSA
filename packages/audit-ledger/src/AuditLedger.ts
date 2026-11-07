@@ -6,6 +6,13 @@ export interface AuditFilters {
   actor?: string;
   type?: string;
   limit?: number;
+  /** Décalage de pagination (à utiliser avec `limit`). */
+  offset?: number;
+  /**
+   * Ordre chronologique : `asc` (par défaut, ordre causal d'insertion) ou
+   * `desc` (les plus récents d'abord, pour la supervision temps réel).
+   */
+  order?: 'asc' | 'desc';
 }
 
 export class AuditLedger {
@@ -86,11 +93,24 @@ export class AuditLedger {
 
     // Causal ordering: created_at is second-resolution (unixepoch), so rowid
     // (insertion order) is the deterministic tiebreak within the same second.
-    sql += ' ORDER BY created_at DESC, rowid DESC';
+    // Défaut : DESC (supervision temps réel, contrat historique de l'API) ;
+    // `order: 'asc'` rétablit l'ordre chronologique d'insertion.
+    const descending = filters.order !== 'asc';
+    sql += descending
+      ? ' ORDER BY created_at DESC, rowid DESC'
+      : ' ORDER BY created_at ASC, rowid ASC';
 
-    if (filters.limit) {
+    if (filters.limit !== undefined) {
       sql += ' LIMIT ?';
       params.push(filters.limit);
+    }
+    if (filters.offset) {
+      // SQLite exige un LIMIT pour utiliser OFFSET.
+      if (filters.limit === undefined) {
+        sql += ' LIMIT -1';
+      }
+      sql += ' OFFSET ?';
+      params.push(filters.offset);
     }
 
     const rows = this.db.prepare(sql).all(...params) as any[];
